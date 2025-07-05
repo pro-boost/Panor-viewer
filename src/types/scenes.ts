@@ -51,14 +51,25 @@ export interface InfoHotspot {
   sceneId: string;
   createdAt: Date;
   updatedAt?: Date;
+  // New fields for enhanced POI system
+  contentUrls?: string[]; // URLs for iframe embedding
+  embedSettings?: {
+    allowFullscreen?: boolean;
+    sandbox?: string;
+    width?: number;
+    height?: number;
+  };
 }
 
 /**
- * POI with associated files
+ * POI with associated files and enhanced content
  */
 export interface POIWithFiles extends InfoHotspot {
   files?: File[];
   imageUrls?: string[]; // Blob URLs for display
+  // Enhanced content support
+  hasEmbeddableContent?: boolean;
+  primaryContentType?: 'image' | 'video' | 'audio' | 'document' | 'web' | 'pdf' | 'unknown';
 }
 
 /**
@@ -72,6 +83,24 @@ export interface POIFile {
   size: number;
   data: Blob;
   createdAt: Date;
+  // Enhanced metadata
+  isEmbeddable?: boolean;
+  thumbnailUrl?: string; // For preview thumbnails
+  contentCategory?: 'image' | 'video' | 'audio' | 'document' | 'web' | 'pdf' | 'unknown';
+}
+
+/**
+ * Content preview configuration
+ */
+export interface ContentPreviewConfig {
+  enableHoverPreview: boolean;
+  hoverDelay: number; // milliseconds
+  maxPreviewSize: { width: number; height: number };
+  allowedDomains: string[]; // for iframe embedding
+  securitySettings: {
+    sandbox: string;
+    allowFullscreen: boolean;
+  };
 }
 
 /**

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { POIWithFiles, POIFile } from '@/types/scenes';
 import { poiDB } from '@/lib/poiDatabase';
+import { detectContentType, isEmbeddableUrl, generateEmbedUrl } from '@/utils/contentTypeUtils';
 
 interface POIDetailsModalProps {
   poi: POIWithFiles | null;
@@ -254,9 +255,74 @@ export default function POIDetailsModal({
             </div>
           )}
 
-          {!loading && files.length === 0 && (
+          {poi.contentUrls && poi.contentUrls.length > 0 && (
+            <div className="content-urls-section">
+              <h3>Web Content ({poi.contentUrls.length})</h3>
+              <div className="content-urls-list">
+                {poi.contentUrls.map((url, index) => {
+                  const contentType = detectContentType(url);
+                  const isEmbeddable = isEmbeddableUrl(url);
+                  const embedUrl = isEmbeddable ? generateEmbedUrl(url) : null;
+                  
+                  return (
+                    <div key={index} className="content-url-item">
+                      <div className="url-info">
+                        <span className="url-icon">{contentType.icon}</span>
+                        <div className="url-details">
+                          <div className="url-text">{url}</div>
+                          <div className="url-meta">
+                            <span className={isEmbeddable ? 'embeddable-badge' : 'non-embeddable-badge'}>
+                              {isEmbeddable ? 'Embeddable' : 'Link only'}
+                            </span>
+                            <span className="content-type">{contentType.category}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="url-actions">
+                        <button
+                          className="open-url-button"
+                          onClick={() => window.open(url, '_blank')}
+                          title="Open in new tab"
+                        >
+                          🔗
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Embedded content preview */}
+              {poi.contentUrls.some(url => isEmbeddableUrl(url)) && (
+                <div className="embedded-content">
+                  <h4>Preview</h4>
+                  {poi.contentUrls
+                    .filter(url => isEmbeddableUrl(url))
+                    .slice(0, 1) // Show only first embeddable content
+                    .map((url, index) => {
+                      const embedUrl = generateEmbedUrl(url);
+                      return (
+                        <div key={index} className="iframe-container">
+                          <iframe
+                            src={embedUrl}
+                            title={`Embedded content from ${url}`}
+                            frameBorder="0"
+                            allowFullScreen
+                            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                            loading="lazy"
+                          />
+                        </div>
+                      );
+                    })
+                  }
+                </div>
+              )}
+            </div>
+          )}
+
+          {!loading && files.length === 0 && (!poi.contentUrls || poi.contentUrls.length === 0) && (
             <div className="no-files-section">
-              <p>No files attached to this POI.</p>
+              <p>No files or content attached to this POI.</p>
             </div>
           )}
         </div>
@@ -516,6 +582,134 @@ export default function POIDetailsModal({
           color: #666;
         }
 
+        .content-urls-section h3,
+        .content-urls-section h4 {
+          margin: 0 0 12px 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+        }
+
+        .content-urls-section h4 {
+          font-size: 16px;
+          margin-top: 20px;
+        }
+
+        .content-urls-list {
+          border: 1px solid #eee;
+          border-radius: 8px;
+          overflow: hidden;
+          margin-bottom: 20px;
+        }
+
+        .content-url-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 16px;
+          border-bottom: 1px solid #eee;
+        }
+
+        .content-url-item:last-child {
+          border-bottom: none;
+        }
+
+        .url-info {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+        }
+
+        .url-icon {
+          font-size: 24px;
+          flex-shrink: 0;
+        }
+
+        .url-details {
+          flex: 1;
+          min-width: 0;
+        }
+
+        .url-text {
+          font-weight: 500;
+          color: #333;
+          margin-bottom: 4px;
+          word-break: break-all;
+          font-size: 14px;
+        }
+
+        .url-meta {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+
+        .embeddable-badge {
+          background: #e8f5e8;
+          color: #2e7d32;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 500;
+        }
+
+        .non-embeddable-badge {
+          background: #fff3e0;
+          color: #f57c00;
+          padding: 2px 8px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 500;
+        }
+
+        .content-type {
+          font-size: 12px;
+          color: #666;
+          text-transform: capitalize;
+        }
+
+        .url-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .open-url-button {
+          background: rgba(0, 0, 0, 0.7);
+          color: white;
+          border: none;
+          padding: 8px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          transition: background-color 0.2s;
+        }
+
+        .open-url-button:hover {
+          background: rgba(0, 0, 0, 0.8);
+        }
+
+        .embedded-content {
+          margin-top: 20px;
+        }
+
+        .iframe-container {
+          position: relative;
+          width: 100%;
+          height: 400px;
+          border: 1px solid #eee;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #f5f5f5;
+        }
+
+        .iframe-container iframe {
+          width: 100%;
+          height: 100%;
+          border: none;
+        }
+
         @media (max-width: 768px) {
           .poi-details-modal {
             margin: 10px;
@@ -544,6 +738,18 @@ export default function POIDetailsModal({
 
           .document-item {
             padding: 12px;
+          }
+
+          .content-url-item {
+            padding: 12px;
+          }
+
+          .url-text {
+            font-size: 13px;
+          }
+
+          .iframe-container {
+            height: 250px;
           }
         }
       `}</style>

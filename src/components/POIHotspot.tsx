@@ -1,13 +1,16 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { POIWithFiles } from '@/types/scenes';
+import { detectContentType, ContentTypeInfo } from '@/utils/contentTypeUtils';
 
 interface POIHotspotProps {
   element: HTMLElement;
   poi: POIWithFiles;
   visible: boolean;
   onClick: (poi: POIWithFiles) => void;
+  onHover?: (poi: POIWithFiles, position: { x: number; y: number }) => void;
+  onHoverEnd?: () => void;
 }
 
 export default function POIHotspot({
@@ -15,10 +18,37 @@ export default function POIHotspot({
   poi,
   visible,
   onClick,
+  onHover,
+  onHoverEnd,
 }: POIHotspotProps) {
+  const [dynamicIcon, setDynamicIcon] = useState<string>('📍');
   const hasImages = poi.imageUrls && poi.imageUrls.length > 0;
   const hasFiles = poi.files && poi.files.length > 0;
   const fileCount = poi.files ? poi.files.length : 0;
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Determine the appropriate icon based on content
+  useEffect(() => {
+    let primaryIcon = '📍'; // Default icon
+    
+    // Check files for content type
+    if (poi.files && poi.files.length > 0) {
+      const firstFile = poi.files[0];
+      const contentType = detectContentType(firstFile.name, firstFile.type);
+      primaryIcon = contentType.icon;
+    } else if (poi.description) {
+      // Check description for URLs
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const urls = poi.description.match(urlRegex);
+      
+      if (urls && urls.length > 0) {
+        const contentType = detectContentType(urls[0]);
+        primaryIcon = contentType.icon;
+      }
+    }
+    
+    setDynamicIcon(primaryIcon);
+  }, [poi]);
 
   useEffect(() => {
     if (!element) return;
@@ -29,10 +59,34 @@ export default function POIHotspot({
       onClick(poi);
     };
 
-    // Generate the HTML content directly
+    // Set up hover handlers for preview
+    const handleMouseEnter = (e: MouseEvent) => {
+      if (onHover && hoverTimeoutRef.current === null) {
+        hoverTimeoutRef.current = setTimeout(() => {
+          const rect = element.getBoundingClientRect();
+          const position = {
+            x: rect.left + rect.width / 2,
+            y: rect.top
+          };
+          onHover(poi, position);
+        }, 500); // 500ms delay before showing preview
+      }
+    };
+
+    const handleMouseLeave = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      if (onHoverEnd) {
+        onHoverEnd();
+      }
+    };
+
+    // Generate the HTML content with dynamic icon
     const htmlContent = `
       <div class="poi-marker">
-        <div class="poi-icon">📍</div>
+        <div class="poi-icon">${dynamicIcon}</div>
         ${hasFiles ? `<div class="file-count-badge">${fileCount}</div>` : ''}
         ${hasImages ? '<div class="image-indicator">🖼️</div>' : ''}
         <div class="poi-tooltip">
@@ -44,23 +98,24 @@ export default function POIHotspot({
       <style>
         .poi-marker {
           position: relative;
-          background: #4CAF50;
+          background: linear-gradient(135deg, #4CAF50, #45a049);
           border: 3px solid white;
           border-radius: 50%;
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
           z-index: 100;
           animation: poiAppear 0.5s ease-out;
         }
         .poi-marker:hover {
-          transform: scale(1.2);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+          transform: scale(1.25);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+          background: linear-gradient(135deg, #66BB6A, #4CAF50);
         }
         .poi-marker:hover .poi-tooltip {
           opacity: 1;
@@ -68,9 +123,10 @@ export default function POIHotspot({
           transform: translateX(-50%) translateY(-10px);
         }
         .poi-icon {
-          font-size: 16px;
+          font-size: 18px;
           line-height: 1;
-          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+          filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+          user-select: none;
         }
         .file-count-badge {
           position: absolute;
@@ -170,12 +226,23 @@ export default function POIHotspot({
     // Set the HTML content directly - no appendChild/removeChild needed
     element.innerHTML = htmlContent;
     element.addEventListener('click', handleClick);
+    element.addEventListener('mouseenter', handleMouseEnter);
+    element.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
       element.removeEventListener('click', handleClick);
+      element.removeEventListener('mouseenter', handleMouseEnter);
+      element.removeEventListener('mouseleave', handleMouseLeave);
+      
+      // Clear any pending hover timeout
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      
       // No need to manually remove DOM elements - Marzipano handles this
     };
-  }, [element, poi, onClick, hasImages, hasFiles, fileCount]);
+  }, [element, poi, onClick, onHover, onHoverEnd, hasImages, hasFiles, fileCount, dynamicIcon]);
 
   useEffect(() => {
     if (element) {

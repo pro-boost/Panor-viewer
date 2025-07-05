@@ -8,10 +8,12 @@ import LoadingScreen from './LoadingScreen';
 import POIDialog from './POIDialog';
 import POIDetailsModal from './POIDetailsModal';
 import POIHotspot from './POIHotspot';
+import POIPreview from './POIPreview';
 
 import Hotspot from './Hotspot';
 import { checkWebGLSupport, createRipple } from '@/lib/panoramaUtils';
 import { poiDB } from '@/lib/poiDatabase';
+import { detectContentType } from '@/utils/contentTypeUtils';
 import {
   ConfigData,
   SceneInfo as SceneInfoType,
@@ -287,6 +289,9 @@ export default function PanoramaViewer() {
   const [scenePOIs, setScenePOIs] = useState<POIWithFiles[]>([]);
   const [poisVisible, setPoisVisible] = useState<boolean>(true);
   const [previewPosition, setPreviewPosition] = useState<{x: number, y: number} | null>(null);
+  const [hoveredPOI, setHoveredPOI] = useState<POIWithFiles | null>(null);
+  const [showPreview, setShowPreview] = useState<boolean>(false);
+  const [previewMode, setPreviewMode] = useState<'hover' | 'click'>('hover');
 
   const viewerRef = useRef<Marzipano.Viewer | null>(null);
   const scenesRef = useRef<Record<string, SceneInfoType>>({});
@@ -367,6 +372,23 @@ export default function PanoramaViewer() {
     []
   );
 
+  // Handle POI hover events
+  const handlePOIHover = useCallback((poi: POIWithFiles, event: MouseEvent) => {
+    const rect = (event.target as HTMLElement).getBoundingClientRect();
+    setPreviewPosition({
+      x: rect.left + rect.width / 2,
+      y: rect.top
+    });
+    setHoveredPOI(poi);
+    setShowPreview(true);
+  }, []);
+
+  const handlePOIHoverEnd = useCallback(() => {
+    setShowPreview(false);
+    setHoveredPOI(null);
+    setPreviewPosition(null);
+  }, []);
+
   // Create POI hotspots for a scene
   const createPOIHotspotsForScene = useCallback(
     (sceneId: string, pois: POIWithFiles[]): void => {
@@ -394,56 +416,73 @@ export default function PanoramaViewer() {
             handlePOIClick(poi);
           };
           
-          element.addEventListener('click', handlePOIElementClick);
+          // Add hover handlers for preview
+          const handlePOIElementHover = (e: Event) => {
+            const mouseEvent = e as unknown as MouseEvent;
+            handlePOIHover(poi, mouseEvent);
+          };
           
-          // Style the POI element with proper visual appearance
-          const hasImages = poi.imageUrls && poi.imageUrls.length > 0;
+          const handlePOIElementHoverEnd = (e: Event) => {
+            handlePOIHoverEnd();
+          };
+          
+          element.addEventListener('click', handlePOIElementClick);
+          element.addEventListener('mouseenter', handlePOIElementHover);
+          element.addEventListener('mouseleave', handlePOIElementHoverEnd);
+          
+          // Create enhanced POI marker with dynamic icon
+          // Detect content type for dynamic icon
+          let dynamicIcon = '📍'; // default
+          if (poi.files && poi.files.length > 0) {
+            const primaryFile = poi.files[0];
+            const contentType = detectContentType(primaryFile.name, primaryFile.type);
+            switch (contentType.category) {
+              case 'image': dynamicIcon = '🖼️'; break;
+              case 'video': dynamicIcon = '🎥'; break;
+              case 'audio': dynamicIcon = '🎵'; break;
+              case 'document': dynamicIcon = '📄'; break;
+              case 'web': dynamicIcon = '🌐'; break;
+              default: dynamicIcon = '📍';
+            }
+          } else if (poi.contentUrls && poi.contentUrls.length > 0) {
+            const url = poi.contentUrls[0];
+            const contentType = detectContentType(url);
+            switch (contentType.category) {
+              case 'video': dynamicIcon = '🎥'; break;
+              case 'web': dynamicIcon = '🌐'; break;
+              default: dynamicIcon = '🌐';
+            }
+          }
+          
           const hasFiles = poi.files && poi.files.length > 0;
+          const hasImages = poi.imageUrls && poi.imageUrls.length > 0;
           const fileCount = poi.files ? poi.files.length : 0;
           
           element.innerHTML = `
-            <div class="poi-marker">
-              <div class="poi-icon">📍</div>
-              ${hasFiles ? `<div class="file-count-badge">${fileCount}</div>` : ''}
-              ${hasImages ? '<div class="image-indicator">🖼️</div>' : ''}
-              <div class="poi-tooltip">
-                <div class="poi-title">${poi.title}</div>
-                ${poi.description ? `<div class="poi-description">${poi.description}</div>` : ''}
-                ${hasFiles ? `<div class="poi-file-info">${fileCount} file${fileCount !== 1 ? 's' : ''} attached</div>` : ''}
-              </div>
-            </div>
-            <style>
-              .poi-marker {
-                position: relative;
-                background: #4CAF50;
-                border: 3px solid white;
-                border-radius: 50%;
-                width: 32px;
-                height: 32px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-                z-index: 100;
-                animation: poiAppear 0.5s ease-out;
-              }
-              .poi-marker:hover {
-                transform: scale(1.2);
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-              }
-              .poi-marker:hover .poi-tooltip {
-                opacity: 1;
-                visibility: visible;
-                transform: translateX(-50%) translateY(-10px);
-              }
-              .poi-icon {
-                font-size: 16px;
+            <div class="poi-marker" style="
+              position: relative;
+              background: linear-gradient(135deg, #4CAF50, #45a049);
+              border: 3px solid white;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+              z-index: 100;
+              animation: poiAppear 0.5s ease-out;
+            ">
+              <div class="poi-icon" style="
+                font-size: 18px;
                 line-height: 1;
-                filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-              }
-              .file-count-badge {
+                filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+                color: white;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+              ">${dynamicIcon}</div>
+              ${hasFiles ? `<div class="file-count-badge" style="
                 position: absolute;
                 top: -8px;
                 right: -8px;
@@ -459,23 +498,9 @@ export default function PanoramaViewer() {
                 font-weight: bold;
                 border: 2px solid white;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-              }
-              .image-indicator {
-                position: absolute;
-                bottom: -6px;
-                right: -6px;
-                background: #2196F3;
-                border-radius: 50%;
-                width: 16px;
-                height: 16px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 8px;
-                border: 2px solid white;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-              }
-              .poi-tooltip {
+              ">${fileCount}</div>` : ''}
+              ${hasImages ? '<div class="image-indicator" style="position: absolute; bottom: -6px; right: -6px; background: #2196F3; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-size: 8px; border: 2px solid white; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);">🖼️</div>' : ''}
+              <div class="poi-tooltip" style="
                 position: absolute;
                 bottom: 100%;
                 left: 50%;
@@ -493,6 +518,36 @@ export default function PanoramaViewer() {
                 pointer-events: none;
                 z-index: 1000;
                 box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+              ">
+                <div class="poi-title" style="
+                  font-weight: 600;
+                  margin-bottom: 4px;
+                  color: white;
+                ">${poi.title}</div>
+                ${poi.description ? `<div class="poi-description" style="
+                  font-size: 12px;
+                  color: #ccc;
+                  margin-bottom: 4px;
+                  white-space: normal;
+                  max-width: 200px;
+                  line-height: 1.3;
+                ">${poi.description}</div>` : ''}
+                ${hasFiles ? `<div class="poi-file-info" style="
+                  font-size: 11px;
+                  color: #4CAF50;
+                  font-weight: 500;
+                ">${fileCount} file${fileCount !== 1 ? 's' : ''} attached</div>` : ''}
+              </div>
+            </div>
+            <style>
+              .poi-marker:hover {
+                transform: scale(1.2);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 3px 6px rgba(0, 0, 0, 0.3);
+              }
+              .poi-marker:hover .poi-tooltip {
+                opacity: 1;
+                visibility: visible;
+                transform: translateX(-50%) translateY(-10px);
               }
               .poi-tooltip::after {
                 content: '';
@@ -502,24 +557,6 @@ export default function PanoramaViewer() {
                 transform: translateX(-50%);
                 border: 6px solid transparent;
                 border-top-color: rgba(0, 0, 0, 0.9);
-              }
-              .poi-title {
-                font-weight: 600;
-                margin-bottom: 4px;
-                color: white;
-              }
-              .poi-description {
-                font-size: 12px;
-                color: #ccc;
-                margin-bottom: 4px;
-                white-space: normal;
-                max-width: 200px;
-                line-height: 1.3;
-              }
-              .poi-file-info {
-                font-size: 11px;
-                color: #4CAF50;
-                font-weight: 500;
               }
               @keyframes poiAppear {
                 0% { transform: scale(0); opacity: 0; }
@@ -1428,6 +1465,20 @@ export default function PanoramaViewer() {
               setShowPOIDetails(false);
               setSelectedPOI(null);
             }
+          }}
+        />
+      )}
+
+      {/* POI Preview */}
+      {showPreview && hoveredPOI && previewPosition && (
+        <POIPreview
+          poi={hoveredPOI}
+          isVisible={showPreview}
+          mode={previewMode}
+          position={previewPosition}
+          onClose={() => {
+            setShowPreview(false);
+            setHoveredPOI(null);
           }}
         />
       )}
