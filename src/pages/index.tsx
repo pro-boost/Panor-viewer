@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ReactElement, useState, useEffect } from 'react';
+import { ReactElement, useState, useEffect, useCallback, useRef } from 'react';
 import styles from '@/styles/Welcome.module.css';
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
@@ -23,58 +23,121 @@ interface ConfigData {
 export default function Home(): ReactElement {
   // Default to false, assuming no panoramas until checked.
   const [hasPanoramas, setHasPanoramas] = useState<boolean>(false);
+  const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
+  const [forceWelcome, setForceWelcome] = useState<boolean>(false);
+  const [isCheckingFromVisibility, setIsCheckingFromVisibility] = useState<boolean>(false);
+  const [lastFileCount, setLastFileCount] = useState<number>(0);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const lastRefreshTime = useRef<number>(0);
+
+  // Handle case where PanoramaViewer detects no config
+  const handleNoConfig = () => {
+    console.log('PanoramaViewer detected no config - showing welcome screen');
+    setHasPanoramas(false);
+    setForceWelcome(true);
+  };
+
+  const checkForPanoramas = useCallback(async () => {
+    try {
+      // Use the check-files API which handles Electron paths correctly
+      // Add timestamp to prevent caching
+      const timestamp = Date.now();
+      const response = await fetch(`/api/check-files?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+      
+      if (!response.ok) {
+        console.warn('Check-files API failed:', response.status, response.statusText);
+        setHasPanoramas(false);
+        return;
+      }
+
+      const result = await response.json();
+      console.log('File check result:', result);
+      
+      // The API returns hasFiles: true if both CSV and images exist
+      const hasFiles = result.hasFiles === true;
+      const currentFileCount = result.imageCount || 0;
+      console.log('Has panoramas:', hasFiles, 'CSV:', result.csvFile, 'Images:', currentFileCount);
+      
+      // Only trigger refresh if:
+      // 1. We're checking from visibility change (user returned from upload), OR
+      // 2. File count has actually changed (new files uploaded)
+      // 3. Not currently refreshing and enough time has passed since last refresh
+      const now = Date.now();
+      const timeSinceLastRefresh = now - lastRefreshTime.current;
+      const shouldRefresh = hasFiles && !isRefreshing && timeSinceLastRefresh > 2000 && (
+        isCheckingFromVisibility || 
+        (hasPanoramas && currentFileCount !== lastFileCount && currentFileCount > 0)
+      );
+      
+      if (shouldRefresh) {
+        console.log('File change detected, triggering panorama refresh...', {
+          fromVisibility: isCheckingFromVisibility,
+          fileCountChanged: currentFileCount !== lastFileCount,
+          oldCount: lastFileCount,
+          newCount: currentFileCount,
+          timeSinceLastRefresh
+        });
+        setIsRefreshing(true);
+        setRefreshTrigger(now);
+        lastRefreshTime.current = now;
+        
+        // Reset refreshing state after a delay
+        setTimeout(() => {
+          setIsRefreshing(false);
+        }, 3000);
+      }
+      
+      // Update file count tracking
+      if (hasFiles && currentFileCount > 0) {
+        setLastFileCount(currentFileCount);
+      }
+      
+      // Reset the visibility check flag
+      if (isCheckingFromVisibility) {
+        setIsCheckingFromVisibility(false);
+      }
+      
+      setHasPanoramas(hasFiles);
+      
+      // Reset force welcome if we now have files
+      if (hasFiles) {
+        setForceWelcome(false);
+      }
+    } catch (error) {
+      // In case of any error during the check, assume no panoramas.
+      console.error('Error checking for panoramas:', error);
+      setHasPanoramas(false);
+    }
+  }, [hasPanoramas, isCheckingFromVisibility, lastFileCount, isRefreshing]);
 
   useEffect(() => {
-    const checkForPanoramas = async () => {
-      try {
-        const configResponse = await fetch('/config.json', {
-          cache: 'no-store',
-        });
-        if (!configResponse.ok) {
-          setHasPanoramas(false);
-          return;
-        }
-
-        const config: ConfigData = await configResponse.json();
-        if (!config.scenes || config.scenes.length === 0) {
-          setHasPanoramas(false);
-          return;
-        }
-
-        // Check if actual image files exist by testing the first few scenes
-        const testScenes = config.scenes.slice(
-          0,
-          Math.min(3, config.scenes.length)
-        );
-        let imageExists = false;
-
-        for (const scene of testScenes) {
-          try {
-            const imageResponse = await fetch(`/images/${scene.id}-pano.jpg`, {
-              method: 'HEAD',
-              cache: 'no-store',
-            });
-            if (imageResponse.ok) {
-              imageExists = true;
-              break;
-            }
-          } catch {
-            // Continue checking other images
-          }
-        }
-        setHasPanoramas(imageExists);
-      } catch (error) {
-        // In case of any error during the check, assume no panoramas.
-        console.error('Error checking for panoramas:', error);
-        setHasPanoramas(false);
+    checkForPanoramas();
+    
+    // Also check when the page becomes visible (user returns from upload)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('Page became visible, rechecking files...');
+        setIsCheckingFromVisibility(true);
+        setTimeout(checkForPanoramas, 500); // Small delay to ensure files are written
       }
     };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [checkForPanoramas]);
 
-    checkForPanoramas();
-  }, []);
-
-  // If panoramas exist, show the viewer.
-  if (hasPanoramas) {
+  // If panoramas exist and we're not forcing welcome screen, show the viewer.
+  if (hasPanoramas && !forceWelcome) {
     return (
       <div>
         {/* Logo */}
@@ -140,7 +203,7 @@ export default function Home(): ReactElement {
             📁 Upload Panoramas
           </Link>
         </header>
-        <PanoramaViewer />
+        <PanoramaViewer refreshTrigger={refreshTrigger} onNoConfig={handleNoConfig} />
       </div>
     );
   }

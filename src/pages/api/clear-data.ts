@@ -34,9 +34,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const publicDir = path.join(process.cwd(), 'public');
+    // Handle Electron packaged app paths
+    let basePath = process.cwd();
+    
+    // Check if we're in an Electron environment
+    if (process.versions && process.versions.electron) {
+      // In packaged Electron app, files are in resources/app/public
+      const electronProcess = process as any;
+      if (electronProcess.resourcesPath) {
+        const resourcesPath = path.join(electronProcess.resourcesPath, 'app');
+        if (fs.existsSync(resourcesPath)) {
+          basePath = resourcesPath;
+        }
+      }
+    }
+    
+    const publicDir = path.join(basePath, 'public');
     const imagesDir = path.join(publicDir, 'images');
     const dataDir = path.join(publicDir, 'data');
+    
+    console.log('Clear data paths:', { basePath, publicDir, imagesDir, dataDir });
 
     await deleteDirectoryFiles(imagesDir);
     await deleteDirectoryFiles(dataDir);

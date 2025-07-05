@@ -32,7 +32,12 @@ function yawPitchToScreen(
   return { x, y };
 }
 
-export default function PanoramaViewer() {
+interface PanoramaViewerProps {
+  refreshTrigger?: number;
+  onNoConfig?: () => void;
+}
+
+export default function PanoramaViewer({ refreshTrigger, onNoConfig }: PanoramaViewerProps = {}) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [config, setConfig] = useState<ConfigData | null>(null);
@@ -55,6 +60,86 @@ export default function PanoramaViewer() {
   const panoRef = useRef<HTMLDivElement>(null);
   const hotspotTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const marzipanoRef = useRef<boolean>(false);
+  
+  // Performance optimization: adaptive memory management based on dataset size
+  const [maxScenesInMemory, setMaxScenesInMemory] = useState(20);
+  const sceneAccessOrder = useRef<string[]>([]);
+  const [memoryStats, setMemoryStats] = useState({ loaded: 0, disposed: 0 });
+  
+  // Circuit breaker for refresh loops
+  const lastRefreshTrigger = useRef<number>(0);
+  const refreshCount = useRef<number>(0);
+  const refreshResetTimeout = useRef<NodeJS.Timeout | null>(null);
+  
+  // Diagnostic function to check image availability
+  const checkImageAvailability = useCallback(async (sceneId: string): Promise<boolean> => {
+    const imageUrl = `/images/${sceneId}-pano.jpg`;
+    try {
+      const response = await fetch(imageUrl, { method: 'HEAD' });
+      const available = response.ok;
+      console.log(`Image check for ${sceneId}: ${available ? 'AVAILABLE' : 'MISSING'} (${response.status})`);
+      return available;
+    } catch (err) {
+      console.log(`Image check for ${sceneId}: ERROR -`, err);
+      return false;
+    }
+  }, []);
+
+  // Dispose of old scenes to free memory
+  const disposeScene = useCallback((sceneId: string): void => {
+    const sceneInfo = scenesRef.current[sceneId];
+    if (!sceneInfo || !sceneInfo.scene) return;
+
+    try {
+      // Clear hotspots first
+      const hotspotContainer = sceneInfo.scene.hotspotContainer();
+      const hotspots = hotspotContainer.listHotspots();
+      hotspots.forEach((hotspot: Marzipano.Hotspot) => {
+        hotspotContainer.destroyHotspot(hotspot);
+      });
+
+      // Dispose of the scene
+       sceneInfo.scene.destroy();
+       sceneInfo.scene = null;
+       sceneInfo.loaded = false;
+       sceneInfo.hotspotElements = [];
+       
+       // Update memory stats
+       setMemoryStats(prev => ({ ...prev, disposed: prev.disposed + 1 }));
+       
+       console.log(`Disposed scene ${sceneId} to free memory`);
+    } catch (err) {
+      console.error(`Error disposing scene ${sceneId}:`, err);
+    }
+  }, []);
+
+  // Manage scene memory by disposing old scenes
+  const manageSceneMemory = useCallback((currentSceneId: string): void => {
+    // Update access order
+    sceneAccessOrder.current = sceneAccessOrder.current.filter(id => id !== currentSceneId);
+    sceneAccessOrder.current.push(currentSceneId);
+
+    // If we have too many scenes, dispose the oldest ones
+    const loadedScenes = Object.keys(scenesRef.current).filter(
+      id => scenesRef.current[id].loaded && scenesRef.current[id].scene
+    );
+
+    if (loadedScenes.length > maxScenesInMemory) {
+       const scenesToDispose = loadedScenes.length - maxScenesInMemory;
+      const oldestScenes = sceneAccessOrder.current.slice(0, scenesToDispose);
+      
+      oldestScenes.forEach(sceneId => {
+        if (sceneId !== currentSceneId) {
+          disposeScene(sceneId);
+        }
+      });
+      
+      // Clean up access order
+      sceneAccessOrder.current = sceneAccessOrder.current.filter(
+        id => !oldestScenes.includes(id) || id === currentSceneId
+      );
+    }
+  }, [disposeScene, maxScenesInMemory]);
 
   // Clear hotspots for a scene
   const clearHotspotsForScene = useCallback(
@@ -117,18 +202,47 @@ export default function PanoramaViewer() {
     const viewer = viewerRef.current;
     const { Marzipano } = window;
 
-    try {
-      // Create source
-      const source = Marzipano.ImageUrlSource.fromString(
-        `/images/${sceneInfo.data.id}-pano.jpg`
-      );
+    console.log(`Attempting to load scene ${sceneId}`);
+    
+    // First, run diagnostic check
+    const imageAvailable = await checkImageAvailability(sceneId);
+    if (!imageAvailable) {
+      console.error(`Diagnostic: Image not available for scene ${sceneId}`);
+      sceneInfo.loaded = false;
+      sceneInfo.scene = null;
+      return;
+    }
 
-      // Create geometry with lower resolution for better performance
+    try {
+      // Validate image exists first
+      const imageUrl = `/images/${sceneInfo.data.id}-pano.jpg`;
+      
+      // Test image loading with explicit validation
+      const imageTest = new Promise<void>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          console.log(`Image validation successful for scene ${sceneId}`);
+          resolve();
+        };
+        img.onerror = (e) => {
+          console.error(`Image validation failed for scene ${sceneId}:`, e);
+          reject(new Error(`Image not found or corrupted: ${imageUrl}`));
+        };
+        img.src = imageUrl;
+      });
+      
+      // Wait for image validation
+      await imageTest;
+      
+      // Create source after validation
+      const source = Marzipano.ImageUrlSource.fromString(imageUrl);
+
+      // Optimized geometry levels for large datasets
       const geometry = new Marzipano.EquirectGeometry([
+        { width: 256 },  // Lower base resolution
         { width: 512 },
         { width: 1024 },
-        { width: 2048 },
-        { width: 4096 },
+        { width: 2048 }, // Reduced max resolution for memory efficiency
       ]);
 
       // Create view with more conservative limits
@@ -145,6 +259,8 @@ export default function PanoramaViewer() {
       if (!viewer) {
         throw new Error('Viewer not initialized');
       }
+      
+      console.log(`Creating Marzipano scene for ${sceneId}`);
       const scene = viewer.createScene({
         source: source,
         geometry: geometry,
@@ -152,44 +268,58 @@ export default function PanoramaViewer() {
         pinFirstLevel: true,
       });
 
+      // Validate scene creation
+      if (!scene) {
+        throw new Error(`Failed to create Marzipano scene for ${sceneId}`);
+      }
+
       // Update scene info
-      sceneInfo.scene = scene;
-      sceneInfo.loaded = true;
+       sceneInfo.scene = scene;
+       sceneInfo.loaded = true;
+       
+       // Update memory stats
+       setMemoryStats(prev => ({ ...prev, loaded: prev.loaded + 1 }));
+       
+       // Manage memory usage
+       manageSceneMemory(sceneId);
+       
+       console.log(`Successfully loaded scene ${sceneId}`);
     } catch (err) {
       console.error(`Failed to load scene ${sceneId}:`, err);
+      console.error(`Scene data:`, sceneInfo.data);
+      console.error(`Image URL attempted:`, `/images/${sceneInfo.data.id}-pano.jpg`);
+      
+      // Mark as failed, but don't prevent navigation
+      sceneInfo.loaded = false;
+      sceneInfo.scene = null;
+      // Don't re-throw - allow navigation to continue
     }
-  }, []);
+  }, [manageSceneMemory]);
 
-  // Preload adjacent scenes more aggressively
+  // Optimized preloading for large datasets
   const preloadAdjacentScenes = useCallback(
     async (sceneId: string): Promise<void> => {
       const sceneInfo = scenesRef.current[sceneId];
       if (!sceneInfo) return;
 
-      // Preload all connected scenes immediately
       const connections = sceneInfo.data.linkHotspots.map(h => h.target);
+      
+      // For large datasets, limit preloading to avoid memory issues
+      const maxPreload = connections.length > 8 ? 4 : connections.length;
+      const connectionsToPreload = connections.slice(0, maxPreload);
 
-      // Create image elements to preload in background
-      connections.forEach(targetId => {
+      // Only preload images in background, don't create Marzipano scenes yet
+      connectionsToPreload.forEach(targetId => {
         const img = new Image();
         img.src = `/images/${targetId}-pano.jpg`;
+        img.onerror = () => {
+          console.warn(`Preload failed for image: ${targetId}-pano.jpg`);
+        };
       });
 
-      // Also load the scenes properly in Marzipano
-      for (const targetId of connections) {
-        if (
-          scenesRef.current[targetId] &&
-          !scenesRef.current[targetId].loaded
-        ) {
-          try {
-            await loadScene(targetId);
-          } catch (err) {
-            console.error(`Failed to preload scene ${targetId}:`, err);
-          }
-        }
-      }
+      console.log(`Preloading ${connectionsToPreload.length} adjacent images for scene ${sceneId}`);
     },
-    [loadScene]
+    []
   );
 
   // Switch scene
@@ -207,7 +337,23 @@ export default function PanoramaViewer() {
         await loadScene(sceneId);
       }
 
-      if (!sceneInfo.scene) return;
+      // Check if scene is available after loading attempt
+      if (!sceneInfo.scene) {
+        console.error(`Scene ${sceneId} failed to load - cannot switch to this scene`);
+        console.error(`Scene info:`, {
+          id: sceneInfo.data.id,
+          loaded: sceneInfo.loaded,
+          hasScene: !!sceneInfo.scene,
+          imageUrl: `/images/${sceneInfo.data.id}-pano.jpg`
+        });
+        
+        // Set a temporary error message for user feedback
+        setError(`Failed to load panorama ${sceneId}. Please check the console for details.`);
+        
+        // Clear error after 5 seconds
+        setTimeout(() => setError(null), 5000);
+        return;
+      }
 
       // Use tracked view direction if preserving and available
       let currentView = null;
@@ -262,6 +408,9 @@ export default function PanoramaViewer() {
       }, 0);
 
       setCurrentScene(sceneId);
+      
+      // Update memory management
+      manageSceneMemory(sceneId);
 
       // Create hotspots but don't show them yet
       createHotspotsForScene(sceneInfo);
@@ -294,6 +443,7 @@ export default function PanoramaViewer() {
       createHotspotsForScene,
       preloadAdjacentScenes,
       currentViewParams,
+      manageSceneMemory,
     ]
   );
 
@@ -305,9 +455,21 @@ export default function PanoramaViewer() {
         throw new Error('WebGL is not supported or disabled in your browser');
       }
 
-      // Load configuration
-      const response = await fetch('/config.json');
+      // Load configuration with cache busting
+      const timestamp = Date.now();
+      const response = await fetch(`/config.json?t=${timestamp}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
       if (!response.ok) {
+        if (response.status === 404) {
+          // Config file doesn't exist - this is expected for fresh installations
+          throw new Error('NO_CONFIG');
+        }
         throw new Error(`Failed to load config.json: ${response.statusText}`);
       }
 
@@ -373,12 +535,28 @@ export default function PanoramaViewer() {
         };
       });
 
-      // Load and display first scene
-      if (configData.scenes.length > 0) {
-        const firstScene = configData.scenes[0];
-        await loadScene(firstScene.id);
-        switchScene(firstScene.id, true, false);
+      // Check if we have scenes to display
+      if (configData.scenes.length === 0) {
+        throw new Error('No panorama scenes found. Please upload panorama images and CSV data first.');
       }
+      
+      // Adaptive memory management based on dataset size
+      const datasetSize = configData.scenes.length;
+      if (datasetSize > 200) {
+        setMaxScenesInMemory(10); // Very conservative for large datasets
+        console.log('Large dataset detected (>200 scenes), using conservative memory management');
+      } else if (datasetSize > 100) {
+        setMaxScenesInMemory(15); // Moderate for medium datasets
+        console.log('Medium dataset detected (>100 scenes), using moderate memory management');
+      } else {
+        setMaxScenesInMemory(25); // More generous for small datasets
+        console.log('Small dataset detected, using standard memory management');
+      }
+
+      // Load and display first scene
+      const firstScene = configData.scenes[0];
+      await loadScene(firstScene.id);
+      switchScene(firstScene.id, true, false);
 
       setIsLoading(false);
 
@@ -387,6 +565,17 @@ export default function PanoramaViewer() {
       setTimeout(() => setShowTapHint(false), 4000);
     } catch (err) {
       console.error('Initialization error:', err);
+      
+      // Handle special case where config doesn't exist
+      if (err instanceof Error && err.message === 'NO_CONFIG') {
+        console.log('No configuration found - showing welcome screen');
+        setIsLoading(false);
+        if (onNoConfig) {
+          onNoConfig();
+        }
+        return;
+      }
+      
       setError(err instanceof Error ? err.message : String(err));
       setIsLoading(false);
     }
@@ -482,6 +671,75 @@ export default function PanoramaViewer() {
       handleMarzipanoLoad();
     }
   }, []);
+
+  // Watch for refresh trigger to reload configuration
+  useEffect(() => {
+    if (refreshTrigger && refreshTrigger > 0 && (window as any).Marzipano) {
+      // Circuit breaker: prevent too many refreshes in a short time
+      const now = Date.now();
+      const timeSinceLastRefresh = now - lastRefreshTrigger.current;
+      
+      // Reset refresh count if enough time has passed
+      if (timeSinceLastRefresh > 10000) { // 10 seconds
+        refreshCount.current = 0;
+      }
+      
+      // Increment refresh count
+      refreshCount.current++;
+      
+      // If too many refreshes in short time, ignore this trigger
+      if (refreshCount.current > 3) {
+        console.warn('Too many refresh attempts, ignoring trigger to prevent infinite loop');
+        return;
+      }
+      
+      console.log('Refresh trigger detected, reloading configuration...', {
+        refreshCount: refreshCount.current,
+        timeSinceLastRefresh
+      });
+      
+      lastRefreshTrigger.current = now;
+      
+      // Reset state
+      setIsLoading(true);
+      setError(null);
+      setConfig(null);
+      setCurrentScene(null);
+      setHotspotsVisible(false);
+      
+      // Clear existing scenes
+      Object.values(scenesRef.current).forEach(sceneInfo => {
+        if (sceneInfo.scene) {
+          clearHotspotsForScene(sceneInfo);
+        }
+      });
+      scenesRef.current = {};
+      sceneAccessOrder.current = [];
+      setMemoryStats({ loaded: 0, disposed: 0 });
+      
+      // Clear any timeouts
+      if (hotspotTimeoutRef.current) {
+        clearTimeout(hotspotTimeoutRef.current);
+        hotspotTimeoutRef.current = null;
+      }
+      
+      // Clear refresh reset timeout if it exists
+      if (refreshResetTimeout.current) {
+        clearTimeout(refreshResetTimeout.current);
+      }
+      
+      // Set timeout to reset refresh count
+      refreshResetTimeout.current = setTimeout(() => {
+        refreshCount.current = 0;
+        console.log('Refresh count reset');
+      }, 15000); // Reset after 15 seconds
+      
+      // Reinitialize viewer with fresh data
+      setTimeout(() => {
+        initializeViewer();
+      }, 100); // Small delay to ensure cleanup is complete
+    }
+  }, [refreshTrigger, initializeViewer, clearHotspotsForScene]);
 
   useEffect(() => {
     function updateSize() {
@@ -611,6 +869,31 @@ export default function PanoramaViewer() {
             onSelectScene={navigateToScene}
             rotationAngle={rotationAngle}
           />
+
+          {/* Performance monitoring overlay */}
+          {config && config.scenes.length > 50 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                background: 'rgba(0, 0, 0, 0.7)',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontFamily: 'monospace',
+                zIndex: 1500,
+                opacity: 0.8,
+              }}
+            >
+              <div>Dataset: {config.scenes.length} scenes</div>
+              <div>Memory Limit: {maxScenesInMemory}</div>
+              <div>Loaded: {memoryStats.loaded}</div>
+              <div>Disposed: {memoryStats.disposed}</div>
+              <div>Active: {Object.values(scenesRef.current).filter(s => s.loaded).length}</div>
+            </div>
+          )}
 
           {/* Render hotspots */}
           {scenesRef.current[currentScene]?.hotspotElements?.map(

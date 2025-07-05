@@ -1,0 +1,74 @@
+# Development files
+src/
+tests/
+docs/
+scripts/
+.github/
+.husky/
+.swc/
+
+# Configuration files
+*.md
+eslint.config.mjs
+jest.config.js
+jest.setup.js
+postcss.config.mjs
+tsconfig.json
+.prettierignore
+.prettierrc.json
+.lighthouserc.json
+.lintstagedrc.json
+.gitignore
+
+# Temporary files
+tmp/
+*.tmp
+*.temp
+.tmp/
+.temp/
+logs/
+
+# Test files
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+
+# Cache and build artifacts
+node_modules/.cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage
+coverage/
+
+# Environment files (keep only production)
+.env.local
+.env.development
+.env.test
+
+# Dynamic data files (should not be packaged)
+public/images/
+public/data/
+public/config.json
+
+# Debug and test files
+public/debug-packaged-images.html
+
+# Test data
+test-data/
+debug-images.js

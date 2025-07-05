@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Debug Tool</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #00ff00; }
+        .section { margin: 20px 0; padding: 10px; border: 1px solid #333; }
+        .error { color: #ff4444; }
+        .success { color: #44ff44; }
+        .warning { color: #ffaa44; }
+        button { padding: 10px; margin: 5px; background: #333; color: white; border: none; cursor: pointer; }
+        button:hover { background: #555; }
+        #results { white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>Panorama Image Debug Tool</h1>
+    <p>This tool helps diagnose image loading issues in the packaged application.</p>
+    
+    <div class="section">
+        <button onclick="testSpecificScenes()">Test Specific Scenes (0, 41, 227)</button>
+        <button onclick="testImageRange()">Test Image Range (0-50)</button>
+        <button onclick="testAllScenes()">Test All Scenes (0-315)</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div class="section">
+        <h3>Results:</h3>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+        
+        async function testImage(sceneId) {
+            const imageUrl = `/images/${sceneId}-pano.jpg`;
+            
+            return new Promise((resolve) => {
+                const img = new Image();
+                const startTime = Date.now();
+                
+                img.onload = () => {
+                    const loadTime = Date.now() - startTime;
+                    log(`Scene ${sceneId}: SUCCESS (${img.width}x${img.height}, ${loadTime}ms)`, 'success');
+                    resolve({ sceneId, success: true, width: img.width, height: img.height, loadTime });
+                };
+                
+                img.onerror = (e) => {
+                    const loadTime = Date.now() - startTime;
+                    log(`Scene ${sceneId}: FAILED (${loadTime}ms) - ${e.type}`, 'error');
+                    resolve({ sceneId, success: false, error: e.type, loadTime });
+                };
+                
+                img.src = imageUrl;
+                
+                // Timeout after 10 seconds
+                setTimeout(() => {
+                    if (!img.complete) {
+                        log(`Scene ${sceneId}: TIMEOUT (>10s)`, 'warning');
+                        resolve({ sceneId, success: false, error: 'timeout', loadTime: 10000 });
+                    }
+                }, 10000);
+            });
+        }
+        
+        async function testSpecificScenes() {
+            log('=== TESTING SPECIFIC SCENES ===');
+            const scenes = ['0', '41', '227'];
+            
+            for (const sceneId of scenes) {
+                await testImage(sceneId);
+            }
+            
+            log('=== SPECIFIC SCENES TEST COMPLETE ===');
+        }
+        
+        async function testImageRange() {
+            log('=== TESTING IMAGE RANGE (0-50) ===');
+            const results = { success: 0, failed: 0, total: 51 };
+            
+            for (let i = 0; i <= 50; i++) {
+                const result = await testImage(i.toString());
+                if (result.success) {
+                    results.success++;
+                } else {
+                    results.failed++;
+                }
+                
+                // Small delay to prevent overwhelming
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            log(`=== RANGE TEST COMPLETE: ${results.success}/${results.total} successful ===`);
+        }
+        
+        async function testAllScenes() {
+            log('=== TESTING ALL SCENES (0-315) ===');
+            const results = { success: 0, failed: 0, total: 316 };
+            const failedScenes = [];
+            
+            for (let i = 0; i <= 315; i++) {
+                const result = await testImage(i.toString());
+                if (result.success) {
+                    results.success++;
+                } else {
+                    results.failed++;
+                    failedScenes.push(i);
+                }
+                
+                // Progress update every 50 scenes
+                if (i % 50 === 0) {
+                    log(`Progress: ${i}/315 tested, ${results.success} successful`, 'info');
+                }
+                
+                // Small delay to prevent overwhelming
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+            
+            log(`=== ALL SCENES TEST COMPLETE: ${results.success}/${results.total} successful ===`);
+            if (failedScenes.length > 0) {
+                log(`Failed scenes: ${failedScenes.join(', ')}`, 'error');
+            }
+        }
+        
+        // Auto-run specific scenes test on load
+        window.onload = () => {
+            log('Image Debug Tool loaded. Click buttons to run tests.');
+        };
+    </script>
+</body>
+</html>

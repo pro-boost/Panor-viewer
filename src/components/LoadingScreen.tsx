@@ -45,6 +45,37 @@ export default function LoadingScreen({
               </div>
             </div>
           )}
+
+          {error.includes('No panorama scenes found') && (
+            <div className={styles.helpSection}>
+              <div className={styles.helpTitle}>To get started:</div>
+              <ul className={styles.helpList}>
+                <li>Upload panorama images (JPG, PNG format)</li>
+                <li>
+                  Upload a CSV file with panorama positions and orientations
+                </li>
+                <li>
+                  The CSV should include columns: id, x, y, z, qw, qx, qy, qz
+                </li>
+              </ul>
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <a
+                  href='/upload'
+                  style={{
+                    display: 'inline-block',
+                    padding: '12px 24px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    textDecoration: 'none',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  Go to Upload Page
+                </a>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );

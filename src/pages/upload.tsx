@@ -207,15 +207,25 @@ export default function Upload() {
       if (response.ok) {
         const result = await response.json();
         setMessage(result.message);
-        setUploadSuccess(true);
 
-        try {
-          sessionStorage.removeItem('uploadPageFiles');
-          if (typeof window !== 'undefined') {
-            delete (window as any).__uploadPageFiles;
+        // Check if configuration generation was successful
+        if (result.success === false) {
+          setMessage(`⚠️ ${result.message}\n\nError: ${result.error}`);
+          setUploadSuccess(false);
+        } else {
+          setUploadSuccess(true);
+
+          try {
+            sessionStorage.removeItem('uploadPageFiles');
+            if (typeof window !== 'undefined') {
+              delete (window as any).__uploadPageFiles;
+            }
+          } catch (error) {
+            console.warn('Failed to clear stored files:', error);
           }
-        } catch (error) {
-          console.warn('Failed to clear stored files:', error);
+
+          // Remove automatic redirect - let user click "View Panoramas" button
+          // This prevents the success message from disappearing automatically
         }
       } else {
         const errorData = await response.json();
@@ -490,9 +500,15 @@ export default function Upload() {
 
         {uploadSuccess && (
           <div className={styles.successActions}>
-            <Link href='/' className={styles.viewPanoramasButton}>
+            <button
+              onClick={() => {
+                // Navigate to home page - replace ensures fresh navigation
+                window.location.href = '/';
+              }}
+              className={styles.viewPanoramasButton}
+            >
               🏠 View Panoramas
-            </Link>
+            </button>
           </div>
         )}
 
