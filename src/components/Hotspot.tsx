@@ -55,10 +55,15 @@ export default function Hotspot({
   const rootRef = useRef<Root | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isUnmounting = useRef(false);
+  const isDestroyed = useRef(false);
+  const isCleanedUp = useRef(false);
+  const isAttached = useRef(false);
 
   // Effect for creating and cleaning up the root
   useEffect(() => {
     isUnmounting.current = false;
+    isDestroyed.current = false;
+    isCleanedUp.current = false;
     
     if (element) {
       // Create a unique container inside the element
@@ -66,17 +71,54 @@ export default function Hotspot({
         containerRef.current = document.createElement('div');
         containerRef.current.style.width = '100%';
         containerRef.current.style.height = '100%';
-        element.appendChild(containerRef.current);
+        
+        try {
+          element.appendChild(containerRef.current);
+          isAttached.current = true;
+        } catch (e) {
+          console.warn('Failed to append hotspot container:', e);
+          return;
+        }
       }
       
       // Create root on our container, not the provided element
       if (!rootRef.current && containerRef.current) {
         rootRef.current = createRoot(containerRef.current);
       }
+      
+      // Set up MutationObserver to detect when element is removed by Marzipano
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'childList') {
+            mutation.removedNodes.forEach((node) => {
+              if (node === element || (element && !document.contains(element))) {
+                isDestroyed.current = true;
+              }
+            });
+          }
+        });
+      });
+      
+      // Observe the parent of the element for removals
+      if (element.parentNode) {
+        observer.observe(element.parentNode, { childList: true, subtree: true });
+      }
+      
+      // Return cleanup function that includes observer cleanup
+      return () => {
+        observer.disconnect();
+      };
     }
-
-    // Cleanup function
+  }, [element]);
+  
+  // Separate cleanup effect
+  useEffect(() => {
     return () => {
+      // Prevent double cleanup in React Strict Mode
+      if (isCleanedUp.current) {
+        return;
+      }
+      isCleanedUp.current = true;
       isUnmounting.current = true;
       
       // Clean up root
@@ -87,18 +129,32 @@ export default function Hotspot({
           try {
             root.unmount();
           } catch (e) {
-            console.warn('Failed to unmount root:', e);
+            console.debug('Root already unmounted:', e);
           }
         }, 0);
       }
       
-      // Clean up container
-      if (containerRef.current && containerRef.current.parentNode) {
-        containerRef.current.parentNode.removeChild(containerRef.current);
+      // Clean up container only if not already destroyed by Marzipano
+      if (containerRef.current && 
+          isAttached.current && 
+          containerRef.current.parentNode && 
+          !isDestroyed.current &&
+          element &&
+          element.parentNode &&
+          element.contains(containerRef.current)) {
+        try {
+          // Check if the container is still a child of its parent
+          if (containerRef.current.parentNode.contains(containerRef.current)) {
+            containerRef.current.parentNode.removeChild(containerRef.current);
+            isAttached.current = false;
+          }
+        } catch (e) {
+          console.debug('Container already removed:', e);
+        }
         containerRef.current = null;
       }
     };
-  }, [element]); // Only recreate when element changes
+  }, []);
 
   // Effect for rendering the hotspot content
   useEffect(() => {

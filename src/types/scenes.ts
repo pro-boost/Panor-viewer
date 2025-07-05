@@ -39,6 +39,42 @@ export interface LinkHotspot {
 }
 
 /**
+ * Info hotspot (POI) data structure
+ */
+export interface InfoHotspot {
+  id: string;
+  yaw: number;
+  pitch: number;
+  title: string;
+  description?: string;
+  type: 'info';
+  sceneId: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+/**
+ * POI with associated files
+ */
+export interface POIWithFiles extends InfoHotspot {
+  files?: File[];
+  imageUrls?: string[]; // Blob URLs for display
+}
+
+/**
+ * File data stored in IndexedDB
+ */
+export interface POIFile {
+  id: string;
+  poiId: string;
+  name: string;
+  type: string;
+  size: number;
+  data: Blob;
+  createdAt: Date;
+}
+
+/**
  * Scene data structure
  */
 export interface SceneData {
@@ -48,6 +84,7 @@ export interface SceneData {
   position: Position;
   initialViewParameters: ViewParameters;
   linkHotspots: LinkHotspot[];
+  infoHotspots?: InfoHotspot[]; // POI hotspots
   northOffset?: number; // Optional: offset from true north in degrees
   panoPos?: PanoPosition;
   // Optional fields for Marzipano configuration
