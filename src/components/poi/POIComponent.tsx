@@ -352,10 +352,11 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
   };
 
   const handleModalClose = () => {
-    console.log('Modal closing, clearing pendingPOI');
+    console.log('Modal closing, clearing pendingPOI and selectedPOI');
     setShowModal(false);
     setPendingPOI(null);
     pendingPOIRef.current = null;
+    setSelectedPOI(null); // Clear selected POI to ensure clean state for next modal
   };
 
   const savePOI = async (data: POIFormData) => {
