@@ -375,13 +375,13 @@ const POIModal: React.FC<POIModalProps> = ({
                 value={formData.content}
                 onChange={e => handleInputChange('content', e.target.value)}
                 className={styles.textarea}
-                placeholder='https://example.com or <iframe src="..." width="..." height="..."></iframe>'
+                placeholder='https://www.youtube.com/watch?v=VIDEO_ID or https://example.com or <iframe src="..." width="..." height="..."></iframe>'
                 rows={4}
                 required
                 disabled={isSubmitting}
               />
               <p className={styles.inputHint}>
-                Enter a URL or paste iframe HTML code
+                Enter a URL (YouTube, Vimeo, etc.) or paste iframe HTML code. YouTube URLs will be automatically converted to embeddable format.
               </p>
             </div>
           )}

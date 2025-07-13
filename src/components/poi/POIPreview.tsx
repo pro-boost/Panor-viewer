@@ -90,6 +90,34 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     return textarea.value;
   };
 
+  const convertYouTubeUrl = (url: string): string => {
+    // Convert various YouTube URL formats to embed format
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(youtubeRegex);
+    
+    if (match && match[1]) {
+      const videoId = match[1];
+      // Extract timestamp if present
+      const timeMatch = url.match(/[?&]t=([0-9]+)/);
+      const startTime = timeMatch ? `?start=${timeMatch[1]}` : '';
+      return `https://www.youtube.com/embed/${videoId}${startTime}`;
+    }
+    
+    return url;
+  };
+
+  const convertVimeoUrl = (url: string): string => {
+    // Convert Vimeo URLs to embed format
+    const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/([0-9]+)/;
+    const match = url.match(vimeoRegex);
+    
+    if (match && match[1]) {
+      return `https://player.vimeo.com/video/${match[1]}`;
+    }
+    
+    return url;
+  };
+
   const getIframeContent = () => {
     const content = poi.content.trim();
     
@@ -101,9 +129,14 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       // Try to extract src attribute from decoded content
       const srcMatch = decodedContent.match(/src=["']([^"']+)["']/i);
       if (srcMatch) {
+        let src = srcMatch[1];
+        // Convert YouTube/Vimeo URLs in iframe src to embed format
+        src = convertYouTubeUrl(src);
+        src = convertVimeoUrl(src);
+        
         return {
-          src: srcMatch[1],
-          html: decodedContent,
+          src: src,
+          html: decodedContent.replace(/src=["']([^"']+)["']/i, `src="${src}"`),
           isHtml: true
         };
       }
@@ -115,9 +148,12 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       };
     }
     
-    // It's a direct URL
+    // It's a direct URL - convert YouTube/Vimeo URLs to embed format
+    let convertedUrl = convertYouTubeUrl(content);
+    convertedUrl = convertVimeoUrl(convertedUrl);
+    
     return {
-      src: content,
+      src: convertedUrl,
       html: null,
       isHtml: false
     };
@@ -145,7 +181,10 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
               className={styles.iframe}
               title={poi.name}
               onLoad={handleImageLoad}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              onError={() => setIsLoading(false)}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
             />
           )}
           {iframeContent.src && (
