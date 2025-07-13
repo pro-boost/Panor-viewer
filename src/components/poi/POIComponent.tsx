@@ -424,6 +424,9 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       }
       
       contentPath = uniqueFilename;
+    } else if (data.type === 'file' && isEditing && selectedPOI) {
+      // For file-type POIs being updated without a new file, preserve the original content path
+      contentPath = selectedPOI.content;
     }
 
     const poiData: POIData = {
