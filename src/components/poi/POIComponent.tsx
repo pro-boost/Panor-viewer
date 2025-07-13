@@ -500,12 +500,15 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
 
   const handleDeletePOI = async (poiId: string) => {
     try {
-      const response = await fetch('/api/poi/delete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ poiId, projectId })
+      // Build query parameters for the DELETE request
+      const params = new URLSearchParams({
+        projectId: projectId,
+        id: poiId,
+        useIndividual: 'false' // Default to false, can be made configurable if needed
+      });
+
+      const response = await fetch(`/api/poi/delete?${params.toString()}`, {
+        method: 'DELETE'
       });
 
       if (!response.ok) {
