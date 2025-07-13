@@ -444,7 +444,7 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
 
     // Save or update POI data
     const saveResponse = await fetch(isEditing ? '/api/poi/update' : '/api/poi/save', {
-      method: 'POST',
+      method: isEditing ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
