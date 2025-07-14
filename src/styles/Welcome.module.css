@@ -84,16 +84,42 @@
 
 .title {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
-  font-weight: 800;
+  font-weight: 900;
   margin-bottom: var(--spacing-2xl);
-  background: linear-gradient(135deg, var(--white) 0%, rgba(255, 255, 255, 0.763) 100%);
+  background: linear-gradient(135deg, 
+   #ffffffca 0%,                    /* Pure white */
+    #ffffffdd 30%,                   /* Extended white */
+    var(--primary-light) 40%,      /* #63b3ed - Light blue */
+    var(--primary) 50%,            /* #4299e1 - Primary blue */
+    var(--primary-light) 60%,      /* #63b3ed - Light blue */
+    #ffffffe3 70%,                   /* Back to white */
+    #ffffffdd 100%                  /* Back to white */
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  background-size: 300% 300%;
+  animation: cosmicShift 8s ease infinite;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  filter: 
+    drop-shadow(0 0 30px rgba(255, 255, 255, 0.4))          /* White glow */
+    drop-shadow(0 0 60px rgba(66, 153, 225, 0.5))           /* Primary blue glow */
+    drop-shadow(0 0 100px rgba(99, 179, 237, 0.4));         /* Light blue outer glow */
 }
 
+@keyframes cosmicShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.subtitle,
+.description {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
 .subtitle {
   font-size: clamp(1.1rem, 2vw, 1.4rem);
   margin-bottom: var(--spacing-xl);

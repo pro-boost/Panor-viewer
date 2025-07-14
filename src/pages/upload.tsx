@@ -1,232 +1,85 @@
-import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { FormEvent, ChangeEvent, useEffect } from 'react';
 import Link from 'next/link';
 import styles from '@/styles/Upload.module.css';
 import Logo from '@/components/ui/Logo';
+import { useFileManager } from '@/hooks/useFileManager';
+import { useUploadState } from '@/hooks/useUploadState';
+import { useProjectManager } from '@/hooks/useProjectManager';
+import { useValidation } from '@/hooks/useValidation';
 
 export default function Upload() {
-  const router = useRouter();
-  const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [referrerUrl, setReferrerUrl] = useState<string>('/');
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [duplicateWarning, setDuplicateWarning] = useState<string[]>([]);
-  const [showDuplicateDetails, setShowDuplicateDetails] = useState(false);
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [duplicateImages, setDuplicateImages] = useState<
-    { name: string; size: number; lastModified: number }[]
-  >([]);
+  // Initialize custom hooks
+  const projectManager = useProjectManager();
+  const uploadState = useUploadState();
+  const validation = useValidation();
+  const fileManager = useFileManager(projectManager.isEditMode, projectManager.existingFiles);
 
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [allowOverwrite, setAllowOverwrite] = useState(false);
-  const [deleteAllAndUpload, setDeleteAllAndUpload] = useState(false);
+  // Destructure commonly used values for cleaner code
+  const {
+    projectName,
+    setProjectName,
+    createdProjectId,
+    editingProjectId,
+    isEditMode,
+    existingFiles,
+    showExistingFiles,
+    setShowExistingFiles,
+    navigateBack,
+    validateProjectName,
+    createProject,
+    updateProjectName,
+    getProjectStatusMessage
+  } = projectManager;
 
-  const [projectName, setProjectName] = useState('');
-  const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
-  const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [existingFiles, setExistingFiles] = useState<{
-    csv: string | null;
-    images: string[];
-    poi: string | null;
-  }>({ csv: null, images: [], poi: null });
-  const [showExistingFiles, setShowExistingFiles] = useState(false);
+  const {
+    message,
+    setMessage,
+    isLoading,
+    uploadSuccess,
+    uploadProgress,
+    allowOverwrite,
+    setAllowOverwrite,
+    deleteAllAndUpload,
+    setDeleteAllAndUpload,
+    startUpload,
+    finishUpload,
+    createProgressInterval,
+    getProgressMessage,
+    handleUploadError,
+    handleUploadResponse,
+    showLargeUploadWarning
+  } = uploadState;
 
-  const [selectedFiles, setSelectedFiles] = useState<{
-    csv: File | null;
-    images: File[];
-  }>({ csv: null, images: [] });
-  const [poiFile, setPOIFile] = useState<File | null>(null);
+  const {
+    validationErrors,
+    duplicateWarning,
+    showDuplicateDetails,
+    setShowDuplicateDetails,
+    clearAllValidation,
+    validateBeforeSubmit,
+    handleDuplicateFiles,
+    isSubmitDisabled,
+    getSubmitButtonText
+  } = validation;
 
-  // This effect captures referrer information for smart back navigation
+  const {
+    selectedFiles,
+    poiFile,
+    duplicateImages,
+    handleFileChange,
+    handlePOIFileChange,
+    removeDuplicateImages,
+    getFileValidationErrors,
+    hasRequiredFiles
+  } = fileManager;
+
+  // Initialize hooks with useEffect
   useEffect(() => {
-    const referrer = document.referrer;
-    const urlParams = new URLSearchParams(window.location.search);
-    const fromProject = urlParams.get('from');
-    const fromScene = urlParams.get('scene');
-
-    if (fromProject && fromScene) {
-      setReferrerUrl(`/${fromProject}?scene=${fromScene}`);
-    } else if (fromProject) {
-      setReferrerUrl(`/${fromProject}`);
-    } else if (editingProjectId) {
-      setReferrerUrl(`/${editingProjectId}`);
-    } else if (referrer && referrer.includes(window.location.origin)) {
-      const referrerPath = referrer.replace(window.location.origin, '');
-      setReferrerUrl(referrerPath || '/');
-    }
-  }, [editingProjectId]);
-
-  // This effect handles project editing mode
-  useEffect(() => {
-    const projectParam = router.query.project as string;
-    if (projectParam && !isEditMode) {
-      setIsEditMode(true);
-      setEditingProjectId(projectParam);
-      setCreatedProjectId(projectParam);
-
-      // Load existing project data
-      const loadProjectData = async () => {
-        try {
-          // Load project info
-          const projectResponse = await fetch(
-            `/api/projects?projectId=${encodeURIComponent(projectParam)}`
-          );
-          if (projectResponse.ok) {
-            const projectData = await projectResponse.json();
-            const project = projectData.projects?.find(
-              (p: any) => p.id === projectParam
-            );
-            if (project) {
-              setProjectName(project.name);
-            }
-          }
-
-          // Load existing files
-          const filesResponse = await fetch(
-            `/api/projects/${encodeURIComponent(projectParam)}/files`
-          );
-          if (filesResponse.ok) {
-            const filesData = await filesResponse.json();
-            const { files } = filesData;
-
-            // Store existing files in state
-            setExistingFiles({
-              csv: files.csv,
-              images: files.images,
-              poi: files.poi || null,
-            });
-
-            let fileInfo = [];
-            if (files.csv) {
-              fileInfo.push(`CSV: ${files.csv}`);
-            }
-            if (files.images.length > 0) {
-              fileInfo.push(`${files.images.length} image(s)`);
-            }
-            if (files.poi) {
-              fileInfo.push(`POI: ${files.poi}`);
-            }
-
-            if (fileInfo.length > 0) {
-              setMessage(
-                `Editing project: ${projectName || projectParam}. Current files: ${fileInfo.join(', ')}. Upload new files to update this project.`
-              );
-            } else {
-              setMessage(
-                `Editing project: ${projectName || projectParam}. No existing files found. Upload files to add content to this project.`
-              );
-            }
-          } else {
-            setMessage(
-              `Editing project: ${projectName || projectParam}. Upload new files to update this project.`
-            );
-          }
-        } catch (error) {
-          console.error('Failed to load project data:', error);
-          setMessage(
-            'Warning: Failed to load project data. You can still upload files to update the project.'
-          );
-        }
-      };
-
-      loadProjectData();
-    }
-  }, [router.query.project, isEditMode]);
-
-  // This effect will run once on mount to initialize file state
-  useEffect(() => {
-    const initializeFiles = async () => {
-      // Try to restore from browser session (no longer checking legacy server files)
-      try {
-        if (
-          typeof window !== 'undefined' &&
-          (window as any).__uploadPageFiles
-        ) {
-          const storedFiles = (window as any).__uploadPageFiles;
-          if (storedFiles.csv || storedFiles.images.length > 0) {
-            setSelectedFiles(storedFiles);
-            return;
-          }
-        }
-
-        const savedData = sessionStorage.getItem('uploadPageFiles');
-        if (savedData) {
-          const fileData = JSON.parse(savedData);
-          if (fileData.csv || fileData.images.length > 0) {
-            setMessage(
-              'Info: Previous file selections were detected but need to be reselected due to browser security restrictions.'
-            );
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to restore files from storage:', error);
-      }
-    };
-
-    if (!isEditMode) {
-      initializeFiles();
-    }
-  }, [isEditMode]); // Only run when not in edit mode
-
-  // This effect synchronizes the file input elements with the state
-  useEffect(() => {
-    const csvInput = document.getElementById('csv') as HTMLInputElement;
-    const imagesInput = document.getElementById('images') as HTMLInputElement;
-
-    const dtCsv = new DataTransfer();
-    if (selectedFiles.csv) {
-      dtCsv.items.add(selectedFiles.csv);
-    }
-    if (csvInput) {
-      csvInput.files = dtCsv.files;
-    }
-
-    const dtImages = new DataTransfer();
-    if (selectedFiles.images.length > 0) {
-      selectedFiles.images.forEach(file => dtImages.items.add(file));
-    }
-    if (imagesInput) {
-      imagesInput.files = dtImages.files;
-    }
-  }, [selectedFiles, existingFiles, isEditMode]);
-
-  // This effect persists selected files for the session
-  useEffect(() => {
-    try {
-      if (selectedFiles.csv || selectedFiles.images.length > 0) {
-        const fileData = {
-          csv: selectedFiles.csv
-            ? {
-                name: selectedFiles.csv.name,
-                size: selectedFiles.csv.size,
-                type: selectedFiles.csv.type,
-                lastModified: selectedFiles.csv.lastModified,
-              }
-            : null,
-          images: selectedFiles.images.map(file => ({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            lastModified: file.lastModified,
-          })),
-        };
-        sessionStorage.setItem('uploadPageFiles', JSON.stringify(fileData));
-
-        if (typeof window !== 'undefined') {
-          (window as any).__uploadPageFiles = {
-            csv: selectedFiles.csv,
-            images: selectedFiles.images,
-          };
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to save files to storage:', error);
-    }
-  }, [selectedFiles]);
+    projectManager.initializeFromUrl();
+  }, []);
 
   const handleDeleteAllAndUpload = () => {
-    setDuplicateWarning([]);
+    validation.clearAllValidation();
     setDeleteAllAndUpload(true);
     const form = document.querySelector('form') as HTMLFormElement;
     if (form) {
@@ -248,151 +101,21 @@ export default function Upload() {
     }
   };
 
-  // Validation functions
-  const validateProjectName = (name: string): string[] => {
-    const errors: string[] = [];
-    if (!name.trim()) {
-      errors.push('Project name is required');
-    } else if (name.length < 3) {
-      errors.push('Project name must be at least 3 characters long');
-    } else if (name.length > 50) {
-      errors.push('Project name must be less than 50 characters');
-    } else if (!/^[a-zA-Z0-9\s\-_]+$/.test(name)) {
-      errors.push(
-        'Project name can only contain letters, numbers, spaces, hyphens, and underscores'
-      );
-    }
-    return errors;
-  };
 
-  const validateCSVFile = (file: File): string[] => {
-    const errors: string[] = [];
-    if (file.name !== 'pano-poses.csv') {
-      errors.push('CSV file must be named exactly "pano-poses.csv"');
-    }
-    if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
-      errors.push('File must be a valid CSV file');
-    }
-    return errors;
-  };
-
-  const validateImageFiles = (files: File[]): string[] => {
-    const errors: string[] = [];
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-
-    if (files.length === 0) {
-      errors.push('At least one image file is required');
-      return errors;
-    }
-
-    const fileNames = new Set<string>();
-
-    files.forEach((file, index) => {
-      // Check file type
-      if (!allowedTypes.includes(file.type)) {
-        errors.push(
-          `Image ${index + 1} (${file.name}): Only JPEG and PNG files are allowed`
-        );
-      }
-
-      // Check for duplicate names in selection
-      if (fileNames.has(file.name)) {
-        errors.push(`Duplicate file name in selection: ${file.name}`);
-      }
-      fileNames.add(file.name);
-    });
-
-    return errors;
-  };
-
-  const detectDuplicateImages = (
-    newFiles: File[]
-  ): { name: string; size: number; lastModified: number }[] => {
-    if (!isEditMode || existingFiles.images.length === 0) return [];
-
-    const duplicates: { name: string; size: number; lastModified: number }[] =
-      [];
-    newFiles.forEach(file => {
-      if (existingFiles.images.includes(file.name)) {
-        duplicates.push({
-          name: file.name,
-          size: file.size,
-          lastModified: file.lastModified,
-        });
-      }
-    });
-
-    return duplicates;
-  };
-
-  const removeDuplicateImages = () => {
-    const duplicateNames = new Set(duplicateImages.map(img => img.name));
-    const filteredImages = selectedFiles.images.filter(
-      file => !duplicateNames.has(file.name)
-    );
-
-    setSelectedFiles(prev => ({ ...prev, images: filteredImages }));
-    setDuplicateImages([]);
-    setValidationErrors([]);
-
-    // Update the file input
-    const imagesInput = document.getElementById('images') as HTMLInputElement;
-    if (imagesInput) {
-      const dt = new DataTransfer();
-      filteredImages.forEach(file => dt.items.add(file));
-      imagesInput.files = dt.files;
-    }
-  };
 
   const handleProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setProjectName(newName);
 
-    // Real-time validation for project name
-    if (newName.trim()) {
-      const nameErrors = validateProjectName(newName);
-      if (nameErrors.length > 0) {
-        setValidationErrors(nameErrors);
-      } else {
-        setValidationErrors([]);
-      }
-    } else {
-      setValidationErrors([]);
+    // Clear validation errors when user starts typing
+    if (validationErrors.length > 0) {
+      validation.clearAllValidation();
     }
   };
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = event.target;
-    setValidationErrors([]);
-    setDuplicateImages([]);
 
-    if (name === 'csv' && files && files[0]) {
-      const csvErrors = validateCSVFile(files[0]);
-      if (csvErrors.length > 0) {
-        setValidationErrors(csvErrors);
-      }
-      setSelectedFiles(prev => ({ ...prev, csv: files[0] }));
-    } else if (name === 'images' && files) {
-      const fileArray = Array.from(files);
-      const imageErrors = validateImageFiles(fileArray);
-      const duplicates = detectDuplicateImages(fileArray);
 
-      if (imageErrors.length > 0) {
-        setValidationErrors(imageErrors);
-      }
 
-      if (duplicates.length > 0) {
-        setDuplicateImages(duplicates);
-      }
-
-      setSelectedFiles(prev => ({ ...prev, images: fileArray }));
-    }
-  };
-
-  const handlePOIFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] || null;
-    setPOIFile(file);
-  };
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement> & {
@@ -401,155 +124,73 @@ export default function Upload() {
     }
   ) => {
     event.preventDefault();
-    setMessage('');
-    setDuplicateWarning([]);
-    setValidationErrors([]);
-    setUploadSuccess(false);
-    setUploadProgress(0);
-    setIsLoading(true);
+    
+    // Clear previous state
+    uploadState.clearState();
+    validation.clearAllValidation();
 
-    // Comprehensive validation before submission
-    const allErrors: string[] = [];
-
-    // Validate project name
-    const nameErrors = validateProjectName(projectName);
-    allErrors.push(...nameErrors);
-
-    // In edit mode, allow updating without requiring new files if existing files are present
-    const hasExistingCsv = isEditMode && existingFiles.csv;
-    const hasExistingImages = isEditMode && existingFiles.images.length > 0;
-    const hasNewCsv = selectedFiles.csv;
-    const hasNewImages = selectedFiles.images.length > 0;
-
-    // Validate CSV file
-    if (!hasNewCsv && !hasExistingCsv) {
-      allErrors.push('Please select a CSV file.');
-    } else if (hasNewCsv) {
-      const csvErrors = validateCSVFile(selectedFiles.csv!);
-      allErrors.push(...csvErrors);
-    }
-
-    // Validate image files
-    if (!hasNewImages && !hasExistingImages) {
-      allErrors.push('Please select at least one image.');
-    } else if (hasNewImages) {
-      const imageErrors = validateImageFiles(selectedFiles.images);
-      allErrors.push(...imageErrors);
-    }
-
-    // If there are validation errors, show them and stop
-    if (allErrors.length > 0) {
-      setValidationErrors(allErrors);
-      setIsLoading(false);
+    // Validate before submission
+    const isValid = validation.validateBeforeSubmit(
+      projectManager.projectName,
+      fileManager.hasRequiredFiles(),
+      fileManager.getFileValidationErrors(),
+      projectManager.validateProjectName
+    );
+    if (!isValid) {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData();
-
-    // Manually append form data to implement logic for existing files in edit mode.
-    formData.append('projectName', projectName.trim());
-
-    // Handle CSV file
-    if (selectedFiles.csv) {
-      formData.append('csv', selectedFiles.csv);
-    } else if (isEditMode && existingFiles.csv) {
-      formData.append('existing_csv', existingFiles.csv);
-    }
-
-    // Handle image files
-    if (selectedFiles.images.length > 0) {
-      selectedFiles.images.forEach(image => {
-        formData.append('images', image);
-      });
-    } else if (isEditMode && existingFiles.images.length > 0) {
-      existingFiles.images.forEach(imageName => {
-        formData.append('existing_images', imageName);
-      });
-    }
-
-    if (allowOverwrite || event._overwriteMode) {
-      formData.append('overwrite', 'true');
-    }
-
-    if (deleteAllAndUpload || event._deleteAllMode) {
-      formData.append('deleteAll', 'true');
-    }
-    setAllowOverwrite(false);
-
-    // Show upload preparation message for large uploads
-    const totalFiles =
-      selectedFiles.images.length + (selectedFiles.csv ? 1 : 0);
-    if (totalFiles > 10) {
-      setMessage(
-        'Large upload detected. This may take several minutes. Please be patient and do not close this page.'
-      );
-    }
+    uploadState.startUpload();
 
     try {
-      const progressInterval = setInterval(() => {
-        setUploadProgress(prev => {
-          if (prev < 90) return prev + Math.random() * 10;
-          return prev;
-        });
-      }, 1000);
-
       let projectId: string;
 
-      if (isEditMode && editingProjectId) {
+      if (projectManager.isEditMode && projectManager.editingProjectId) {
         // Use existing project ID for editing
-        projectId = editingProjectId;
-
-        // Update project name if it has changed
-        try {
-          await fetch('/api/projects', {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              projectId: editingProjectId,
-              projectName: projectName.trim(),
-            }),
-          });
-        } catch (error) {
-          console.warn('Failed to update project name:', error);
-        }
+        projectId = projectManager.editingProjectId;
+        await projectManager.updateProjectName(projectManager.editingProjectId);
       } else {
         // Create new project
-        const projectResponse = await fetch('/api/projects', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ projectName: projectName.trim() }),
-        });
-
-        if (!projectResponse.ok) {
-          const projectError = await projectResponse.json();
-          if (projectResponse.status === 409) {
-            setValidationErrors([
-              `Error: Project name "${projectName.trim()}" already exists`,
-              'Please choose a different name or edit the existing project',
-            ]);
-            setIsLoading(false);
-            return;
-          } else if (projectResponse.status === 400) {
-            setValidationErrors([
-              'Error: Invalid project name',
-              'Project names can only contain letters, numbers, spaces, hyphens, and underscores',
-            ]);
-            setIsLoading(false);
-            return;
-          } else {
-            throw new Error(projectError.error || 'Failed to create project');
-          }
-        }
-
-        const projectData = await projectResponse.json();
-        projectId = projectData.project.id;
-        setCreatedProjectId(projectId);
+        projectId = await projectManager.createProject();
       }
+
+      // Prepare form data
+      const formData = new FormData();
+      formData.append('projectName', projectManager.projectName.trim());
+
+      // Handle CSV file
+      if (fileManager.selectedFiles.csv) {
+        formData.append('csv', fileManager.selectedFiles.csv);
+      } else if (projectManager.isEditMode && projectManager.existingFiles.csv) {
+        formData.append('existing_csv', projectManager.existingFiles.csv);
+      }
+
+      // Handle image files
+      if (fileManager.selectedFiles.images.length > 0) {
+        fileManager.selectedFiles.images.forEach(image => {
+          formData.append('images', image);
+        });
+      } else if (projectManager.isEditMode && projectManager.existingFiles.images.length > 0) {
+        projectManager.existingFiles.images.forEach(imageName => {
+          formData.append('existing_images', imageName);
+        });
+      }
+
+      if (uploadState.allowOverwrite || event._overwriteMode) {
+        formData.append('overwrite', 'true');
+      }
+
+      if (uploadState.deleteAllAndUpload || event._deleteAllMode) {
+        formData.append('deleteAll', 'true');
+      }
+      uploadState.setAllowOverwrite(false);
+
+      // Show large upload warning if needed
+      const totalFiles = fileManager.selectedFiles.images.length + (fileManager.selectedFiles.csv ? 1 : 0) + (fileManager.poiFile ? 1 : 0);
+      uploadState.showLargeUploadWarning(totalFiles);
+
+      // Create progress simulation
+      const progressInterval = uploadState.createProgressInterval();
 
       // Upload files to the project
       const response = await fetch(
@@ -561,103 +202,25 @@ export default function Upload() {
       );
 
       clearInterval(progressInterval);
-      setUploadProgress(100);
+      uploadState.updateProgress(100);
 
-      if (response.ok) {
-        const result = await response.json();
-        let finalMessage = result.message;
-
-        // Auto-import POI file if one was selected
-        if (poiFile) {
-          try {
-            const poiFormData = new FormData();
-            poiFormData.append('file', poiFile);
-            poiFormData.append('projectId', projectId);
-
-            const poiResponse = await fetch('/api/poi/import-single', {
-              method: 'POST',
-              body: poiFormData,
-            });
-
-            if (poiResponse.ok) {
-              const poiResult = await poiResponse.json();
-              finalMessage += ` POI data imported successfully: ${poiResult.message}`;
-              setPOIFile(null);
-              // Clear the POI file input
-              const poiFileInput = document.getElementById(
-                'poiFile'
-              ) as HTMLInputElement;
-              if (poiFileInput) {
-                poiFileInput.value = '';
-              }
-            } else {
-              const poiErrorData = await poiResponse.json();
-              finalMessage += ` Warning: POI import failed: ${poiErrorData.error}`;
-            }
-          } catch (poiError) {
-            console.error('POI import error:', poiError);
-            finalMessage += ' Warning: Failed to import POI data.';
-          }
+      const result = await uploadState.handleUploadResponse(response);
+      
+      // Clear session storage on successful upload
+      try {
+        sessionStorage.removeItem('uploadPageFiles');
+        if (typeof window !== 'undefined') {
+          delete (window as any).__uploadPageFiles;
         }
-
-        setMessage(finalMessage);
-        setUploadSuccess(true);
-        setDuplicateImages([]);
-
-        try {
-          sessionStorage.removeItem('uploadPageFiles');
-          if (typeof window !== 'undefined') {
-            delete (window as any).__uploadPageFiles;
-          }
-        } catch (error) {
-          console.warn('Failed to clear stored files:', error);
-        }
-      } else {
-        const errorData = await response.json();
-
-        if (response.status === 409 && errorData.duplicates) {
-          setDuplicateWarning(errorData.duplicates);
-          setMessage(errorData.message);
-        } else if (response.status === 413) {
-          setMessage(
-            `Upload failed: ${errorData.error} Try uploading fewer files or reducing file sizes.`
-          );
-        } else if (response.status === 408) {
-          setMessage(
-            `Upload timeout: ${errorData.error} Try uploading fewer files at once.`
-          );
-        } else if (
-          response.status === 500 &&
-          errorData.error === 'Configuration generation failed'
-        ) {
-          // Handle configuration generation errors with more detail
-          setMessage(
-            `Warning: Files uploaded successfully, but configuration generation failed.\n\n` +
-              `Error: ${errorData.message}\n\n` +
-              `You can try running this command manually:\n` +
-              `${errorData.manualCommand || 'node scripts/node/generate-config.js --project "' + projectId + '"'}`
-          );
-        } else {
-          setMessage(
-            `Upload failed: ${errorData.error || errorData.message || 'Unknown error'}`
-          );
-        }
+      } catch (error) {
+        console.warn('Failed to clear stored files:', error);
       }
+      
+      fileManager.clearDuplicateImages();
     } catch (error: any) {
-      setUploadProgress(0);
-      if (error.name === 'AbortError') {
-        setMessage('Upload was cancelled.');
-      } else if (error.message.includes('Failed to fetch')) {
-        setMessage(
-          'Network error. Please check your connection and try again.'
-        );
-      } else {
-        setMessage('An error occurred during upload. Please try again.');
-      }
-      console.error('Upload error:', error);
+      uploadState.handleUploadError(error);
     } finally {
-      setIsLoading(false);
-      setTimeout(() => setUploadProgress(0), 2000);
+      uploadState.finishUpload(false, '');
     }
   };
 
@@ -666,20 +229,11 @@ export default function Upload() {
       <Logo variant='default' position='absolute' />
       <div className={styles.content}>
         <h1 className={styles.title}>
-          {isEditMode ? 'Edit Project Data' : 'Upload Panorama Data'}
+          {projectManager.isEditMode ? 'Edit Project Data' : 'Upload Panorama Data'}
         </h1>
 
         <button
-          onClick={() => {
-            if (window.history.length > 1) {
-              router.back();
-            } else {
-              const targetUrl = editingProjectId
-                ? `/${editingProjectId}`
-                : referrerUrl;
-              router.push(targetUrl);
-            }
-          }}
+          onClick={projectManager.navigateBack}
           className={styles.backLink}
         >
           ← Back to Panorama Viewer
@@ -694,14 +248,14 @@ export default function Upload() {
               type='text'
               id='projectName'
               name='projectName'
-              value={projectName}
-              onChange={handleProjectNameChange}
+              value={projectManager.projectName}
+              onChange={(e) => projectManager.setProjectName(e.target.value)}
               placeholder='Enter a name for your project'
               required
-              className={`${styles.textInput} ${validationErrors.some(error => error.includes('Project name')) ? styles.inputError : ''}`}
+              className={`${styles.textInput} ${validation.validationErrors.some(error => error.includes('Project name')) ? styles.inputError : ''}`}
             />
             <div className={styles.inputHint}>
-              {isEditMode
+              {projectManager.isEditMode
                 ? 'Update the name of your existing project.'
                 : 'This will create a new project folder for your panorama data.'}
             </div>
@@ -710,13 +264,13 @@ export default function Upload() {
           <div className={styles.formGroup}>
             <label htmlFor='csv' className={styles.label}>
               CSV File
-              {isEditMode && existingFiles.csv
+              {projectManager.isEditMode && projectManager.existingFiles.csv
                 ? ' (Optional - will replace existing)'
                 : ''}
               :
             </label>
-            {selectedFiles.csv &&
-              selectedFiles.csv.name !== 'pano-poses.csv' && (
+            {fileManager.selectedFiles.csv &&
+              fileManager.selectedFiles.csv.name !== 'pano-poses.csv' && (
                 <div className={styles.csvInstruction}>
                   <p>
                     Important: Your CSV file must be named exactly{' '}
@@ -729,8 +283,8 @@ export default function Upload() {
               id='csv'
               name='csv'
               accept='.csv'
-              required={!isEditMode || !existingFiles.csv}
-              onChange={handleFileChange}
+              required={!projectManager.isEditMode || !projectManager.existingFiles.csv}
+              onChange={fileManager.handleFileChange}
               className={styles.fileInput}
             />
           </div>
@@ -738,7 +292,7 @@ export default function Upload() {
           <div className={styles.formGroup}>
             <label htmlFor='images' className={styles.label}>
               Panorama Images
-              {isEditMode && existingFiles.images.length > 0
+              {projectManager.isEditMode && projectManager.existingFiles.images.length > 0
                 ? ' (Optional - will add to existing)'
                 : ''}
               :
@@ -749,8 +303,8 @@ export default function Upload() {
               name='images'
               accept='image/*'
               multiple
-              required={!isEditMode || existingFiles.images.length === 0}
-              onChange={handleFileChange}
+              required={!projectManager.isEditMode || projectManager.existingFiles.images.length === 0}
+              onChange={fileManager.handleFileChange}
               className={styles.fileInput}
             />
           </div>
@@ -764,15 +318,15 @@ export default function Upload() {
               id='poiFile'
               name='poiFile'
               accept='.json,.zip'
-              onChange={handlePOIFileChange}
+              onChange={fileManager.handlePOIFileChange}
               className={styles.fileInput}
             />
           </div>
 
-          {isEditMode &&
-            (existingFiles.csv ||
-              existingFiles.images.length > 0 ||
-              existingFiles.poi) && (
+          {projectManager.isEditMode &&
+            (projectManager.existingFiles.csv ||
+              projectManager.existingFiles.images.length > 0 ||
+              projectManager.existingFiles.poi) && (
               <div className={styles.formGroup}>
                 <div className={styles.fileList}>
                   <div className={styles.fileListHeader}>
@@ -781,17 +335,17 @@ export default function Upload() {
                     </p>
                     <button
                       type='button'
-                      onClick={() => setShowExistingFiles(!showExistingFiles)}
+                      onClick={() => projectManager.setShowExistingFiles(!projectManager.showExistingFiles)}
                       className={styles.toggleButton}
                     >
-                      {showExistingFiles ? '▼ Hide' : '▶ Show'}
+                      {projectManager.showExistingFiles ? '▼ Hide' : '▶ Show'}
                     </button>
                   </div>
-                  {showExistingFiles && (
+                  {projectManager.showExistingFiles && (
                     <ul className={styles.fileListItems}>
-                      {existingFiles.csv && <li>CSV: {existingFiles.csv}</li>}
-                      {existingFiles.poi && <li>POI: {existingFiles.poi}</li>}
-                      {existingFiles.images.map((imageName, index) => (
+                      {projectManager.existingFiles.csv && <li>CSV: {projectManager.existingFiles.csv}</li>}
+                      {projectManager.existingFiles.poi && <li>POI: {projectManager.existingFiles.poi}</li>}
+                      {projectManager.existingFiles.images.map((imageName, index) => (
                         <li key={index}>Image: {imageName}</li>
                       ))}
                     </ul>
@@ -801,28 +355,26 @@ export default function Upload() {
             )}
 
           {/* File Summary */}
-          {(selectedFiles.csv ||
-            selectedFiles.images.length > 0 ||
-            poiFile) && (
+          {fileManager.hasRequiredFiles() && (
             <div className={styles.fileSummary}>
               <h4 className={styles.summaryTitle}>Upload Summary</h4>
               <div className={styles.summaryContent}>
-                {selectedFiles.csv && (
+                {fileManager.selectedFiles.csv && (
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
-                      CSV: {selectedFiles.csv.name} (
-                      {Math.round(selectedFiles.csv.size / 1024)} KB)
+                      CSV: {fileManager.selectedFiles.csv.name} (
+                      {Math.round(fileManager.selectedFiles.csv.size / 1024)} KB)
                     </span>
                   </div>
                 )}
-                {selectedFiles.images.length > 0 && (
+                {fileManager.selectedFiles.images.length > 0 && (
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
-                      {selectedFiles.images.length} image(s) (
+                      {fileManager.selectedFiles.images.length} image(s) (
                       {Math.round(
-                        selectedFiles.images.reduce(
+                        fileManager.selectedFiles.images.reduce(
                           (sum, file) => sum + file.size,
                           0
                         ) /
@@ -833,19 +385,19 @@ export default function Upload() {
                     </span>
                   </div>
                 )}
-                {poiFile && (
+                {fileManager.poiFile && (
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
-                      POI: {poiFile.name} ({Math.round(poiFile.size / 1024)} KB)
+                      POI: {fileManager.poiFile.name} ({Math.round(fileManager.poiFile.size / 1024)} KB)
                     </span>
                   </div>
                 )}
-                {duplicateImages.length > 0 && (
+                {fileManager.duplicateImages.length > 0 && (
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
-                      {duplicateImages.length} duplicate(s) detected
+                      {fileManager.duplicateImages.length} duplicate(s) detected
                     </span>
                   </div>
                 )}
@@ -855,49 +407,35 @@ export default function Upload() {
 
           <button
             type='submit'
-            disabled={isLoading || validationErrors.length > 0}
+            disabled={validation.isSubmitDisabled()}
             className={`${styles.submitButton} ${
-              validationErrors.length > 0 ? styles.submitButtonDisabled : ''
+              validation.validationErrors.length > 0 ? styles.submitButtonDisabled : ''
             }`}
           >
-            {isLoading && <span className={styles.loadingSpinner}></span>}
-            {validationErrors.length > 0 && !isLoading
-              ? 'Fix errors to continue'
-              : isLoading
-                ? isEditMode
-                  ? 'Updating Project...'
-                  : 'Uploading and Generating...'
-                : isEditMode
-                  ? 'Update Project'
-                  : 'Upload and Generate'}
+            {uploadState.isLoading && <span className={styles.loadingSpinner}></span>}
+            {validation.getSubmitButtonText(uploadState.isLoading, projectManager.isEditMode)}
           </button>
 
-          {isLoading && uploadProgress > 0 && (
+          {uploadState.isLoading && uploadState.uploadProgress > 0 && (
             <div className={styles.progressContainer}>
               <div className={styles.progressHeader}>
                 <span className={styles.progressTitle}>
-                  {uploadProgress < 30
-                    ? 'Preparing files...'
-                    : uploadProgress < 70
-                      ? 'Uploading files...'
-                      : uploadProgress < 100
-                        ? 'Processing data...'
-                        : 'Generating configuration...'}
+                  {uploadState.getProgressMessage(uploadState.uploadProgress)}
                 </span>
                 <span className={styles.progressPercentage}>
-                  {uploadProgress < 100
-                    ? `${Math.round(uploadProgress)}%`
+                  {uploadState.uploadProgress < 100
+                    ? `${Math.round(uploadState.uploadProgress)}%`
                     : '99%'}
                 </span>
               </div>
               <div className={styles.progressBar}>
                 <div
                   className={styles.progressFill}
-                  style={{ width: `${uploadProgress}%` }}
+                  style={{ width: `${uploadState.uploadProgress}%` }}
                 ></div>
               </div>
               <div className={styles.progressDetails}>
-                {uploadProgress < 100 ? (
+                {uploadState.uploadProgress < 100 ? (
                   <span className={styles.progressSubtext}>
                     Please keep this page open while files are being
                     processed...
@@ -986,9 +524,11 @@ export default function Upload() {
                 {duplicateImages.length > 0 && (
                   <button
                     type='button'
-                    onClick={removeDuplicateImages}
+                    onClick={fileManager.removeDuplicateImages}
                     className={styles.removeDuplicatesButton}
-                  ></button>
+                  >
+                    Remove Duplicates
+                  </button>
                 )}
                 <button
                   onClick={e => {
@@ -1042,7 +582,7 @@ export default function Upload() {
                 : styles.messageSuccess
             }`}
           >
-            {message}
+            {projectManager.getProjectStatusMessage() || message}
           </div>
         )}
 
