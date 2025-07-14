@@ -22,11 +22,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const files = {
       csv: null as string | null,
-      images: [] as string[]
+      images: [] as string[],
+      poi: null as string | null
     };
 
-    // Check for CSV file (pano-poses.csv)
-    const csvPath = path.join(projectDir, 'pano-poses.csv');
+    // Check for CSV file (pano-poses.csv) in data directory
+    const csvPath = path.join(projectDir, 'data', 'pano-poses.csv');
     if (fs.existsSync(csvPath)) {
       files.csv = 'pano-poses.csv';
     }
@@ -41,6 +42,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         })
         .sort();
       files.images = imageFiles;
+    }
+
+    // Check for POI files
+    const poiDataDir = path.join(projectDir, 'data', 'poi');
+    if (fs.existsSync(poiDataDir)) {
+      const poiDataFile = path.join(poiDataDir, 'poi-data.json');
+      if (fs.existsSync(poiDataFile)) {
+        files.poi = 'poi-data.json';
+      }
     }
 
     return res.status(200).json({ files });

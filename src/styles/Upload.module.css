@@ -89,10 +89,10 @@
   font-weight: 500;
   font-size: var(--font-sm);
   padding: var(--spacing-md) var(--spacing-lg);
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
     margin-left: 1rem;
   background: var(--glass-bg);
-  border: 1px solid rgba(255, 255, 255, 0.463); ;
+  border: 1px solid rgba(255, 255, 255, 0.284); ;
   border-radius: var(--radius-full);
   transition: var(--transition-base);
   backdrop-filter: blur(10px);
@@ -265,31 +265,6 @@
   color: var(--text-tertiary);
   font-size: var(--font-sm);
   line-height: 1.5;
-}
-
-.existingFileInfo {
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: var(--radius-md);
-  border-left: 4px solid var(--success);
-  backdrop-filter: blur(10px);
-}
-
-.existingFileInfo p {
-  margin: 0;
-  font-size: var(--font-sm);
-  color: var(--success-light);
-  line-height: 1.5;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.existingFileInfo strong {
-  color: var(--success);
-  font-weight: 600;
 }
 
 .csvInstruction {

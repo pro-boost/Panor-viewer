@@ -105,6 +105,9 @@ export default function Upload() {
             if (files.images.length > 0) {
               fileInfo.push(`${files.images.length} image(s)`);
             }
+            if (files.poi) {
+              fileInfo.push(`POI: ${files.poi}`);
+            }
 
             if (fileInfo.length > 0) {
               setMessage(
@@ -684,6 +687,7 @@ export default function Upload() {
         <h1 className={styles.title}>
           {isEditMode ? 'Edit Project Data' : 'Upload Panorama Data'}
         </h1>
+
         <button
           onClick={() => {
             if (window.history.length > 1) {
@@ -699,6 +703,7 @@ export default function Upload() {
         >
           ← Back to Panorama Viewer
         </button>
+
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor='projectName' className={styles.label}>
@@ -729,14 +734,6 @@ export default function Upload() {
                 : ''}
               :
             </label>
-            {isEditMode && existingFiles.csv && (
-              <div className={styles.existingFileInfo}>
-                <span className={styles.existingFileLabel}>Current file:</span>
-                <span className={styles.existingFileName}>
-                  {existingFiles.csv}
-                </span>
-              </div>
-            )}
             {selectedFiles.csv &&
               selectedFiles.csv.name !== 'pano-poses.csv' && (
                 <div className={styles.csvInstruction}>
@@ -765,21 +762,6 @@ export default function Upload() {
                 : ''}
               :
             </label>
-            {isEditMode && existingFiles.images.length > 0 && (
-              <div className={styles.existingFileInfo}>
-                <span className={styles.existingFileLabel}>Current files:</span>
-                <span className={styles.existingFileName}>
-                  {existingFiles.images.length} image
-                  {existingFiles.images.length !== 1 ? 's' : ''}
-                  {existingFiles.images.length <= 3 && (
-                    <span className={styles.fileNames}>
-                      {' '}
-                      ({existingFiles.images.join(', ')})
-                    </span>
-                  )}
-                </span>
-              </div>
-            )}
             <input
               type='file'
               id='images'
@@ -796,14 +778,6 @@ export default function Upload() {
             <label htmlFor='poiFile' className={styles.label}>
               POI File (Optional):
             </label>
-            {isEditMode && existingFiles.poi && (
-              <div className={styles.existingFileInfo}>
-                <span className={styles.existingFileLabel}>Current file:</span>
-                <span className={styles.existingFileName}>
-                  {existingFiles.poi}
-                </span>
-              </div>
-            )}
             <input
               type='file'
               id='poiFile'
@@ -815,7 +789,9 @@ export default function Upload() {
           </div>
 
           {isEditMode &&
-            (existingFiles.csv || existingFiles.images.length > 0) && (
+            (existingFiles.csv ||
+              existingFiles.images.length > 0 ||
+              existingFiles.poi) && (
               <div className={styles.formGroup}>
                 <div className={styles.fileList}>
                   <div className={styles.fileListHeader}>
@@ -1204,19 +1180,46 @@ export default function Upload() {
         )}
 
         <div className={styles.instructions}>
-          <h3 className={styles.instructionsTitle}>Instructions:</h3>
+          <h3 className={styles.instructionsTitle}>
+            {isEditMode ? 'Update Instructions:' : 'Instructions:'}
+          </h3>
           <ol className={styles.instructionsList}>
-            <li>
-              Select your pano-poses.csv file containing panorama position data
-            </li>
-            <li>Select one or more panorama images (JPG or PNG format)</li>
-            <li>
-              Click "Upload and Generate" to upload files and automatically
-              generate the configuration
-            </li>
-            <li>
-              Once complete, return to the main viewer to see your panoramas
-            </li>
+            {isEditMode ? (
+              <>
+                <li>
+                  (Optional) Select a new pano-poses.csv file to replace existing panorama position data
+                </li>
+                <li>
+                  (Optional) Select additional panorama images (JPG or PNG format) to add to your project
+                </li>
+                <li>
+                  (Optional) Select a POI file (JSON format) to update points of interest in your panoramas
+                </li>
+                <li>
+                  Click "Update Project" to upload new files and regenerate the configuration
+                </li>
+                <li>
+                  Once complete, return to the main viewer to see your updated panoramas
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  Select your pano-poses.csv file containing panorama position data
+                </li>
+                <li>Select one or more panorama images (JPG or PNG format)</li>
+                <li>
+                  (Optional) Select a POI file (JSON format) to add points of interest to your panoramas
+                </li>
+                <li>
+                  Click "Upload and Generate" to upload files and automatically
+                  generate the configuration
+                </li>
+                <li>
+                  Once complete, return to the main viewer to see your panoramas
+                </li>
+              </>
+            )}
           </ol>
         </div>
       </div>
