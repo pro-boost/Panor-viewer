@@ -782,6 +782,31 @@
   color: var(--warning);
 }
 
+.toggleDetailsButton {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.toggleDetailsButton:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.5);
+  transform: translateY(-1px);
+}
+
+.toggleDetailsButton:active {
+  transform: translateY(0);
+}
+
 .duplicateList {
   margin: var(--spacing-sm) 0;
   padding: 0;
@@ -865,51 +890,7 @@
   border-radius: 50%;
 }
 
-/* ===================================
-   DIAGNOSTICS
-   =================================== */
-.diagnosticsSection {
-  margin: var(--spacing-xl) 0;
-  padding: var(--spacing-xl);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  text-align: center;
-  backdrop-filter: blur(10px);
-}
 
-.diagnosticsButton {
-  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-  color: white;
-  border: none;
-  padding: var(--spacing-md) var(--spacing-xl);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--font-base);
-  font-weight: 500;
-  transition: var(--transition-base);
-  margin-bottom: var(--spacing-sm);
-  box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
-}
-
-.diagnosticsButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
-  background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
-}
-
-.diagnosticsButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: linear-gradient(135deg, var(--text-muted) 0%, #64748b 100%);
-}
-
-.diagnosticsHint {
-  margin: 0;
-  font-size: var(--font-sm);
-  color: var(--text-tertiary);
-  font-style: italic;
-}
 
 /* ===================================
    SUCCESS ACTIONS
@@ -1139,102 +1120,7 @@
   border-bottom: none;
 }
 
-/* ===================================
-   DIAGNOSTICS RESULTS
-   =================================== */
-.diagnosticsHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--glass-border);
-}
 
-.diagnosticsResults {
-  text-align: left;
-}
-
-.diagnosticsSummary {
-  margin-bottom: var(--spacing-xl);
-}
-
-.diagnosticsSummary h5 {
-  margin: 0 0 var(--spacing-md) 0;
-  color: var(--text-secondary);
-  font-size: var(--font-base);
-  font-weight: 600;
-}
-
-.diagnosticsSummary ul {
-  margin: 0;
-  padding-left: var(--spacing-xl);
-  list-style-type: none;
-}
-
-.diagnosticsSummary li {
-  margin: var(--spacing-xs) 0;
-  font-size: var(--font-sm);
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
-  color: var(--text-tertiary);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--glass-bg);
-  border-radius: var(--radius-sm);
-}
-
-.diagnosticsRecommendations {
-  margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-lg);
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: var(--radius-md);
-}
-
-.diagnosticsRecommendations h5 {
-  margin: 0 0 var(--spacing-md) 0;
-  color: var(--warning);
-  font-size: var(--font-base);
-  font-weight: 600;
-}
-
-.diagnosticsRecommendations ul {
-  margin: 0;
-  padding-left: var(--spacing-xl);
-}
-
-.diagnosticsRecommendations li {
-  margin: var(--spacing-xs) 0;
-  font-size: var(--font-sm);
-  color: var(--warning-dark);
-}
-
-.diagnosticsDetails {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-}
-
-.diagnosticsDetails summary {
-  cursor: pointer;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
-}
-
-.diagnosticsDetails pre {
-  margin: var(--spacing-md) 0 0 0;
-  padding: var(--spacing-md);
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  overflow-x: auto;
-  max-height: 300px;
-  overflow-y: auto;
-  color: var(--text-primary);
-}
 
 /* ===================================
    ANIMATIONS
@@ -1622,7 +1508,6 @@
   /* Adjust sections for mobile */
   .poiImportSection,
   .fileSummary,
-  .diagnosticsSection,
   .instructions {
     padding: var(--spacing-lg);
   }
@@ -1642,12 +1527,7 @@
     font-size: var(--font-sm);
   }
   
-  /* Stack diagnostic results */
-  .diagnosticsHeader {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
-  }
+
   
   /* Adjust instruction list */
   .instructionsList {
@@ -1731,7 +1611,6 @@
   /* Reduce section padding on small screens */
   .poiImportSection,
   .fileSummary,
-  .diagnosticsSection,
   .instructions,
   .overwriteOptions {
     padding: var(--spacing-md);
@@ -1743,11 +1622,7 @@
     font-size: var(--font-sm);
   }
   
-  /* Smaller diagnostics button */
-  .diagnosticsButton {
-    padding: var(--spacing-sm) var(--spacing-lg);
-    font-size: var(--font-sm);
-  }
+
 }
 
 /* ===================================
@@ -1768,7 +1643,6 @@
   .form,
   .poiImportSection,
   .fileSummary,
-  .diagnosticsSection,
   .instructions,
   .poiFileManager {
     border-width: 2px;
@@ -1801,7 +1675,6 @@
   .clearButton,
   .deleteAllButton,
   .removeDuplicatesButton,
-  .diagnosticsButton,
   .viewPanoramasButton,
   .exportButton,
   .migrateButton {
@@ -1858,7 +1731,6 @@
 .form,
 .poiImportSection,
 .fileSummary,
-.diagnosticsSection,
 .instructions,
 .poiFileManager {
   will-change: transform;

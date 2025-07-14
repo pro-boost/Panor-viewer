@@ -11,15 +11,16 @@ export default function Upload() {
   const [referrerUrl, setReferrerUrl] = useState<string>('/');
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [duplicateWarning, setDuplicateWarning] = useState<string[]>([]);
+  const [showDuplicateDetails, setShowDuplicateDetails] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [duplicateImages, setDuplicateImages] = useState<
     { name: string; size: number; lastModified: number }[]
   >([]);
-  const [showDuplicatePreview, setShowDuplicatePreview] = useState(false);
+
   const [uploadProgress, setUploadProgress] = useState(0);
   const [allowOverwrite, setAllowOverwrite] = useState(false);
   const [deleteAllAndUpload, setDeleteAllAndUpload] = useState(false);
-  const [showSelectedFiles, setShowSelectedFiles] = useState(false);
+
   const [projectName, setProjectName] = useState('');
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -30,9 +31,7 @@ export default function Upload() {
     poi: string | null;
   }>({ csv: null, images: [], poi: null });
   const [showExistingFiles, setShowExistingFiles] = useState(false);
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [diagnosticsData, setDiagnosticsData] = useState<any>(null);
-  const [loadingDiagnostics, setLoadingDiagnostics] = useState(false);
+
   const [selectedFiles, setSelectedFiles] = useState<{
     csv: File | null;
     images: File[];
@@ -362,25 +361,6 @@ export default function Upload() {
     }
   };
 
-  const runDiagnostics = async () => {
-    setLoadingDiagnostics(true);
-    try {
-      const response = await fetch('/api/diagnostics');
-      const data = await response.json();
-      setDiagnosticsData(data);
-      setShowDiagnostics(true);
-    } catch (error) {
-      console.error('Failed to run diagnostics:', error);
-      setDiagnosticsData({
-        healthy: false,
-        error: 'Failed to run diagnostics. Please check your connection.',
-      });
-      setShowDiagnostics(true);
-    } finally {
-      setLoadingDiagnostics(false);
-    }
-  };
-
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, files } = event.target;
     setValidationErrors([]);
@@ -622,6 +602,7 @@ export default function Upload() {
 
         setMessage(finalMessage);
         setUploadSuccess(true);
+        setDuplicateImages([]);
 
         try {
           sessionStorage.removeItem('uploadPageFiles');
@@ -957,106 +938,99 @@ export default function Upload() {
                 files)
               </h4>
               <button
-                type='button'
-                onClick={() => setShowDuplicatePreview(!showDuplicatePreview)}
-                className={styles.toggleButton}
+                type="button"
+                onClick={() => setShowDuplicateDetails(!showDuplicateDetails)}
+                className={styles.toggleDetailsButton}
               >
-                {showDuplicatePreview ? '▼ Hide Details' : '▶ Show Details'}
+                {showDuplicateDetails ? 'Hide Details' : 'Show Details'}
               </button>
             </div>
-            {showDuplicatePreview && (
-              <div className={styles.duplicateDetails}>
-                <p className={styles.duplicateExplanation}>
-                  These files have the same names as existing files in your
-                  project:
-                </p>
+            <div>
+              <p className={styles.duplicateExplanation}>
+                These files have the same names as existing files in your
+                project:
+              </p>
+              {showDuplicateDetails && (
                 <ul className={styles.duplicateList}>
-                  {duplicateImages.length > 0
-                    ? duplicateImages.map((img, index) => (
-                        <li key={index} className={styles.duplicateItem}>
-                          <span className={styles.fileName}>{img.name}</span>
-                          <span className={styles.fileSize}>
-                            ({Math.round(img.size / 1024)} KB)
-                          </span>
-                        </li>
-                      ))
-                    : duplicateWarning.map((filename, index) => (
-                        <li key={index} className={styles.duplicateItem}>
-                          <span className={styles.fileName}>{filename}</span>
-                        </li>
-                      ))}
+                {duplicateImages.length > 0
+                  ? duplicateImages.map((img, index) => (
+                      <li key={index} className={styles.duplicateItem}>
+                        <span className={styles.fileName}>{img.name}</span>
+                        <span className={styles.fileSize}>
+                          ({Math.round(img.size / 1024)} KB)
+                        </span>
+                      </li>
+                    ))
+                  : duplicateWarning.map((filename, index) => (
+                      <li key={index} className={styles.duplicateItem}>
+                        <span className={styles.fileName}>{filename}</span>
+                      </li>
+                    ))}
                 </ul>
+              )}
 
-                <div className={styles.duplicateActions}>
-                  <p className={styles.actionText}>
-                    <strong>Options:</strong>
-                  </p>
-                  <ul className={styles.actionList}>
-                    <li>Rename the duplicate files and re-select them</li>
-                    <li>Continue upload to replace existing files</li>
-                    <li>
-                      Remove all existing files and replace them with the new
-                      ones provided
-                    </li>
-                    {duplicateImages.length > 0 && (
-                      <li>Remove duplicates from your selection</li>
-                    )}
-                  </ul>
-                </div>
-                <div className={styles.duplicateActions}>
-                  {duplicateImages.length > 0 && (
-                    <button
-                      type='button'
-                      onClick={removeDuplicateImages}
-                      className={styles.removeDuplicatesButton}
-                    >
-                      Remove Duplicate Images
-                    </button>
-                  )}
-                  <button
-                    onClick={e => {
-                      e.preventDefault();
-                      const form = document.querySelector(
-                        'form'
-                      ) as HTMLFormElement;
-                      if (form) {
-                        const syntheticEvent = {
-                          preventDefault: () => {},
-                          currentTarget: form,
-                          target: form,
-                          nativeEvent: new Event('submit'),
-                          bubbles: true,
-                          cancelable: true,
-                          defaultPrevented: false,
-                          eventPhase: 0,
-                          isTrusted: true,
-                          timeStamp: Date.now(),
-                          type: 'submit',
-                          _overwriteMode: true,
-                        } as unknown as FormEvent<HTMLFormElement> & {
-                          _overwriteMode: boolean;
-                        };
-                        handleSubmit(syntheticEvent);
-                      }
-                    }}
-                    disabled={isLoading}
-                    className={styles.overwriteButton}
-                  >
-                    {isLoading && (
-                      <span className={styles.loadingSpinner}></span>
-                    )}
-                    {isLoading ? 'Overwriting...' : 'Upload and Overwrite'}
-                  </button>
+              <div className={styles.duplicateActions}>
+                <p className={styles.actionText}>
+                  <strong>Options:</strong>
+                </p>
+                <ul className={styles.actionList}>
+                  <li>Rename the duplicate files and re-select them</li>
+                  <li>Continue upload to replace existing files</li>
+                  <li>
+                    Remove all existing files and replace them with the new ones
+                    provided
+                  </li>
+                </ul>
+              </div>
+              <div className={styles.duplicateActions}>
+                {duplicateImages.length > 0 && (
                   <button
                     type='button'
-                    onClick={handleDeleteAllAndUpload}
-                    className={styles.deleteAllButton}
-                  >
-                    Delete All & Upload
-                  </button>
-                </div>
-              </div>
-            )}
+                    onClick={removeDuplicateImages}
+                    className={styles.removeDuplicatesButton}
+                  ></button>
+                )}
+                <button
+                  onClick={e => {
+                    e.preventDefault();
+                    const form = document.querySelector(
+                      'form'
+                    ) as HTMLFormElement;
+                    if (form) {
+                      const syntheticEvent = {
+                        preventDefault: () => {},
+                        currentTarget: form,
+                        target: form,
+                        nativeEvent: new Event('submit'),
+                        bubbles: true,
+                        cancelable: true,
+                        defaultPrevented: false,
+                        eventPhase: 0,
+                        isTrusted: true,
+                        timeStamp: Date.now(),
+                        type: 'submit',
+                        _overwriteMode: true,
+                      } as unknown as FormEvent<HTMLFormElement> & {
+                        _overwriteMode: boolean;
+                      };
+                      handleSubmit(syntheticEvent);
+                    }
+                  }}
+                  disabled={isLoading}
+                  className={styles.overwriteButton}
+                >
+                  {isLoading && <span className={styles.loadingSpinner}></span>}
+                  {isLoading ? 'Overwriting...' : 'Upload and Overwrite'}
+                </button>
+                <button
+                  type='button'
+                  onClick={handleDeleteAllAndUpload}
+                  className={styles.deleteAllButton}
+                >
+                  Delete All & Upload
+                </button>
+                  </div>
+            </div>
           </div>
         )}
 
@@ -1089,96 +1063,6 @@ export default function Upload() {
           </div>
         )}
 
-        {/* Diagnostics Section */}
-        {(message.includes('failed') ||
-          message.includes('error') ||
-          validationErrors.length > 0) && (
-          <div className={styles.diagnosticsSection}>
-            <button
-              type='button'
-              onClick={runDiagnostics}
-              disabled={loadingDiagnostics}
-              className={styles.diagnosticsButton}
-            >
-              {loadingDiagnostics
-                ? 'Running Diagnostics...'
-                : 'Run System Diagnostics'}
-            </button>
-            <p className={styles.diagnosticsHint}>
-              Having trouble? Run diagnostics to check your system setup.
-            </p>
-          </div>
-        )}
-
-        {/* Diagnostics Results */}
-        {showDiagnostics && diagnosticsData && (
-          <div
-            className={`${styles.message} ${diagnosticsData.healthy ? styles.messageSuccess : styles.messageError}`}
-          >
-            <div className={styles.diagnosticsHeader}>
-              <h4>
-                {diagnosticsData.healthy
-                  ? 'System Check Passed'
-                  : 'System Issues Detected'}
-              </h4>
-              <button
-                type='button'
-                onClick={() => setShowDiagnostics(false)}
-                className={styles.toggleButton}
-              >
-                Close
-              </button>
-            </div>
-
-            {diagnosticsData.error ? (
-              <p>{diagnosticsData.error}</p>
-            ) : (
-              <div className={styles.diagnosticsResults}>
-                <div className={styles.diagnosticsSummary}>
-                  <h5>System Status:</h5>
-                  <ul>
-                    <li>
-                      Python: {diagnosticsData.summary?.python || 'Unknown'}
-                    </li>
-                    <li>
-                      NumPy: {diagnosticsData.summary?.numpy || 'Unknown'}
-                    </li>
-                    <li>
-                      Public Directory:{' '}
-                      {diagnosticsData.summary?.publicDir || 'Unknown'}
-                    </li>
-                    <li>
-                      Scripts: {diagnosticsData.summary?.scripts || 'Unknown'}
-                    </li>
-                  </ul>
-                </div>
-
-                {diagnosticsData.diagnostics?.recommendations?.length > 0 && (
-                  <div className={styles.diagnosticsRecommendations}>
-                    <h5>Recommendations:</h5>
-                    <ul>
-                      {diagnosticsData.diagnostics.recommendations.map(
-                        (rec: string, index: number) => (
-                          <li key={index}>{rec}</li>
-                        )
-                      )}
-                    </ul>
-                  </div>
-                )}
-
-                {process.env.NODE_ENV === 'development' && (
-                  <details className={styles.diagnosticsDetails}>
-                    <summary>Technical Details</summary>
-                    <pre>
-                      {JSON.stringify(diagnosticsData.diagnostics, null, 2)}
-                    </pre>
-                  </details>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
         <div className={styles.instructions}>
           <h3 className={styles.instructionsTitle}>
             {isEditMode ? 'Update Instructions:' : 'Instructions:'}
@@ -1187,29 +1071,36 @@ export default function Upload() {
             {isEditMode ? (
               <>
                 <li>
-                  (Optional) Select a new pano-poses.csv file to replace existing panorama position data
+                  (Optional) Select a new pano-poses.csv file to replace
+                  existing panorama position data
                 </li>
                 <li>
-                  (Optional) Select additional panorama images (JPG or PNG format) to add to your project
+                  (Optional) Select additional panorama images (JPG or PNG
+                  format) to add to your project
                 </li>
                 <li>
-                  (Optional) Select a POI file (JSON format) to update points of interest in your panoramas
+                  (Optional) Select a POI file (JSON format) to update points of
+                  interest in your panoramas
                 </li>
                 <li>
-                  Click "Update Project" to upload new files and regenerate the configuration
+                  Click "Update Project" to upload new files and regenerate the
+                  configuration
                 </li>
                 <li>
-                  Once complete, return to the main viewer to see your updated panoramas
+                  Once complete, return to the main viewer to see your updated
+                  panoramas
                 </li>
               </>
             ) : (
               <>
                 <li>
-                  Select your pano-poses.csv file containing panorama position data
+                  Select your pano-poses.csv file containing panorama position
+                  data
                 </li>
                 <li>Select one or more panorama images (JPG or PNG format)</li>
                 <li>
-                  (Optional) Select a POI file (JSON format) to add points of interest to your panoramas
+                  (Optional) Select a POI file (JSON format) to add points of
+                  interest to your panoramas
                 </li>
                 <li>
                   Click "Upload and Generate" to upload files and automatically
