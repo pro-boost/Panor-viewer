@@ -21,10 +21,11 @@ const POIModal: React.FC<POIModalProps> = ({
     type: 'file',
     content: '',
   });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
   const [filesToDelete, setFilesToDelete] = useState<string[]>([]);
+  const [customFilenames, setCustomFilenames] = useState<{[key: number]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [storedPosition, setStoredPosition] = useState<POIPosition | null>(
     null
@@ -42,6 +43,7 @@ const POIModal: React.FC<POIModalProps> = ({
           content: editingPOI.content,
         });
         setSelectedFiles([]);
+        setCustomFilenames({});
         // Set existing files for editing
         if (editingPOI.files && editingPOI.files.length > 0) {
           setExistingFiles(editingPOI.files);
@@ -51,6 +53,7 @@ const POIModal: React.FC<POIModalProps> = ({
           setExistingFiles([]);
         }
         setFilesToDelete([]);
+        setCustomFilenames(editingPOI.customFilenames || {});
         setStoredPosition(editingPOI.position);
       } else if (pendingPosition && !storedPosition) {
         console.log('Modal position lock:', pendingPosition);
@@ -71,6 +74,7 @@ const POIModal: React.FC<POIModalProps> = ({
       });
       setSelectedFile(null);
       setSelectedFiles([]);
+      setCustomFilenames({});
       setExistingFiles([]);
       setFilesToDelete([]);
     }
@@ -130,6 +134,7 @@ const POIModal: React.FC<POIModalProps> = ({
     setFormData(prev => ({ ...prev, type, content: '' }));
     setSelectedFile(null);
     setSelectedFiles([]);
+    setCustomFilenames({});
   };
 
   const removeFile = (indexToRemove: number) => {
@@ -149,12 +154,50 @@ const POIModal: React.FC<POIModalProps> = ({
       
       return newFiles;
     });
+    // Remove custom filename for this index and shift others
+    setCustomFilenames(prev => {
+      const newFilenames = { ...prev };
+      const adjustedIndexToRemove = existingFiles.length + indexToRemove;
+      delete newFilenames[adjustedIndexToRemove];
+      // Shift remaining filenames down
+      const shifted: {[key: number]: string} = {};
+      Object.keys(newFilenames).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > adjustedIndexToRemove) {
+          shifted[keyNum - 1] = newFilenames[keyNum];
+        } else {
+          shifted[keyNum] = newFilenames[keyNum];
+        }
+      });
+      return shifted;
+    });
   };
 
   const clearAllFiles = () => {
     setSelectedFiles([]);
     setSelectedFile(null);
     setFormData(prev => ({ ...prev, content: '' }));
+    setCustomFilenames({});
+  };
+
+  const handleCustomFilenameChange = (index: number, filename: string) => {
+    // Adjust index to account for existing files
+    const adjustedIndex = existingFiles.length + index;
+    setCustomFilenames(prev => ({
+      ...prev,
+      [adjustedIndex]: filename
+    }));
+  };
+
+  const getCustomFilename = (index: number, originalName: string) => {
+    // Adjust index to account for existing files
+    const adjustedIndex = existingFiles.length + index;
+    return customFilenames[adjustedIndex] || originalName.replace(/\.[^/.]+$/, '');
+  };
+
+  const getFileExtension = (filename: string) => {
+    const lastDot = filename.lastIndexOf('.');
+    return lastDot !== -1 ? filename.substring(lastDot) : '';
   };
 
   const removeExistingFile = (filename: string) => {
@@ -210,6 +253,7 @@ const POIModal: React.FC<POIModalProps> = ({
         file: selectedFile || undefined,
         files: selectedFiles.length > 0 ? selectedFiles : undefined,
         position: storedPosition,
+        customFilenames: customFilenames,
       };
 
       // Add POI ID and file deletion info for editing
@@ -230,6 +274,10 @@ const POIModal: React.FC<POIModalProps> = ({
         content: '',
       });
       setSelectedFile(null);
+      setSelectedFiles([]);
+      setCustomFilenames({});
+      setExistingFiles([]);
+      setFilesToDelete([]);
 
       toast.success(
         editingPOI ? 'POI updated successfully!' : 'POI created successfully!'
@@ -478,7 +526,20 @@ const POIModal: React.FC<POIModalProps> = ({
                         <div className={styles.fileInfo}>
                           <FaFile className={styles.fileIcon} />
                           <div className={styles.fileDetails}>
-                            <span className={styles.fileName}>{file.name}</span>
+                            <div className={styles.fileNameSection}>
+                              <label className={styles.filenameLabel}>Filename:</label>
+                              <div className={styles.filenameInputGroup}>
+                                <input
+                                  type="text"
+                                  value={getCustomFilename(index, file.name)}
+                                  onChange={(e) => handleCustomFilenameChange(index, e.target.value)}
+                                  className={styles.filenameInput}
+                                  placeholder="Enter filename"
+                                  disabled={isSubmitting}
+                                />
+                                <span className={styles.fileExtension}>{getFileExtension(file.name)}</span>
+                              </div>
+                            </div>
                             <span className={styles.fileSize}>{formatFileSize(file.size)}</span>
                           </div>
                         </div>

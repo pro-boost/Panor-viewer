@@ -193,7 +193,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
           ) : (
             <img
               src={contentPath}
-              alt={filename}
+              alt={getDisplayFilename(filename, index)}
               className={styles.previewImage}
               onLoad={handleImageLoad}
               onError={handleImageError}
@@ -252,7 +252,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
               <iframe
                 src={contentPath}
                 className={styles.pdfIframe}
-                title={`PDF: ${filename}`}
+                title={`PDF: ${getDisplayFilename(filename, index)}`}
                 onLoad={handlePdfLoad}
                 onError={handlePdfError}
               />
@@ -276,7 +276,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     return (
       <div key={fileKey} className={styles.fileContainer}>
         <div className={styles.fileIcon}>{renderFileIcon(category)}</div>
-        <p className={styles.fileName}>{filename}</p>
+        <p className={styles.fileName}>{getDisplayFilename(filename, index)}</p>
         <a
           href={contentPath}
           target='_blank'
@@ -368,7 +368,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
                     {renderFileIcon(category)}
                   </div>
                   <div className={styles.stackItemInfo}>
-                    <span className={styles.stackItemName}>{filename}</span>
+                    <span className={styles.stackItemName}>{getDisplayFilename(filename, index)}</span>
                     <span className={styles.stackItemType}>{category}</span>
                   </div>
                   {isSelected && (
@@ -401,6 +401,44 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       webm: 'video/webm'
     };
     return mimeTypes[extension] || 'application/octet-stream';
+  };
+
+  const getDisplayFilename = (filename: string, index?: number): string => {
+    // First, try to get the custom filename from POI data
+    if (poi.customFilenames && index !== undefined && poi.customFilenames[index]) {
+      const customName = poi.customFilenames[index];
+      const lastDotIndex = filename.lastIndexOf('.');
+      const extension = lastDotIndex !== -1 ? filename.substring(lastDotIndex) : '';
+      return customName + extension;
+    }
+    
+    // Fallback: extract a user-friendly name from the stored filename
+    const lastDotIndex = filename.lastIndexOf('.');
+    const extension = lastDotIndex !== -1 ? filename.substring(lastDotIndex) : '';
+    const nameWithoutExt = lastDotIndex !== -1 ? filename.substring(0, lastDotIndex) : filename;
+    
+    // Check if this follows the poiId_timestamp pattern
+    const underscoreIndex = nameWithoutExt.indexOf('_');
+    if (underscoreIndex !== -1) {
+      const afterUnderscore = nameWithoutExt.substring(underscoreIndex + 1);
+      // If what follows the underscore is all digits (timestamp), this is a generated filename
+      if (/^\d+$/.test(afterUnderscore)) {
+        // Use a generic name based on file type
+        const fileType = extension.toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileType)) {
+          return `Image${extension}`;
+        } else if (['.mp4', '.webm'].includes(fileType)) {
+          return `Video${extension}`;
+        } else if (fileType === '.pdf') {
+          return `Document${extension}`;
+        } else {
+          return `File${extension}`;
+        }
+      }
+    }
+    
+    // If it doesn't match the generated pattern, return as-is
+    return filename;
   };
 
   return (

@@ -14,6 +14,7 @@ export interface POIData {
   type: 'file' | 'iframe';
   content: string; // filename for file type, URL for iframe type
   files?: string[]; // array of filenames for multiple files
+  customFilenames?: {[key: number]: string}; // custom filenames for display
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +28,7 @@ export interface POIFormData {
   files?: File[]; // array of files for multiple file uploads
   existingFiles?: string[]; // array of existing filenames when editing
   filesToDelete?: string[]; // array of filenames to delete when editing
+  customFilenames?: {[key: number]: string}; // custom filenames for uploaded files
   position?: POIPosition;
 }
 

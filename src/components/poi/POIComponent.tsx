@@ -423,7 +423,9 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
          if (filesToUpload.length === 1) {
            // Single file upload (backward compatibility)
            const file = filesToUpload[0];
-           const uniqueFilename = generateUniqueFilename(file.name, poiId);
+           const customName = data.customFilenames?.[0];
+           const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
+           const uniqueFilename = generateUniqueFilename(baseFilename, poiId);
            
            const formData = new FormData();
            formData.append('file', file);
@@ -459,7 +461,9 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
            const filenames: string[] = [];
            
            filesToUpload.forEach((file, index) => {
-             const uniqueFilename = generateUniqueFilename(file.name, poiId);
+             const customName = data.customFilenames?.[index];
+             const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
+             const uniqueFilename = generateUniqueFilename(baseFilename, poiId);
              formData.append('files', file);
              formData.append('filenames', uniqueFilename);
              filenames.push(uniqueFilename);
@@ -530,6 +534,7 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       type: data.type,
       content: contentPath,
       files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+      customFilenames: data.customFilenames,
       createdAt: isEditing ? (selectedPOI?.createdAt || timestamp) : timestamp,
       updatedAt: timestamp
     };
