@@ -13,6 +13,7 @@ export interface POIData {
   position: POIPosition;
   type: 'file' | 'iframe';
   content: string; // filename for file type, URL for iframe type
+  files?: string[]; // array of filenames for multiple files
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +24,7 @@ export interface POIFormData {
   type: 'file' | 'iframe';
   content: string;
   file?: File;
+  files?: File[]; // array of files for multiple file uploads
   position?: POIPosition;
 }
 

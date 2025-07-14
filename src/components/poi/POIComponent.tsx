@@ -391,42 +391,103 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
     
     let contentPath = data.content;
     
-    // Handle file upload
-    if (data.type === 'file' && data.file) {
-      const uniqueFilename = generateUniqueFilename(data.file.name, poiId);
+    // Handle file uploads (single or multiple)
+    let uploadedFiles: string[] = [];
+    
+    if (data.type === 'file') {
+      const filesToUpload = data.files && data.files.length > 0 ? data.files : (data.file ? [data.file] : []);
       
-      // Upload file
-      const formData = new FormData();
-      formData.append('file', data.file);
-      formData.append('filename', uniqueFilename);
-      formData.append('projectId', projectId);
-      
-      const uploadResponse = await fetch('/api/poi/upload', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!uploadResponse.ok) {
-        const uploadErrorData = await uploadResponse.text();
-        console.error('File Upload API Error:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          response: uploadErrorData
-        });
-        
-        // Try to parse error response for better user feedback
-        try {
-          const errorJson = JSON.parse(uploadErrorData);
-          throw new Error(errorJson.error || `Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText}`);
-        } catch (parseError) {
-          throw new Error(`Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText}`);
-        }
+      if (filesToUpload.length > 0) {
+         if (filesToUpload.length === 1) {
+           // Single file upload (backward compatibility)
+           const file = filesToUpload[0];
+           const uniqueFilename = generateUniqueFilename(file.name, poiId);
+           
+           const formData = new FormData();
+           formData.append('file', file);
+           formData.append('filename', uniqueFilename);
+           formData.append('projectId', projectId);
+           
+           const uploadResponse = await fetch('/api/poi/upload', {
+             method: 'POST',
+             body: formData
+           });
+           
+           if (!uploadResponse.ok) {
+             const uploadErrorData = await uploadResponse.text();
+             console.error('File Upload API Error:', {
+               status: uploadResponse.status,
+               statusText: uploadResponse.statusText,
+               response: uploadErrorData
+             });
+             
+             // Try to parse error response for better user feedback
+             try {
+               const errorJson = JSON.parse(uploadErrorData);
+               throw new Error(errorJson.error || `Failed to upload file ${file.name}: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             } catch (parseError) {
+               throw new Error(`Failed to upload file ${file.name}: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             }
+           }
+           
+           uploadedFiles.push(uniqueFilename);
+         } else {
+           // Multiple files upload
+           const formData = new FormData();
+           const filenames: string[] = [];
+           
+           filesToUpload.forEach((file, index) => {
+             const uniqueFilename = generateUniqueFilename(file.name, poiId);
+             formData.append('files', file);
+             formData.append('filenames', uniqueFilename);
+             filenames.push(uniqueFilename);
+           });
+           
+           formData.append('projectId', projectId);
+           
+           const uploadResponse = await fetch('/api/poi/upload-multiple', {
+             method: 'POST',
+             body: formData
+           });
+           
+           if (!uploadResponse.ok) {
+             const uploadErrorData = await uploadResponse.text();
+             console.error('Multiple File Upload API Error:', {
+               status: uploadResponse.status,
+               statusText: uploadResponse.statusText,
+               response: uploadErrorData
+             });
+             
+             // Try to parse error response for better user feedback
+             try {
+               const errorJson = JSON.parse(uploadErrorData);
+               throw new Error(errorJson.error || `Failed to upload files: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             } catch (parseError) {
+               throw new Error(`Failed to upload files: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             }
+           }
+           
+           const uploadResult = await uploadResponse.json();
+           
+           if (uploadResult.errors && uploadResult.errors.length > 0) {
+             console.warn('Some files failed to upload:', uploadResult.errors);
+             // Still proceed if at least some files uploaded successfully
+           }
+           
+           if (uploadResult.uploadedFiles && uploadResult.uploadedFiles.length > 0) {
+             uploadedFiles = uploadResult.uploadedFiles.map((file: any) => file.filename);
+           } else {
+             throw new Error('No files were successfully uploaded');
+           }
+         }
+         
+         // Set content path to first file for backward compatibility
+         contentPath = uploadedFiles[0];
+      } else if (isEditing && selectedPOI) {
+        // For file-type POIs being updated without new files, preserve the original content
+        contentPath = selectedPOI.content;
+        uploadedFiles = selectedPOI.files || [selectedPOI.content];
       }
-      
-      contentPath = uniqueFilename;
-    } else if (data.type === 'file' && isEditing && selectedPOI) {
-      // For file-type POIs being updated without a new file, preserve the original content path
-      contentPath = selectedPOI.content;
     }
 
     const poiData: POIData = {
@@ -437,6 +498,7 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       position: currentPendingPOI,
       type: data.type,
       content: contentPath,
+      files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
       createdAt: isEditing ? (selectedPOI?.createdAt || timestamp) : timestamp,
       updatedAt: timestamp
     };

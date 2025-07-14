@@ -63,12 +63,13 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     setIsLoading(false);
   };
 
-  const getContentPath = () => {
+  const getContentPath = (filename?: string) => {
     if (poi.type === 'iframe') {
       return poi.content;
     }
     // Use API route for file serving to handle CORS and static file issues
-    return `/api/files/${projectId}/data/poi/attachments/${poi.content}`;
+    const file = filename || poi.content;
+    return `/api/files/${projectId}/data/poi/attachments/${file}`;
   };
 
   const renderFileIcon = (category: string) => {
@@ -159,6 +160,133 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     };
   };
 
+  const renderFileContent = (filename: string, index?: number) => {
+    const contentPath = getContentPath(filename);
+    const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
+    const mimeType = getMimeType(fileExtension);
+    const category = getFileCategory(mimeType);
+    const fileKey = index !== undefined ? `${filename}-${index}` : filename;
+
+    if (category === 'image') {
+      return (
+        <div key={fileKey} className={styles.imageContainer}>
+          {isLoading && (
+            <div className={styles.imageLoadingContainer}>
+              <div className={styles.spinner}></div>
+            </div>
+          )}
+          {imageError ? (
+            <div className={styles.errorContainer}>
+              <FaImage className={styles.errorIcon} size={48} />
+              <p className={styles.errorText}>Failed to load image</p>
+              <a
+                href={contentPath}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.errorLink}
+              >
+                Open file directly
+              </a>
+            </div>
+          ) : (
+            <img
+              src={contentPath}
+              alt={filename}
+              className={styles.previewImage}
+              onLoad={handleImageLoad}
+              onError={handleImageError}
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (category === 'video') {
+      return (
+        <div key={fileKey} className={styles.videoContainer}>
+          {isLoading && (
+            <div className={styles.videoLoadingContainer}>
+              <div className={styles.spinner}></div>
+            </div>
+          )}
+          <video
+            src={contentPath}
+            controls
+            className={styles.previewVideo}
+            onLoadedData={handleImageLoad}
+            onError={handleImageError}
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+
+    // For PDFs, show PDF viewer
+    if (category === 'pdf') {
+      return (
+        <div key={fileKey} className={styles.pdfContainer}>
+          {isLoading && (
+            <div className={styles.pdfLoadingContainer}>
+              <div className={styles.spinner}></div>
+              <p>Loading PDF...</p>
+            </div>
+          )}
+          {pdfError ? (
+            <div className={styles.errorContainer}>
+              <FaFilePdf className={styles.errorIcon} size={48} />
+              <p className={styles.errorText}>Failed to load PDF</p>
+              <a
+                href={contentPath}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.errorLink}
+              >
+                Open PDF directly
+              </a>
+            </div>
+          ) : (
+            <>
+              <iframe
+                src={contentPath}
+                className={styles.pdfIframe}
+                title={`PDF: ${filename}`}
+                onLoad={handlePdfLoad}
+                onError={handlePdfError}
+              />
+              <div className={styles.pdfActions}>
+                <a
+                  href={contentPath}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.openFileButton}
+                >
+                  Open in new tab
+                </a>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
+    // For other files, show download link
+    return (
+      <div key={fileKey} className={styles.fileContainer}>
+        <div className={styles.fileIcon}>{renderFileIcon(category)}</div>
+        <p className={styles.fileName}>{filename}</p>
+        <a
+          href={contentPath}
+          target='_blank'
+          rel='noopener noreferrer'
+          className={styles.openFileButton}
+        >
+          Open File
+        </a>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (poi.type === 'iframe') {
       const iframeContent = getIframeContent();
@@ -202,131 +330,27 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       );
     }
 
-    // File content
-    const contentPath = getContentPath();
-    const fileExtension = poi.content.split('.').pop()?.toLowerCase() || '';
-    const mimeType = getMimeType(fileExtension);
-    const category = getFileCategory(mimeType);
-
-    if (category === 'image') {
+    // Handle multiple files if they exist
+    if (poi.files && poi.files.length > 0) {
       return (
-        <div className={styles.imageContainer}>
-          {isLoading && (
-            <div className={styles.imageLoadingContainer}>
-              <div className={styles.spinner}></div>
+        <div className={styles.multipleFilesContainer}>
+          {poi.files.length > 1 && (
+            <div className={styles.filesHeader}>
+              <p className={styles.filesCount}>{poi.files.length} files attached</p>
             </div>
           )}
-          {imageError ? (
-            <div className={styles.errorContainer}>
-              <FaImage className={styles.errorIcon} size={48} />
-              <p className={styles.errorText}>Failed to load image</p>
-              <a
-                href={contentPath}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.errorLink}
-              >
-                Open file directly
-              </a>
-            </div>
-          ) : (
-            <img
-              src={contentPath}
-              alt={poi.name}
-              className={styles.previewImage}
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-            />
-          )}
+          <div className={styles.filesGrid}>
+            {poi.files.map((filename, index) => renderFileContent(filename, index))}
+          </div>
         </div>
       );
     }
 
-    if (category === 'video') {
-      return (
-        <div className={styles.videoContainer}>
-          {isLoading && (
-            <div className={styles.videoLoadingContainer}>
-              <div className={styles.spinner}></div>
-            </div>
-          )}
-          <video
-            src={contentPath}
-            controls
-            className={styles.previewVideo}
-            onLoadedData={handleImageLoad}
-            onError={handleImageError}
-          >
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      );
-    }
-
-    // For PDFs, show PDF viewer
-    if (category === 'pdf') {
-      return (
-        <div className={styles.pdfContainer}>
-          {isLoading && (
-            <div className={styles.pdfLoadingContainer}>
-              <div className={styles.spinner}></div>
-              <p>Loading PDF...</p>
-            </div>
-          )}
-          {pdfError ? (
-            <div className={styles.errorContainer}>
-              <FaFilePdf className={styles.errorIcon} size={48} />
-              <p className={styles.errorText}>Failed to load PDF</p>
-              <a
-                href={contentPath}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.errorLink}
-              >
-                Open PDF directly
-              </a>
-            </div>
-          ) : (
-            <>
-              <iframe
-                src={contentPath}
-                className={styles.pdfIframe}
-                title={`PDF: ${poi.name}`}
-                onLoad={handlePdfLoad}
-                onError={handlePdfError}
-              />
-              <div className={styles.pdfActions}>
-                <a
-                  href={contentPath}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.openFileButton}
-                >
-                  Open in new tab
-                </a>
-              </div>
-            </>
-          )}
-        </div>
-      );
-    }
-
-    // For other files, show download link
-    return (
-      <div className={styles.fileContainer}>
-        <div className={styles.fileIcon}>{renderFileIcon(category)}</div>
-        <p className={styles.fileName}>{poi.content}</p>
-        <a
-          href={contentPath}
-          target='_blank'
-          rel='noopener noreferrer'
-          className={styles.openFileButton}
-        >
-          Open File
-        </a>
-      </div>
-    );
+    // Fallback to single file (backward compatibility)
+    return renderFileContent(poi.content);
   };
+
+
 
   const getMimeType = (extension: string): string => {
     const mimeTypes: { [key: string]: string } = {

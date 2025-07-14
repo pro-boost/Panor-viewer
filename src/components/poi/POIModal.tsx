@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { POIModalProps, POIFormData, POIPosition } from '@/types/poi';
 import { validateFileType, formatFileSize } from './utils';
-import { FaTimes, FaUpload, FaFile, FaLink, FaMapPin } from 'react-icons/fa';
+import { FaTimes, FaUpload, FaFile, FaLink, FaMapPin, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import styles from './POIModal.module.css';
 
@@ -22,6 +22,7 @@ const POIModal: React.FC<POIModalProps> = ({
     content: '',
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [storedPosition, setStoredPosition] = useState<POIPosition | null>(
     null
@@ -38,6 +39,7 @@ const POIModal: React.FC<POIModalProps> = ({
           type: editingPOI.type,
           content: editingPOI.content,
         });
+      setSelectedFiles([]);
         setStoredPosition(editingPOI.position);
       } else if (pendingPosition && !storedPosition) {
         console.log('Modal position lock:', pendingPosition);
@@ -57,29 +59,45 @@ const POIModal: React.FC<POIModalProps> = ({
         content: '',
       });
       setSelectedFile(null);
+      setSelectedFiles([]);
     }
   }, [isOpen]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    for (const file of acceptedFiles) {
       if (!validateFileType(file)) {
-        toast.error(
-          'Invalid file type. Please upload images (JPG, PNG, GIF), PDFs, or videos (MP4, WebM).'
-        );
-        return;
+        errors.push(`${file.name}: Invalid file type`);
+        continue;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
-        toast.error('File size must be less than 10MB.');
-        return;
+        errors.push(`${file.name}: File size must be less than 10MB`);
+        continue;
       }
 
-      setSelectedFile(file);
-      setFormData(prev => ({ ...prev, content: file.name }));
+      validFiles.push(file);
     }
-  }, []);
+
+    if (errors.length > 0) {
+      toast.error(`Some files were rejected:\n${errors.join('\n')}`);
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(prev => [...prev, ...validFiles]);
+      // For backward compatibility, also set the first file as selectedFile
+      if (validFiles.length === 1 && selectedFiles.length === 0) {
+        setSelectedFile(validFiles[0]);
+        setFormData(prev => ({ ...prev, content: validFiles[0].name }));
+      } else {
+        // For multiple files, set content to indicate multiple files
+        const totalFiles = selectedFiles.length + validFiles.length;
+        setFormData(prev => ({ ...prev, content: `${totalFiles} files selected` }));
+      }
+    }
+  }, [selectedFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -88,7 +106,7 @@ const POIModal: React.FC<POIModalProps> = ({
       'application/pdf': ['.pdf'],
       'video/*': ['.mp4', '.webm'],
     },
-    multiple: false,
+    multiple: true,
   });
 
   const handleInputChange = (field: keyof POIFormData, value: string) => {
@@ -98,6 +116,32 @@ const POIModal: React.FC<POIModalProps> = ({
   const handleTypeChange = (type: 'file' | 'iframe') => {
     setFormData(prev => ({ ...prev, type, content: '' }));
     setSelectedFile(null);
+    setSelectedFiles([]);
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setSelectedFiles(prev => {
+      const newFiles = prev.filter((_, index) => index !== indexToRemove);
+      
+      // Update form content based on remaining files
+      if (newFiles.length === 0) {
+        setFormData(prev => ({ ...prev, content: '' }));
+        setSelectedFile(null);
+      } else if (newFiles.length === 1) {
+        setFormData(prev => ({ ...prev, content: newFiles[0].name }));
+        setSelectedFile(newFiles[0]);
+      } else {
+        setFormData(prev => ({ ...prev, content: `${newFiles.length} files selected` }));
+      }
+      
+      return newFiles;
+    });
+  };
+
+  const clearAllFiles = () => {
+    setSelectedFiles([]);
+    setSelectedFile(null);
+    setFormData(prev => ({ ...prev, content: '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,8 +157,8 @@ const POIModal: React.FC<POIModalProps> = ({
       return;
     }
 
-    if (formData.type === 'file' && !selectedFile && !editingPOI) {
-      toast.error('Please select a file to upload.');
+    if (formData.type === 'file' && selectedFiles.length === 0 && !selectedFile && !editingPOI) {
+      toast.error('Please select at least one file to upload.');
       return;
     }
 
@@ -146,6 +190,7 @@ const POIModal: React.FC<POIModalProps> = ({
       const submitData: POIFormData = {
         ...formData,
         file: selectedFile || undefined,
+        files: selectedFiles.length > 0 ? selectedFiles : undefined,
         position: storedPosition,
       };
 
@@ -333,35 +378,85 @@ const POIModal: React.FC<POIModalProps> = ({
               >
                 <input {...getInputProps()} disabled={isSubmitting} />
                 <FaUpload className={styles.uploadIcon} size={24} />
-                {selectedFile ? (
+                {selectedFiles.length > 0 || selectedFile ? (
                   <div className={styles.selectedFileInfo}>
-                    <p className={styles.selectedFileName}>
-                      {selectedFile.name}
-                    </p>
-                    <p className={styles.selectedFileSize}>
-                      {formatFileSize(selectedFile.size)}
-                    </p>
+                    {selectedFiles.length > 0 ? (
+                      <p className={styles.selectedFileName}>
+                        {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                      </p>
+                    ) : selectedFile ? (
+                      <>
+                        <p className={styles.selectedFileName}>
+                          {selectedFile.name}
+                        </p>
+                        <p className={styles.selectedFileSize}>
+                          {formatFileSize(selectedFile.size)}
+                        </p>
+                      </>
+                    ) : null}
                     {editingPOI && (
                       <p className={styles.replaceFileNote}>
-                        This will replace the current file
+                        This will replace the current file{selectedFiles.length > 1 ? 's' : ''}
                       </p>
                     )}
+                    <p className={styles.dropzoneSubtext}>
+                      Click or drag to add more files
+                    </p>
                   </div>
                 ) : (
                   <div>
                     <p className={styles.dropzoneText}>
                       {isDragActive
-                        ? 'Drop the file here'
+                        ? 'Drop the files here'
                         : editingPOI
-                          ? 'Drag & drop a new file here, or click to select'
-                          : 'Drag & drop a file here, or click to select'}
+                          ? 'Drag & drop files here, or click to select'
+                          : 'Drag & drop files here, or click to select'}
                     </p>
                     <p className={styles.dropzoneSubtext}>
-                      Supports: Images, PDFs, Videos (max 10MB)
+                      Supports: Images, PDFs, Videos (max 10MB each) • Multiple files allowed
                     </p>
                   </div>
                 )}
               </div>
+
+              {/* Display selected files list */}
+              {selectedFiles.length > 0 && (
+                <div className={styles.selectedFilesList}>
+                  <div className={styles.filesListHeader}>
+                    <span>Selected Files ({selectedFiles.length})</span>
+                    <button
+                      type="button"
+                      onClick={clearAllFiles}
+                      className={styles.clearAllButton}
+                      disabled={isSubmitting}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  <div className={styles.filesList}>
+                    {selectedFiles.map((file, index) => (
+                      <div key={`${file.name}-${index}`} className={styles.fileItem}>
+                        <div className={styles.fileInfo}>
+                          <FaFile className={styles.fileIcon} />
+                          <div className={styles.fileDetails}>
+                            <span className={styles.fileName}>{file.name}</span>
+                            <span className={styles.fileSize}>{formatFileSize(file.size)}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className={styles.removeFileButton}
+                          disabled={isSubmitting}
+                          title="Remove file"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

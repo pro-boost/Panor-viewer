@@ -529,4 +529,96 @@
     padding: 6px 10px;
     font-size: 12px;
   }
+  
+  .multipleFilesContainer {
+    gap: 0.75rem;
+  }
+  
+  .filesGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .filesHeader {
+    padding: 0.5rem;
+  }
+  
+  .filesCount {
+    font-size: 12px;
+  }
+}
+
+/* Multiple Files Display */
+.multipleFilesContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.filesHeader {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.filesCount {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  text-align: center;
+}
+
+.filesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+/* Individual file containers in grid */
+.filesGrid .imageContainer,
+.filesGrid .videoContainer,
+.filesGrid .pdfContainer,
+.filesGrid .fileContainer {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.filesGrid .imageContainer {
+  padding: 0;
+}
+
+.filesGrid .videoContainer {
+  padding: 0;
+}
+
+.filesGrid .pdfContainer {
+  padding: 0.75rem;
+}
+
+.filesGrid .fileContainer {
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Adjust image and video sizing in grid */
+.filesGrid .previewImage {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 0;
+}
+
+.filesGrid .previewVideo {
+  width: 100%;
+  height: 200px;
+  border-radius: 0;
+}
+
+.filesGrid .pdfIframe {
+  height: 300px;
 }
