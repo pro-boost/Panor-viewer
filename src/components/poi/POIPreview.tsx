@@ -404,40 +404,17 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
   };
 
   const getDisplayFilename = (filename: string, index?: number): string => {
-    // First, try to get the custom filename from POI data
-    if (poi.customFilenames && index !== undefined && poi.customFilenames[index]) {
-      const customName = poi.customFilenames[index];
-      const lastDotIndex = filename.lastIndexOf('.');
-      const extension = lastDotIndex !== -1 ? filename.substring(lastDotIndex) : '';
-      return customName + extension;
+    // First, check if we have a custom filename for this index
+    if (index !== undefined && poi.customFilenames && poi.customFilenames[index]) {
+      return poi.customFilenames[index];
     }
     
-    // Fallback: extract a user-friendly name from the stored filename
-    const lastDotIndex = filename.lastIndexOf('.');
-    const extension = lastDotIndex !== -1 ? filename.substring(lastDotIndex) : '';
-    const nameWithoutExt = lastDotIndex !== -1 ? filename.substring(0, lastDotIndex) : filename;
-    
-    // Check if this follows the poiId_timestamp pattern
-    const underscoreIndex = nameWithoutExt.indexOf('_');
-    if (underscoreIndex !== -1) {
-      const afterUnderscore = nameWithoutExt.substring(underscoreIndex + 1);
-      // If what follows the underscore is all digits (timestamp), this is a generated filename
-      if (/^\d+$/.test(afterUnderscore)) {
-        // Use a generic name based on file type
-        const fileType = extension.toLowerCase();
-        if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileType)) {
-          return `Image${extension}`;
-        } else if (['.mp4', '.webm'].includes(fileType)) {
-          return `Video${extension}`;
-        } else if (fileType === '.pdf') {
-          return `Document${extension}`;
-        } else {
-          return `File${extension}`;
-        }
-      }
+    // If no custom filename is set, try to use the original filename
+    if (index !== undefined && poi.originalFilenames && poi.originalFilenames[index]) {
+      return poi.originalFilenames[index];
     }
     
-    // If it doesn't match the generated pattern, return as-is
+    // Fallback to the stored filename
     return filename;
   };
 

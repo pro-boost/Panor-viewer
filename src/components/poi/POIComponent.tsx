@@ -427,6 +427,13 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
            const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
            const uniqueFilename = generateUniqueFilename(baseFilename, poiId);
            
+           // Store original filename with adjusted index for editing
+            if (!data.originalFilenames) {
+              data.originalFilenames = {};
+            }
+            const adjustedIndex = (data.existingFiles?.length || 0);
+            data.originalFilenames![adjustedIndex] = file.name;
+           
            const formData = new FormData();
            formData.append('file', file);
            formData.append('filename', uniqueFilename);
@@ -460,6 +467,11 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
            const formData = new FormData();
            const filenames: string[] = [];
            
+           // Initialize originalFilenames if not exists
+           if (!data.originalFilenames) {
+             data.originalFilenames = {};
+           }
+           
            filesToUpload.forEach((file, index) => {
              const customName = data.customFilenames?.[index];
              const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
@@ -467,6 +479,10 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
              formData.append('files', file);
              formData.append('filenames', uniqueFilename);
              filenames.push(uniqueFilename);
+             
+             // Store original filename with adjusted index for editing
+              const adjustedIndex = (data.existingFiles?.length || 0) + index;
+              data.originalFilenames![adjustedIndex] = file.name;
            });
            
            formData.append('projectId', projectId);
@@ -525,6 +541,11 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       }
     }
 
+    // Preserve existing originalFilenames and merge with new ones
+    const mergedOriginalFilenames = isEditing && selectedPOI?.originalFilenames 
+      ? { ...selectedPOI.originalFilenames, ...data.originalFilenames }
+      : data.originalFilenames;
+
     const poiData: POIData = {
       id: poiId,
       panoramaId: currentPanoramaId,
@@ -535,6 +556,7 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       content: contentPath,
       files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
       customFilenames: data.customFilenames,
+      originalFilenames: mergedOriginalFilenames,
       createdAt: isEditing ? (selectedPOI?.createdAt || timestamp) : timestamp,
       updatedAt: timestamp
     };

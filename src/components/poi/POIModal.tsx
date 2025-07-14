@@ -54,6 +54,17 @@ const POIModal: React.FC<POIModalProps> = ({
         }
         setFilesToDelete([]);
         setCustomFilenames(editingPOI.customFilenames || {});
+        
+        // Initialize originalFilenames for existing files if not already set
+         if (editingPOI.files && !editingPOI.originalFilenames) {
+           const originalFilenames: {[key: number]: string} = {};
+           editingPOI.files.forEach((filename, index) => {
+             // For existing POIs without originalFilenames, use the stored filename as fallback
+             originalFilenames[index] = filename;
+           });
+           // Store this in the POI data so it persists
+           editingPOI.originalFilenames = originalFilenames;
+         }
         setStoredPosition(editingPOI.position);
       } else if (pendingPosition && !storedPosition) {
         console.log('Modal position lock:', pendingPosition);
@@ -254,6 +265,7 @@ const POIModal: React.FC<POIModalProps> = ({
         files: selectedFiles.length > 0 ? selectedFiles : undefined,
         position: storedPosition,
         customFilenames: customFilenames,
+        originalFilenames: editingPOI?.originalFilenames || {},
       };
 
       // Add POI ID and file deletion info for editing
