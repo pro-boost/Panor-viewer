@@ -20,7 +20,6 @@ export default function Upload() {
   const [allowOverwrite, setAllowOverwrite] = useState(false);
   const [deleteAllAndUpload, setDeleteAllAndUpload] = useState(false);
   const [showSelectedFiles, setShowSelectedFiles] = useState(false);
-  const [showDuplicateFiles, setShowDuplicateFiles] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -28,7 +27,8 @@ export default function Upload() {
   const [existingFiles, setExistingFiles] = useState<{
     csv: string | null;
     images: string[];
-  }>({ csv: null, images: [] });
+    poi: string | null;
+  }>({ csv: null, images: [], poi: null });
   const [showExistingFiles, setShowExistingFiles] = useState(false);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
   const [diagnosticsData, setDiagnosticsData] = useState<any>(null);
@@ -38,8 +38,6 @@ export default function Upload() {
     images: File[];
   }>({ csv: null, images: [] });
   const [poiFile, setPOIFile] = useState<File | null>(null);
-  const [poiImportMessage, setPOIImportMessage] = useState('');
-  const [isImportingPOI, setIsImportingPOI] = useState(false);
 
   // This effect captures referrer information for smart back navigation
   useEffect(() => {
@@ -97,6 +95,7 @@ export default function Upload() {
             setExistingFiles({
               csv: files.csv,
               images: files.images,
+              poi: files.poi || null,
             });
 
             let fileInfo = [];
@@ -109,22 +108,22 @@ export default function Upload() {
 
             if (fileInfo.length > 0) {
               setMessage(
-                `✏️ Editing project: ${projectName || projectParam}. Current files: ${fileInfo.join(', ')}. Upload new files to update this project.`
+                `Editing project: ${projectName || projectParam}. Current files: ${fileInfo.join(', ')}. Upload new files to update this project.`
               );
             } else {
               setMessage(
-                `✏️ Editing project: ${projectName || projectParam}. No existing files found. Upload files to add content to this project.`
+                `Editing project: ${projectName || projectParam}. No existing files found. Upload files to add content to this project.`
               );
             }
           } else {
             setMessage(
-              `✏️ Editing project: ${projectName || projectParam}. Upload new files to update this project.`
+              `Editing project: ${projectName || projectParam}. Upload new files to update this project.`
             );
           }
         } catch (error) {
           console.error('Failed to load project data:', error);
           setMessage(
-            '⚠️ Failed to load project data. You can still upload files to update the project.'
+            'Warning: Failed to load project data. You can still upload files to update the project.'
           );
         }
       };
@@ -154,7 +153,7 @@ export default function Upload() {
           const fileData = JSON.parse(savedData);
           if (fileData.csv || fileData.images.length > 0) {
             setMessage(
-              'ℹ️ Previous file selections were detected but need to be reselected due to browser security restrictions.'
+              'Info: Previous file selections were detected but need to be reselected due to browser security restrictions.'
             );
           }
         }
@@ -410,59 +409,7 @@ export default function Upload() {
   const handlePOIFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] || null;
     setPOIFile(file);
-    setPOIImportMessage('');
   };
-
-  const handlePOIImport = async () => {
-    if (!poiFile) {
-      setPOIImportMessage('❌ Please select a POI file to import');
-      return;
-    }
-
-    if (!createdProjectId && !editingProjectId) {
-      setPOIImportMessage('❌ Please create or select a project first');
-      return;
-    }
-
-    const projectId = createdProjectId || editingProjectId;
-    if (!projectId) {
-      setPOIImportMessage('❌ No project selected for POI import');
-      return;
-    }
-
-    setIsImportingPOI(true);
-    setPOIImportMessage('📤 Importing POI data...');
-
-    try {
-      const formData = new FormData();
-      formData.append('file', poiFile);
-      formData.append('projectId', projectId);
-
-      const response = await fetch('/api/poi/import-single', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setPOIImportMessage(`✅ ${result.message}`);
-        setPOIFile(null);
-        // Clear the file input
-        const fileInput = document.getElementById('poiFile') as HTMLInputElement;
-        if (fileInput) {
-          fileInput.value = '';
-        }
-      } else {
-        const errorData = await response.json();
-        setPOIImportMessage(`❌ Import failed: ${errorData.error}`);
-      }
-    } catch (error) {
-      console.error('POI import error:', error);
-      setPOIImportMessage('❌ Failed to import POI data. Please try again.');
-    } finally {
-       setIsImportingPOI(false);
-     }
-   };
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement> & {
@@ -599,15 +546,15 @@ export default function Upload() {
           const projectError = await projectResponse.json();
           if (projectResponse.status === 409) {
             setValidationErrors([
-              `❌ Project name "${projectName.trim()}" already exists`,
-              '💡 Please choose a different name or edit the existing project',
+              `Error: Project name "${projectName.trim()}" already exists`,
+              'Please choose a different name or edit the existing project',
             ]);
             setIsLoading(false);
             return;
           } else if (projectResponse.status === 400) {
             setValidationErrors([
-              '❌ Invalid project name',
-              '💡 Project names can only contain letters, numbers, spaces, hyphens, and underscores',
+              'Error: Invalid project name',
+              'Project names can only contain letters, numbers, spaces, hyphens, and underscores',
             ]);
             setIsLoading(false);
             return;
@@ -635,7 +582,42 @@ export default function Upload() {
 
       if (response.ok) {
         const result = await response.json();
-        setMessage(result.message);
+        let finalMessage = result.message;
+
+        // Auto-import POI file if one was selected
+        if (poiFile) {
+          try {
+            const poiFormData = new FormData();
+            poiFormData.append('file', poiFile);
+            poiFormData.append('projectId', projectId);
+
+            const poiResponse = await fetch('/api/poi/import-single', {
+              method: 'POST',
+              body: poiFormData,
+            });
+
+            if (poiResponse.ok) {
+              const poiResult = await poiResponse.json();
+              finalMessage += ` POI data imported successfully: ${poiResult.message}`;
+              setPOIFile(null);
+              // Clear the POI file input
+              const poiFileInput = document.getElementById(
+                'poiFile'
+              ) as HTMLInputElement;
+              if (poiFileInput) {
+                poiFileInput.value = '';
+              }
+            } else {
+              const poiErrorData = await poiResponse.json();
+              finalMessage += ` Warning: POI import failed: ${poiErrorData.error}`;
+            }
+          } catch (poiError) {
+            console.error('POI import error:', poiError);
+            finalMessage += ' Warning: Failed to import POI data.';
+          }
+        }
+
+        setMessage(finalMessage);
         setUploadSuccess(true);
 
         try {
@@ -666,9 +648,9 @@ export default function Upload() {
         ) {
           // Handle configuration generation errors with more detail
           setMessage(
-            `⚠️ Files uploaded successfully, but configuration generation failed.\n\n` +
+            `Warning: Files uploaded successfully, but configuration generation failed.\n\n` +
               `Error: ${errorData.message}\n\n` +
-              `💡 You can try running this command manually:\n` +
+              `You can try running this command manually:\n` +
               `${errorData.manualCommand || 'node scripts/node/generate-config.js --project "' + projectId + '"'}`
           );
         } else {
@@ -697,34 +679,30 @@ export default function Upload() {
 
   return (
     <div className={styles.container}>
-      <Logo variant="default" position="absolute" />
+      <Logo variant='default' position='absolute' />
       <div className={styles.content}>
-        <div className={styles.header}>
-          <button
-            onClick={() => {
-              if (window.history.length > 1) {
-                router.back();
-              } else {
-                const targetUrl = editingProjectId
-                  ? `/${editingProjectId}`
-                  : referrerUrl;
-                router.push(targetUrl);
-              }
-            }}
-            className={styles.backLink}
-          >
-            ← Back to Panorama Viewer
-          </button>
-        </div>
-
         <h1 className={styles.title}>
           {isEditMode ? 'Edit Project Data' : 'Upload Panorama Data'}
         </h1>
-
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              router.back();
+            } else {
+              const targetUrl = editingProjectId
+                ? `/${editingProjectId}`
+                : referrerUrl;
+              router.push(targetUrl);
+            }
+          }}
+          className={styles.backLink}
+        >
+          ← Back to Panorama Viewer
+        </button>
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor='projectName' className={styles.label}>
-              📁 Project Name:
+              Project Name:
             </label>
             <input
               type='text'
@@ -745,17 +723,25 @@ export default function Upload() {
 
           <div className={styles.formGroup}>
             <label htmlFor='csv' className={styles.label}>
-              📄 CSV File
+              CSV File
               {isEditMode && existingFiles.csv
                 ? ' (Optional - will replace existing)'
                 : ''}
               :
             </label>
+            {isEditMode && existingFiles.csv && (
+              <div className={styles.existingFileInfo}>
+                <span className={styles.existingFileLabel}>Current file:</span>
+                <span className={styles.existingFileName}>
+                  {existingFiles.csv}
+                </span>
+              </div>
+            )}
             {selectedFiles.csv &&
               selectedFiles.csv.name !== 'pano-poses.csv' && (
                 <div className={styles.csvInstruction}>
                   <p>
-                    ⚠️ Important: Your CSV file must be named exactly{' '}
+                    Important: Your CSV file must be named exactly{' '}
                     <strong>"pano-poses.csv"</strong>
                   </p>
                 </div>
@@ -769,22 +755,31 @@ export default function Upload() {
               onChange={handleFileChange}
               className={styles.fileInput}
             />
-            {(selectedFiles.csv || (isEditMode && existingFiles.csv)) && (
-              <div className={styles.fileInfo}>
-                Selected:{' '}
-                {selectedFiles.csv ? selectedFiles.csv.name : existingFiles.csv}
-              </div>
-            )}
           </div>
 
           <div className={styles.formGroup}>
             <label htmlFor='images' className={styles.label}>
-              🖼️ Panorama Images
+              Panorama Images
               {isEditMode && existingFiles.images.length > 0
                 ? ' (Optional - will add to existing)'
                 : ''}
               :
             </label>
+            {isEditMode && existingFiles.images.length > 0 && (
+              <div className={styles.existingFileInfo}>
+                <span className={styles.existingFileLabel}>Current files:</span>
+                <span className={styles.existingFileName}>
+                  {existingFiles.images.length} image
+                  {existingFiles.images.length !== 1 ? 's' : ''}
+                  {existingFiles.images.length <= 3 && (
+                    <span className={styles.fileNames}>
+                      {' '}
+                      ({existingFiles.images.join(', ')})
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
             <input
               type='file'
               id='images'
@@ -795,29 +790,28 @@ export default function Upload() {
               onChange={handleFileChange}
               className={styles.fileInput}
             />
-            {selectedFiles.images.length > 0 && (
-              <div className={styles.fileList}>
-                <div className={styles.fileListHeader}>
-                  <p className={styles.fileListTitle}>
-                    Selected {selectedFiles.images.length} new image(s)
-                  </p>
-                  <button
-                    type='button'
-                    onClick={() => setShowSelectedFiles(!showSelectedFiles)}
-                    className={styles.toggleButton}
-                  >
-                    {showSelectedFiles ? '▼ Hide' : '▶ Show'}
-                  </button>
-                </div>
-                {showSelectedFiles && (
-                  <ul className={styles.fileListItems}>
-                    {selectedFiles.images.map((file, index) => (
-                      <li key={index}>{file.name}</li>
-                    ))}
-                  </ul>
-                )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label htmlFor='poiFile' className={styles.label}>
+              POI File (Optional):
+            </label>
+            {isEditMode && existingFiles.poi && (
+              <div className={styles.existingFileInfo}>
+                <span className={styles.existingFileLabel}>Current file:</span>
+                <span className={styles.existingFileName}>
+                  {existingFiles.poi}
+                </span>
               </div>
             )}
+            <input
+              type='file'
+              id='poiFile'
+              name='poiFile'
+              accept='.json,.zip'
+              onChange={handlePOIFileChange}
+              className={styles.fileInput}
+            />
           </div>
 
           {isEditMode &&
@@ -838,9 +832,10 @@ export default function Upload() {
                   </div>
                   {showExistingFiles && (
                     <ul className={styles.fileListItems}>
-                      {existingFiles.csv && <li>{existingFiles.csv}</li>}
+                      {existingFiles.csv && <li>CSV: {existingFiles.csv}</li>}
+                      {existingFiles.poi && <li>POI: {existingFiles.poi}</li>}
                       {existingFiles.images.map((imageName, index) => (
-                        <li key={index}>{imageName}</li>
+                        <li key={index}>Image: {imageName}</li>
                       ))}
                     </ul>
                   )}
@@ -848,57 +843,53 @@ export default function Upload() {
               </div>
             )}
 
-          {/* POI Import Section */}
-          {(uploadSuccess || isEditMode) && (createdProjectId || editingProjectId) && (
-            <div className={styles.formGroup}>
-              <div className={styles.poiImportSection}>
-                <h3 className={styles.sectionTitle}>📍 Import POI Data (Optional)</h3>
-                <p className={styles.inputHint}>
-                  Import Points of Interest from a previously exported POI file (.json or .zip format).
-                </p>
-                
-                <div className={styles.poiImportControls}>
-                  <label htmlFor='poiFile' className={styles.label}>
-                    📎 POI File:
-                  </label>
-                  <input
-                    type='file'
-                    id='poiFile'
-                    name='poiFile'
-                    accept='.json,.zip'
-                    onChange={handlePOIFileChange}
-                    className={styles.fileInput}
-                  />
-                  {poiFile && (
-                    <div className={styles.fileInfo}>
-                      Selected: {poiFile.name} ({Math.round(poiFile.size / 1024)} KB)
-                    </div>
-                  )}
-                  
-                  <button
-                    type='button'
-                    onClick={handlePOIImport}
-                    disabled={!poiFile || isImportingPOI}
-                    className={`${styles.poiImportButton} ${
-                      !poiFile || isImportingPOI ? styles.submitButtonDisabled : ''
-                    }`}
-                  >
-                    {isImportingPOI && <span className={styles.loadingSpinner}></span>}
-                    {isImportingPOI ? '📤 Importing...' : '📥 Import POI Data'}
-                  </button>
-                </div>
-                
-                {poiImportMessage && (
-                  <div
-                    className={`${styles.message} ${
-                      poiImportMessage.includes('❌') || poiImportMessage.includes('failed')
-                        ? styles.messageError
-                        : poiImportMessage.includes('✅')
-                        ? styles.messageSuccess
-                        : styles.messageInfo
-                    } ${styles.poiImportMessage}`}
-                  >
-                    {poiImportMessage}
+          {/* File Summary */}
+          {(selectedFiles.csv ||
+            selectedFiles.images.length > 0 ||
+            poiFile) && (
+            <div className={styles.fileSummary}>
+              <h4 className={styles.summaryTitle}>Upload Summary</h4>
+              <div className={styles.summaryContent}>
+                {selectedFiles.csv && (
+                  <div className={styles.summaryItem}>
+                    <span className={styles.summaryIcon}></span>
+                    <span className={styles.summaryText}>
+                      CSV: {selectedFiles.csv.name} (
+                      {Math.round(selectedFiles.csv.size / 1024)} KB)
+                    </span>
+                  </div>
+                )}
+                {selectedFiles.images.length > 0 && (
+                  <div className={styles.summaryItem}>
+                    <span className={styles.summaryIcon}></span>
+                    <span className={styles.summaryText}>
+                      {selectedFiles.images.length} image(s) (
+                      {Math.round(
+                        selectedFiles.images.reduce(
+                          (sum, file) => sum + file.size,
+                          0
+                        ) /
+                          1024 /
+                          1024
+                      )}{' '}
+                      MB total)
+                    </span>
+                  </div>
+                )}
+                {poiFile && (
+                  <div className={styles.summaryItem}>
+                    <span className={styles.summaryIcon}></span>
+                    <span className={styles.summaryText}>
+                      POI: {poiFile.name} ({Math.round(poiFile.size / 1024)} KB)
+                    </span>
+                  </div>
+                )}
+                {duplicateImages.length > 0 && (
+                  <div className={styles.summaryItem}>
+                    <span className={styles.summaryIcon}></span>
+                    <span className={styles.summaryText}>
+                      {duplicateImages.length} duplicate(s) detected
+                    </span>
                   </div>
                 )}
               </div>
@@ -914,70 +905,27 @@ export default function Upload() {
           >
             {isLoading && <span className={styles.loadingSpinner}></span>}
             {validationErrors.length > 0 && !isLoading
-              ? '⚠️ Fix errors to continue'
+              ? 'Fix errors to continue'
               : isLoading
                 ? isEditMode
                   ? 'Updating Project...'
                   : 'Uploading and Generating...'
                 : isEditMode
-                  ? '✅ Update Project'
-                  : '🚀 Upload and Generate'}
+                  ? 'Update Project'
+                  : 'Upload and Generate'}
           </button>
-
-          {/* File Summary */}
-          {(selectedFiles.csv || selectedFiles.images.length > 0) && (
-            <div className={styles.fileSummary}>
-              <h4 className={styles.summaryTitle}>📋 Upload Summary</h4>
-              <div className={styles.summaryContent}>
-                {selectedFiles.csv && (
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryIcon}>📄</span>
-                    <span className={styles.summaryText}>
-                      CSV: {selectedFiles.csv.name} (
-                      {Math.round(selectedFiles.csv.size / 1024)} KB)
-                    </span>
-                  </div>
-                )}
-                {selectedFiles.images.length > 0 && (
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryIcon}>🖼️</span>
-                    <span className={styles.summaryText}>
-                      {selectedFiles.images.length} image(s) (
-                      {Math.round(
-                        selectedFiles.images.reduce(
-                          (sum, file) => sum + file.size,
-                          0
-                        ) /
-                          1024 /
-                          1024
-                      )}{' '}
-                      MB total)
-                    </span>
-                  </div>
-                )}
-                {duplicateImages.length > 0 && (
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryIcon}>⚠️</span>
-                    <span className={styles.summaryText}>
-                      {duplicateImages.length} duplicate(s) detected
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           {isLoading && uploadProgress > 0 && (
             <div className={styles.progressContainer}>
               <div className={styles.progressHeader}>
                 <span className={styles.progressTitle}>
                   {uploadProgress < 30
-                    ? '📤 Preparing files...'
+                    ? 'Preparing files...'
                     : uploadProgress < 70
-                      ? '⬆️ Uploading files...'
+                      ? 'Uploading files...'
                       : uploadProgress < 100
-                        ? '📊 Processing data...'
-                        : '🔧 Generating configuration...'}
+                        ? 'Processing data...'
+                        : 'Generating configuration...'}
                 </span>
                 <span className={styles.progressPercentage}>
                   {uploadProgress < 100
@@ -1011,7 +959,7 @@ export default function Upload() {
         {validationErrors.length > 0 && (
           <div className={`${styles.message} ${styles.messageError}`}>
             <div className={styles.errorHeader}>
-              <h4>⚠️ Please fix the following issues:</h4>
+              <h4>Please fix the following issues:</h4>
             </div>
             <ul className={styles.errorList}>
               {validationErrors.map((error, index) => (
@@ -1023,12 +971,14 @@ export default function Upload() {
           </div>
         )}
 
-        {/* Duplicate Images Management */}
-        {duplicateImages.length > 0 && (
+        {/* Duplicate Files Management */}
+        {(duplicateImages.length > 0 || duplicateWarning.length > 0) && (
           <div className={`${styles.message} ${styles.messageWarning}`}>
             <div className={styles.duplicateHeader}>
               <h4>
-                🔄 Duplicate Images Detected ({duplicateImages.length} files)
+                Duplicate Files Detected (
+                {Math.max(duplicateImages.length, duplicateWarning.length)}{' '}
+                files)
               </h4>
               <button
                 type='button'
@@ -1041,110 +991,96 @@ export default function Upload() {
             {showDuplicatePreview && (
               <div className={styles.duplicateDetails}>
                 <p className={styles.duplicateExplanation}>
-                  These images have the same names as existing files in your
+                  These files have the same names as existing files in your
                   project:
                 </p>
                 <ul className={styles.duplicateList}>
-                  {duplicateImages.map((img, index) => (
-                    <li key={index} className={styles.duplicateItem}>
-                      <span className={styles.fileName}>{img.name}</span>
-                      <span className={styles.fileSize}>
-                        ({Math.round(img.size / 1024)} KB)
-                      </span>
-                    </li>
-                  ))}
+                  {duplicateImages.length > 0
+                    ? duplicateImages.map((img, index) => (
+                        <li key={index} className={styles.duplicateItem}>
+                          <span className={styles.fileName}>{img.name}</span>
+                          <span className={styles.fileSize}>
+                            ({Math.round(img.size / 1024)} KB)
+                          </span>
+                        </li>
+                      ))
+                    : duplicateWarning.map((filename, index) => (
+                        <li key={index} className={styles.duplicateItem}>
+                          <span className={styles.fileName}>{filename}</span>
+                        </li>
+                      ))}
                 </ul>
+
                 <div className={styles.duplicateActions}>
                   <p className={styles.actionText}>
-                    💡 <strong>Options:</strong>
+                    <strong>Options:</strong>
                   </p>
                   <ul className={styles.actionList}>
-                    <li>✏️ Rename the duplicate files and re-select them</li>
-                    <li>🔄 Continue upload to replace existing files</li>
-                    <li>🗑️ Remove duplicates from your selection</li>
+                    <li>Rename the duplicate files and re-select them</li>
+                    <li>Continue upload to replace existing files</li>
+                    <li>
+                      Remove all existing files and replace them with the new
+                      ones provided
+                    </li>
+                    {duplicateImages.length > 0 && (
+                      <li>Remove duplicates from your selection</li>
+                    )}
                   </ul>
-                  <div className={styles.duplicateButtonContainer}>
+                </div>
+                <div className={styles.duplicateActions}>
+                  {duplicateImages.length > 0 && (
                     <button
                       type='button'
                       onClick={removeDuplicateImages}
                       className={styles.removeDuplicatesButton}
                     >
-                      🗑️ Remove Duplicate Images
+                      Remove Duplicate Images
                     </button>
-                  </div>
+                  )}
+                  <button
+                    onClick={e => {
+                      e.preventDefault();
+                      const form = document.querySelector(
+                        'form'
+                      ) as HTMLFormElement;
+                      if (form) {
+                        const syntheticEvent = {
+                          preventDefault: () => {},
+                          currentTarget: form,
+                          target: form,
+                          nativeEvent: new Event('submit'),
+                          bubbles: true,
+                          cancelable: true,
+                          defaultPrevented: false,
+                          eventPhase: 0,
+                          isTrusted: true,
+                          timeStamp: Date.now(),
+                          type: 'submit',
+                          _overwriteMode: true,
+                        } as unknown as FormEvent<HTMLFormElement> & {
+                          _overwriteMode: boolean;
+                        };
+                        handleSubmit(syntheticEvent);
+                      }
+                    }}
+                    disabled={isLoading}
+                    className={styles.overwriteButton}
+                  >
+                    {isLoading && (
+                      <span className={styles.loadingSpinner}></span>
+                    )}
+                    {isLoading ? 'Overwriting...' : 'Upload and Overwrite'}
+                  </button>
+                  <button
+                    type='button'
+                    onClick={handleDeleteAllAndUpload}
+                    className={styles.deleteAllButton}
+                  >
+                    Delete All & Upload
+                  </button>
                 </div>
               </div>
             )}
-          </div>
-        )}
-
-        {duplicateWarning.length > 0 && (
-          <div className={`${styles.message} ${styles.messageWarning}`}>
-            <div className={styles.duplicateHeader}>
-              <h4>
-                ⚠️ Duplicate Files Detected ({duplicateWarning.length} files)
-              </h4>
-              <button
-                type='button'
-                onClick={() => setShowDuplicateFiles(!showDuplicateFiles)}
-                className={styles.toggleButton}
-              >
-                {showDuplicateFiles ? '▼ Hide' : '▶ Show'}
-              </button>
-            </div>
-            {showDuplicateFiles && (
-              <ul className={styles.duplicateList}>
-                {duplicateWarning.map((filename, index) => (
-                  <li key={index}>{filename}</li>
-                ))}
-              </ul>
-            )}
-            <p>
-              These files already exist. You can either rename them or choose to
-              overwrite the existing files.
-            </p>
-
-            <div className={styles.duplicateActions}>
-              <button
-                onClick={e => {
-                  e.preventDefault();
-                  const form = document.querySelector(
-                    'form'
-                  ) as HTMLFormElement;
-                  if (form) {
-                    const syntheticEvent = {
-                      preventDefault: () => {},
-                      currentTarget: form,
-                      target: form,
-                      nativeEvent: new Event('submit'),
-                      bubbles: true,
-                      cancelable: true,
-                      defaultPrevented: false,
-                      eventPhase: 0,
-                      isTrusted: true,
-                      timeStamp: Date.now(),
-                      type: 'submit',
-                      _overwriteMode: true,
-                    } as unknown as FormEvent<HTMLFormElement> & {
-                      _overwriteMode: boolean;
-                    };
-                    handleSubmit(syntheticEvent);
-                  }
-                }}
-                disabled={isLoading}
-                className={styles.overwriteButton}
-              >
-                {isLoading && <span className={styles.loadingSpinner}></span>}
-                {isLoading ? 'Overwriting...' : '🔄 Upload and Overwrite'}
-              </button>
-              <button
-                type='button'
-                onClick={handleDeleteAllAndUpload}
-                className={styles.deleteAllButton}
-              >
-                Delete All & Upload
-              </button>
-            </div>
           </div>
         )}
 
@@ -1167,11 +1103,11 @@ export default function Upload() {
                 href={`/${createdProjectId}`}
                 className={styles.viewPanoramasButton}
               >
-                🏠 View Project Panoramas
+                View Project Panoramas
               </Link>
             ) : (
               <Link href='/' className={styles.viewPanoramasButton}>
-                🏠 View Panoramas
+                View Panoramas
               </Link>
             )}
           </div>
@@ -1189,8 +1125,8 @@ export default function Upload() {
               className={styles.diagnosticsButton}
             >
               {loadingDiagnostics
-                ? '🔍 Running Diagnostics...'
-                : '🔧 Run System Diagnostics'}
+                ? 'Running Diagnostics...'
+                : 'Run System Diagnostics'}
             </button>
             <p className={styles.diagnosticsHint}>
               Having trouble? Run diagnostics to check your system setup.
@@ -1206,15 +1142,15 @@ export default function Upload() {
             <div className={styles.diagnosticsHeader}>
               <h4>
                 {diagnosticsData.healthy
-                  ? '✅ System Check Passed'
-                  : '❌ System Issues Detected'}
+                  ? 'System Check Passed'
+                  : 'System Issues Detected'}
               </h4>
               <button
                 type='button'
                 onClick={() => setShowDiagnostics(false)}
                 className={styles.toggleButton}
               >
-                ✕ Close
+                Close
               </button>
             </div>
 
@@ -1223,28 +1159,27 @@ export default function Upload() {
             ) : (
               <div className={styles.diagnosticsResults}>
                 <div className={styles.diagnosticsSummary}>
-                  <h5>📋 System Status:</h5>
+                  <h5>System Status:</h5>
                   <ul>
                     <li>
-                      Python: {diagnosticsData.summary?.python || '❓ Unknown'}
+                      Python: {diagnosticsData.summary?.python || 'Unknown'}
                     </li>
                     <li>
-                      NumPy: {diagnosticsData.summary?.numpy || '❓ Unknown'}
+                      NumPy: {diagnosticsData.summary?.numpy || 'Unknown'}
                     </li>
                     <li>
                       Public Directory:{' '}
-                      {diagnosticsData.summary?.publicDir || '❓ Unknown'}
+                      {diagnosticsData.summary?.publicDir || 'Unknown'}
                     </li>
                     <li>
-                      Scripts:{' '}
-                      {diagnosticsData.summary?.scripts || '❓ Unknown'}
+                      Scripts: {diagnosticsData.summary?.scripts || 'Unknown'}
                     </li>
                   </ul>
                 </div>
 
                 {diagnosticsData.diagnostics?.recommendations?.length > 0 && (
                   <div className={styles.diagnosticsRecommendations}>
-                    <h5>💡 Recommendations:</h5>
+                    <h5>Recommendations:</h5>
                     <ul>
                       {diagnosticsData.diagnostics.recommendations.map(
                         (rec: string, index: number) => (
@@ -1257,7 +1192,7 @@ export default function Upload() {
 
                 {process.env.NODE_ENV === 'development' && (
                   <details className={styles.diagnosticsDetails}>
-                    <summary>🔍 Technical Details</summary>
+                    <summary>Technical Details</summary>
                     <pre>
                       {JSON.stringify(diagnosticsData.diagnostics, null, 2)}
                     </pre>

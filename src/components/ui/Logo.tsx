@@ -7,23 +7,22 @@ interface LogoProps {
   className?: string;
 }
 
-const Logo: React.FC<LogoProps> = React.memo(({ 
-  variant = 'default', 
-  position = 'absolute',
-  className = ''
-}) => {
-  const logoClass = `${styles.logoContainer} ${styles[variant]} ${styles[position]} ${className}`.trim();
-  
-  return (
-    <div className={logoClass}>
-      <img
-        src="/assets/svg/primezone-logo.svg"
-        alt="PrimeZone Logo"
-        className={styles.logoImage}
-      />
-    </div>
-  );
-});
+const Logo: React.FC<LogoProps> = React.memo(
+  ({ variant = 'default', position = 'absolute', className = '' }) => {
+    const logoClass =
+      `${styles.logoContainer} ${styles[variant]} ${styles[position]} ${className}`.trim();
+
+    return (
+      <div className={logoClass}>
+        <img
+          src='/assets/svg/primezone-logo.svg'
+          alt='PrimeZone Logo'
+          className={styles.logoImage}
+        />
+      </div>
+    );
+  }
+);
 
 Logo.displayName = 'Logo';
 

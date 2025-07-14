@@ -41,9 +41,16 @@ export default function POIManagement() {
   );
   const [deletingPOI, setDeletingPOI] = useState<string | null>(null);
   const [useIndividualFiles, setUseIndividualFiles] = useState(false);
-  const [fileManagerMessage, setFileManagerMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [fileManagerMessage, setFileManagerMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [poiToDelete, setPOIToDelete] = useState<{ projectId: string; poiId: string; poiName: string } | null>(null);
+  const [poiToDelete, setPOIToDelete] = useState<{
+    projectId: string;
+    poiId: string;
+    poiName: string;
+  } | null>(null);
 
   useEffect(() => {
     // Capture referrer information
@@ -84,7 +91,7 @@ export default function POIManagement() {
           const individualResponse = await fetch(
             `/api/poi/load-individual?projectId=${encodeURIComponent(project.id)}&useIndividual=${useIndividualFiles}`
           );
-          
+
           if (individualResponse.ok) {
             const poisData = await individualResponse.json();
             if (poisData.pois && poisData.pois.length > 0) {
@@ -134,7 +141,11 @@ export default function POIManagement() {
     }
   };
 
-  const handleDeletePOI = async (projectId: string, poiId: string, poiName: string) => {
+  const handleDeletePOI = async (
+    projectId: string,
+    poiId: string,
+    poiName: string
+  ) => {
     setPOIToDelete({ projectId, poiId, poiName });
     setShowDeleteConfirm(true);
   };
@@ -149,10 +160,10 @@ export default function POIManagement() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          projectId: poiToDelete.projectId, 
-          poiId: poiToDelete.poiId, 
-          useIndividual: useIndividualFiles 
+        body: JSON.stringify({
+          projectId: poiToDelete.projectId,
+          poiId: poiToDelete.poiId,
+          useIndividual: useIndividualFiles,
         }),
       });
 
@@ -188,24 +199,35 @@ export default function POIManagement() {
   const handleExportPOI = async (poi: POIData, projectId: string) => {
     try {
       await exportPOI(projectId, poi.id, poi.name);
-      setFileManagerMessage({ type: 'success', text: `POI "${poi.name}" exported successfully` });
+      setFileManagerMessage({
+        type: 'success',
+        text: `POI "${poi.name}" exported successfully`,
+      });
     } catch (error) {
-      setFileManagerMessage({ 
-        type: 'error', 
-        text: error instanceof Error ? error.message : 'Failed to export POI' 
+      setFileManagerMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Failed to export POI',
       });
     }
   };
 
-  const handleFileManagerMessage = (type: 'success' | 'error', text: string) => {
+  const handleFileManagerMessage = (
+    type: 'success' | 'error',
+    text: string
+  ) => {
     setFileManagerMessage({ type, text });
     setTimeout(() => setFileManagerMessage(null), 5000);
   };
 
-  const handleExportAllPOIs = async (projectId: string, projectName: string) => {
+  const handleExportAllPOIs = async (
+    projectId: string,
+    projectName: string
+  ) => {
     try {
-      const response = await fetch(`/api/poi/export-all?projectId=${encodeURIComponent(projectId)}`);
-      
+      const response = await fetch(
+        `/api/poi/export-all?projectId=${encodeURIComponent(projectId)}`
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to export POIs');
@@ -222,14 +244,15 @@ export default function POIManagement() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      setFileManagerMessage({ 
-        type: 'success', 
-        text: `All POIs from "${projectName}" exported successfully` 
+      setFileManagerMessage({
+        type: 'success',
+        text: `All POIs from "${projectName}" exported successfully`,
       });
     } catch (error) {
-      setFileManagerMessage({ 
-        type: 'error', 
-        text: error instanceof Error ? error.message : 'Failed to export all POIs' 
+      setFileManagerMessage({
+        type: 'error',
+        text:
+          error instanceof Error ? error.message : 'Failed to export all POIs',
       });
     }
   };
@@ -279,7 +302,7 @@ export default function POIManagement() {
   return (
     <div className={styles.container}>
       {/* Logo */}
-      <Logo variant="default" position="absolute" />
+      <Logo variant='default' position='absolute' />
 
       <div className={styles.content}>
         <div className={styles.header}>
@@ -315,8 +338,8 @@ export default function POIManagement() {
           <POIFileManager
             projectId={selectedProject}
             onPOIImported={handlePOIImported}
-            onError={(error) => handleFileManagerMessage('error', error)}
-            onSuccess={(message) => handleFileManagerMessage('success', message)}
+            onError={error => handleFileManagerMessage('error', error)}
+            onSuccess={message => handleFileManagerMessage('success', message)}
           />
         )}
 
@@ -446,7 +469,10 @@ export default function POIManagement() {
                   <button
                     onClick={e => {
                       e.stopPropagation();
-                      handleExportAllPOIs(project.projectId, project.projectName);
+                      handleExportAllPOIs(
+                        project.projectId,
+                        project.projectName
+                      );
                     }}
                     className={`${styles.backLink} ${poiStyles.exportButton}`}
                     title={`Export all ${project.pois.length} POIs from this project`}
@@ -469,20 +495,17 @@ export default function POIManagement() {
               {showDetails[project.projectId] && (
                 <div className={poiStyles.poisGrid}>
                   {project.pois.map(poi => (
-                    <div
-                      key={poi.id}
-                      className={poiStyles.poiCard}
-                    >
+                    <div key={poi.id} className={poiStyles.poiCard}>
                       <div className={poiStyles.poiHeader}>
                         <div className={poiStyles.poiContent}>
                           <div className={poiStyles.poiTitleRow}>
                             <span className={poiStyles.poiIcon}>
                               {getFileIcon(poi.type)}
                             </span>
-                            <h4 className={poiStyles.poiTitle}>
-                              {poi.name}
-                            </h4>
-                            <span className={`${poiStyles.poiTypeBadge} ${poiStyles[poi.type]}`}>
+                            <h4 className={poiStyles.poiTitle}>{poi.name}</h4>
+                            <span
+                              className={`${poiStyles.poiTypeBadge} ${poiStyles[poi.type]}`}
+                            >
                               {poi.type.toUpperCase()}
                             </span>
                           </div>
@@ -498,30 +521,36 @@ export default function POIManagement() {
                           </div>
                         </div>
                         <div className={poiStyles.poiActions}>
-                            <Link
-                              href={`/${project.projectId}?scene=${poi.panoramaId}`}
-                              className={`${styles.backLink} ${poiStyles.viewButton}`}
-                            >
-                              👁️ View
-                            </Link>
-                            <button
-                              onClick={() => handleExportPOI(poi, project.projectId)}
-                              className={poiStyles.exportPOIButton}
-                            >
-                              📤 Export
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleDeletePOI(project.projectId, poi.id, poi.name)
-                              }
-                              disabled={deletingPOI === poi.id}
-                              className={poiStyles.deleteButton}
-                            >
-                              {deletingPOI === poi.id
-                                ? '⏳ Deleting...'
-                                : '🗑️ Delete'}
-                            </button>
-                          </div>
+                          <Link
+                            href={`/${project.projectId}?scene=${poi.panoramaId}`}
+                            className={`${styles.backLink} ${poiStyles.viewButton}`}
+                          >
+                            👁️ View
+                          </Link>
+                          <button
+                            onClick={() =>
+                              handleExportPOI(poi, project.projectId)
+                            }
+                            className={poiStyles.exportPOIButton}
+                          >
+                            📤 Export
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDeletePOI(
+                                project.projectId,
+                                poi.id,
+                                poi.name
+                              )
+                            }
+                            disabled={deletingPOI === poi.id}
+                            className={poiStyles.deleteButton}
+                          >
+                            {deletingPOI === poi.id
+                              ? '⏳ Deleting...'
+                              : '🗑️ Delete'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -563,19 +592,19 @@ export default function POIManagement() {
       </div>
 
       {/* Delete Confirmation Modal */}
-       <ConfirmationModal
-         isOpen={showDeleteConfirm}
-         onCancel={() => {
-           setShowDeleteConfirm(false);
-           setPOIToDelete(null);
-         }}
-         onConfirm={confirmDeletePOI}
-         title="Delete POI"
-         message={`Are you sure you want to delete the POI "${poiToDelete?.poiName}"? This action cannot be undone.`}
-         confirmText="Delete"
-         cancelText="Cancel"
-         variant="danger"
-       />
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
+        onCancel={() => {
+          setShowDeleteConfirm(false);
+          setPOIToDelete(null);
+        }}
+        onConfirm={confirmDeletePOI}
+        title='Delete POI'
+        message={`Are you sure you want to delete the POI "${poiToDelete?.poiName}"? This action cannot be undone.`}
+        confirmText='Delete'
+        cancelText='Cancel'
+        variant='danger'
+      />
     </div>
   );
 }
