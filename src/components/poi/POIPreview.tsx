@@ -12,6 +12,7 @@ import {
   FaExternalLinkAlt,
   FaEdit,
   FaTrash,
+  FaEye,
 } from 'react-icons/fa';
 import ConfirmationModal from '../ui/ConfirmationModal';
 import styles from './POIPreview.module.css';
@@ -20,8 +21,9 @@ import styles from './POIPreview.module.css';
 const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit, onDelete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [pdfError, setPdfError] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedFileIndex, setSelectedFileIndex] = useState<number>(0);
 
   const handleImageLoad = () => {
     setIsLoading(false);
@@ -332,15 +334,51 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
 
     // Handle multiple files if they exist
     if (poi.files && poi.files.length > 0) {
+      if (poi.files.length === 1) {
+        // Single file - render directly
+        return renderFileContent(poi.files[0], 0);
+      }
+      
+      // Multiple files - show stacked layout with preview
       return (
-        <div className={styles.multipleFilesContainer}>
-          {poi.files.length > 1 && (
-            <div className={styles.filesHeader}>
-              <p className={styles.filesCount}>{poi.files.length} files attached</p>
-            </div>
-          )}
-          <div className={styles.filesGrid}>
-            {poi.files.map((filename, index) => renderFileContent(filename, index))}
+        <div className={styles.stackedFilesContainer}>
+          <div className={styles.filesHeader}>
+            <p className={styles.filesCount}>{poi.files.length} files attached</p>
+          </div>
+          
+          {/* Main preview area */}
+          <div className={styles.mainPreviewArea}>
+            {renderFileContent(poi.files[selectedFileIndex], selectedFileIndex)}
+          </div>
+          
+          {/* File thumbnails/stack */}
+          <div className={styles.fileStack}>
+            {poi.files.map((filename, index) => {
+              const category = getFileCategory(filename);
+              const isSelected = index === selectedFileIndex;
+              
+              return (
+                <div
+                  key={`stack-${index}`}
+                  className={`${styles.stackItem} ${isSelected ? styles.stackItemSelected : ''}`}
+                  onClick={() => setSelectedFileIndex(index)}
+                  style={{ zIndex: poi.files!.length - index }}
+                >
+                  <div className={styles.stackItemIcon}>
+                    {renderFileIcon(category)}
+                  </div>
+                  <div className={styles.stackItemInfo}>
+                    <span className={styles.stackItemName}>{filename}</span>
+                    <span className={styles.stackItemType}>{category}</span>
+                  </div>
+                  {isSelected && (
+                    <div className={styles.selectedIndicator}>
+                      <FaEye size={12} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       );
