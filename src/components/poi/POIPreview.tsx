@@ -414,8 +414,8 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       return poi.originalFilenames[index];
     }
     
-    // Fallback to the stored filename
-    return filename;
+    // If we have a stored filename, return it, otherwise return empty string
+    return filename || '';
   };
 
   return (

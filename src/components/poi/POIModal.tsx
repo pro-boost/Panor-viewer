@@ -203,7 +203,7 @@ const POIModal: React.FC<POIModalProps> = ({
   const getCustomFilename = (index: number, originalName: string) => {
     // Adjust index to account for existing files
     const adjustedIndex = existingFiles.length + index;
-    return customFilenames[adjustedIndex] || originalName.replace(/\.[^/.]+$/, '');
+    return customFilenames[adjustedIndex] || (originalName ? originalName.replace(/\.[^/.]+$/, '') : '');
   };
 
   const getFileExtension = (filename: string) => {
