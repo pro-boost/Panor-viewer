@@ -191,12 +191,13 @@ export default function Home(): ReactElement {
         // Show welcome screen
         <div className={styles.container}>
           {/* Logo */}
-          <Logo variant="default" position="absolute" />
+          <Logo variant='default' position='absolute' />
 
-          <div className={`${styles.content} ${hasProjects && showProjects ? styles.contentWithProjects : ''}`}>
+          <div
+            className={`${styles.content} ${hasProjects && showProjects ? styles.contentWithProjects : ''}`}
+          >
             {/* Hero Section */}
             <div className={styles.heroSection}>
-              <div className={styles.icon}>🏢</div>
               <h1 className={styles.title}>Welcome to PrimeZone</h1>
               <p className={styles.subtitle}>
                 Experience immersive 360° panoramic tours of your spaces
