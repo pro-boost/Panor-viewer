@@ -503,6 +503,11 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
            }
          }
          
+         // Combine newly uploaded files with existing files when editing
+         if (isEditing && data.existingFiles && data.existingFiles.length > 0) {
+           uploadedFiles = [...data.existingFiles, ...uploadedFiles];
+         }
+         
          // Set content path to first file for backward compatibility
          contentPath = uploadedFiles[0];
       } else if (isEditing && data.existingFiles && data.existingFiles.length > 0) {
