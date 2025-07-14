@@ -391,6 +391,28 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
     
     let contentPath = data.content;
     
+    // Handle file deletion for editing POIs
+    if (isEditing && data.filesToDelete && data.filesToDelete.length > 0) {
+      try {
+        const deleteResponse = await fetch('/api/poi/delete-files', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            projectId,
+            filenames: data.filesToDelete
+          })
+        });
+        
+        if (!deleteResponse.ok) {
+          console.warn('Failed to delete some files:', data.filesToDelete);
+        }
+      } catch (error) {
+        console.warn('Error deleting files:', error);
+      }
+    }
+    
     // Handle file uploads (single or multiple)
     let uploadedFiles: string[] = [];
     
@@ -483,8 +505,12 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
          
          // Set content path to first file for backward compatibility
          contentPath = uploadedFiles[0];
+      } else if (isEditing && data.existingFiles && data.existingFiles.length > 0) {
+        // For file-type POIs being updated without new files, use existing files from form
+        uploadedFiles = data.existingFiles;
+        contentPath = uploadedFiles[0];
       } else if (isEditing && selectedPOI) {
-        // For file-type POIs being updated without new files, preserve the original content
+        // Fallback to original POI content if no existing files specified
         contentPath = selectedPOI.content;
         uploadedFiles = selectedPOI.files || [selectedPOI.content];
       }

@@ -23,6 +23,8 @@ const POIModal: React.FC<POIModalProps> = ({
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [existingFiles, setExistingFiles] = useState<string[]>([]);
+  const [filesToDelete, setFilesToDelete] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [storedPosition, setStoredPosition] = useState<POIPosition | null>(
     null
@@ -39,7 +41,16 @@ const POIModal: React.FC<POIModalProps> = ({
           type: editingPOI.type,
           content: editingPOI.content,
         });
-      setSelectedFiles([]);
+        setSelectedFiles([]);
+        // Set existing files for editing
+        if (editingPOI.files && editingPOI.files.length > 0) {
+          setExistingFiles(editingPOI.files);
+        } else if (editingPOI.content && editingPOI.type === 'file') {
+          setExistingFiles([editingPOI.content]);
+        } else {
+          setExistingFiles([]);
+        }
+        setFilesToDelete([]);
         setStoredPosition(editingPOI.position);
       } else if (pendingPosition && !storedPosition) {
         console.log('Modal position lock:', pendingPosition);
@@ -60,6 +71,8 @@ const POIModal: React.FC<POIModalProps> = ({
       });
       setSelectedFile(null);
       setSelectedFiles([]);
+      setExistingFiles([]);
+      setFilesToDelete([]);
     }
   }, [isOpen]);
 
@@ -144,6 +157,11 @@ const POIModal: React.FC<POIModalProps> = ({
     setFormData(prev => ({ ...prev, content: '' }));
   };
 
+  const removeExistingFile = (filename: string) => {
+    setExistingFiles(prev => prev.filter(file => file !== filename));
+    setFilesToDelete(prev => [...prev, filename]);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -194,9 +212,11 @@ const POIModal: React.FC<POIModalProps> = ({
         position: storedPosition,
       };
 
-      // Add POI ID for editing
+      // Add POI ID and file deletion info for editing
       if (editingPOI) {
         (submitData as any).id = editingPOI.id;
+        (submitData as any).existingFiles = existingFiles;
+        (submitData as any).filesToDelete = filesToDelete;
       }
 
       console.log('Submitting POI data:', submitData);
@@ -353,20 +373,39 @@ const POIModal: React.FC<POIModalProps> = ({
                 File Upload {editingPOI ? '' : '*'}
               </label>
 
-              {/* Show existing file info when editing */}
-              {editingPOI && editingPOI.type === 'file' && !selectedFile && (
-                <div className={styles.existingFileInfo}>
-                  <div className={styles.existingFileContent}>
-                    <FaFile className={styles.existingFileIcon} />
-                    <div>
-                      <p className={styles.existingFileName}>
-                        Current file: {editingPOI.content}
-                      </p>
-                      <p className={styles.existingFileNote}>
-                        Click below to replace with a new file (optional)
-                      </p>
-                    </div>
+              {/* Show existing files when editing */}
+              {existingFiles.length > 0 && (
+                <div className={styles.existingFilesSection}>
+                  <div className={styles.existingFilesHeader}>
+                    <span>Current Files ({existingFiles.length})</span>
                   </div>
+                  <div className={styles.existingFilesList}>
+                    {existingFiles.map((filename, index) => (
+                      <div key={`existing-${filename}-${index}`} className={styles.existingFileItem}>
+                        <div className={styles.fileInfo}>
+                          <FaFile className={styles.fileIcon} />
+                          <div className={styles.fileDetails}>
+                            <span className={styles.fileName}>{filename}</span>
+                            <span className={styles.fileType}>Existing file</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeExistingFile(filename)}
+                          className={styles.removeFileButton}
+                          disabled={isSubmitting}
+                          title="Delete file"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {existingFiles.length > 0 && (
+                    <p className={styles.existingFileNote}>
+                      Add new files below or delete existing ones above
+                    </p>
+                  )}
                 </div>
               )}
 

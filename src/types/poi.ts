@@ -25,6 +25,8 @@ export interface POIFormData {
   content: string;
   file?: File;
   files?: File[]; // array of files for multiple file uploads
+  existingFiles?: string[]; // array of existing filenames when editing
+  filesToDelete?: string[]; // array of filenames to delete when editing
   position?: POIPosition;
 }
 

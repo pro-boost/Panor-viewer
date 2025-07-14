@@ -537,6 +537,61 @@
   cursor: not-allowed;
 }
 
+/* Existing Files Section */
+.existingFilesSection {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.existingFilesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.existingFilesList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.existingFileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.existingFileItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.existingFileNote {
+  margin-top: 0.75rem;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+  margin-bottom: 0;
+}
+
+.fileType {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .modalContainer {
@@ -575,5 +630,18 @@
   
   .fileSize {
     font-size: 0.6875rem;
+  }
+  
+  /* Responsive adjustments for existing files */
+  .existingFilesSection {
+    padding: 0.75rem;
+  }
+  
+  .existingFileItem {
+    padding: 0.5rem;
+  }
+  
+  .existingFilesHeader {
+    font-size: 13px;
   }
 }
