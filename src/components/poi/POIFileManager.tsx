@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { POIData } from '@/types/poi';
-import styles from '@/styles/Upload.module.css';
+import styles from '@/styles/POIManagement.module.css';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 interface POIFileManagerProps {
@@ -15,16 +15,16 @@ interface ImportOptions {
   generateNewId: boolean;
 }
 
-export default function POIFileManager({ 
-  projectId, 
-  onPOIImported, 
-  onError, 
-  onSuccess 
+export default function POIFileManager({
+  projectId,
+  onPOIImported,
+  onError,
+  onSuccess,
 }: POIFileManagerProps) {
   const [isImporting, setIsImporting] = useState(false);
   const [importOptions, setImportOptions] = useState<ImportOptions>({
     overwrite: false,
-    generateNewId: false
+    generateNewId: false,
   });
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,9 +49,9 @@ export default function POIFileManager({
       // Get the filename from the response headers
       const contentDisposition = response.headers.get('Content-Disposition');
       let filename = `poi-${poiName.replace(/[^a-zA-Z0-9]/g, '_')}-${poiId.substring(0, 8)}`;
-      
+
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="(.+)"/);;
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
         if (filenameMatch) {
           filename = filenameMatch[1];
         }
@@ -71,13 +71,15 @@ export default function POIFileManager({
       onSuccess?.(`POI "${poiName}" exported successfully`);
     } catch (error) {
       console.error('Export error:', error);
-      onError?.(error instanceof Error ? error.message : 'Failed to export POI');
+      onError?.(
+        error instanceof Error ? error.message : 'Failed to export POI'
+      );
     }
   };
 
   const handleImportPOI = async (file: File) => {
     setIsImporting(true);
-    
+
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -98,7 +100,7 @@ export default function POIFileManager({
           setOverwriteData({
             file,
             existingPOI: result.existingPOI,
-            formData
+            formData,
           });
           setShowOverwriteConfirm(true);
           setIsImporting(false);
@@ -111,7 +113,9 @@ export default function POIFileManager({
       onSuccess?.(result.message || 'POI imported successfully');
     } catch (error) {
       console.error('Import error:', error);
-      onError?.(error instanceof Error ? error.message : 'Failed to import POI');
+      onError?.(
+        error instanceof Error ? error.message : 'Failed to import POI'
+      );
     } finally {
       setIsImporting(false);
     }
@@ -128,17 +132,19 @@ export default function POIFileManager({
         method: 'POST',
         body: overwriteData.formData,
       });
-      
+
       const retryResult = await retryResponse.json();
       if (!retryResponse.ok) {
         throw new Error(retryResult.error || 'Failed to import POI');
       }
-      
+
       onPOIImported?.(retryResult.poi);
       onSuccess?.(retryResult.message || 'POI imported successfully');
     } catch (error) {
       console.error('Import error:', error);
-      onError?.(error instanceof Error ? error.message : 'Failed to import POI');
+      onError?.(
+        error instanceof Error ? error.message : 'Failed to import POI'
+      );
     } finally {
       setIsImporting(false);
       setShowOverwriteConfirm(false);
@@ -184,7 +190,7 @@ export default function POIFileManager({
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const files = e.dataTransfer.files;
     if (files && files[0]) {
       handleImportPOI(files[0]);
@@ -201,36 +207,40 @@ export default function POIFileManager({
       {/* Import Section */}
       <div className={styles.section}>
         <h4>Import POI</h4>
-        
+
         {/* Import Options */}
         <div className={styles.importOptions}>
           <label className={styles.checkbox}>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={importOptions.generateNewId}
-              onChange={(e) => setImportOptions(prev => ({ 
-                ...prev, 
-                generateNewId: e.target.checked 
-              }))}
+              onChange={e =>
+                setImportOptions(prev => ({
+                  ...prev,
+                  generateNewId: e.target.checked,
+                }))
+              }
             />
             Generate new ID (prevents conflicts)
           </label>
-          
+
           <label className={styles.checkbox}>
             <input
-              type="checkbox"
+              type='checkbox'
               checked={importOptions.overwrite}
-              onChange={(e) => setImportOptions(prev => ({ 
-                ...prev, 
-                overwrite: e.target.checked 
-              }))}
+              onChange={e =>
+                setImportOptions(prev => ({
+                  ...prev,
+                  overwrite: e.target.checked,
+                }))
+              }
             />
             Overwrite existing POIs
           </label>
         </div>
 
         {/* File Drop Zone */}
-        <div 
+        <div
           className={`${styles.dropZone} ${dragActive ? styles.dragActive : ''}`}
           onDragEnter={handleDragIn}
           onDragLeave={handleDragOut}
@@ -240,12 +250,12 @@ export default function POIFileManager({
         >
           <input
             ref={fileInputRef}
-            type="file"
-            accept=".json,.zip"
+            type='file'
+            accept='.json,.zip'
             onChange={handleFileSelect}
             style={{ display: 'none' }}
           />
-          
+
           {isImporting ? (
             <div className={styles.importing}>
               <div className={styles.spinner}></div>
@@ -253,7 +263,7 @@ export default function POIFileManager({
             </div>
           ) : (
             <div className={styles.dropContent}>
-              <div className={styles.uploadIcon}>📁</div>
+              <div className={styles.uploadIcon}></div>
               <p>Drop POI files here or click to browse</p>
               <p className={styles.supportedFormats}>
                 Supported formats: .json, .zip
@@ -267,25 +277,29 @@ export default function POIFileManager({
       <div className={styles.section}>
         <h4>Export POI</h4>
         <p>
-          To export a POI, use the export button in the POI management table or 
+          To export a POI, use the export button in the POI management table or
           the POI context menu in the viewer.
         </p>
         <div className={styles.exportInfo}>
           <h5>Export Formats:</h5>
           <ul>
-            <li><strong>JSON:</strong> For iframe POIs (lightweight)</li>
-            <li><strong>ZIP:</strong> For file POIs with attachments</li>
+            <li>
+              <strong>JSON:</strong> For iframe POIs (lightweight)
+            </li>
+            <li>
+              <strong>ZIP:</strong> For file POIs with attachments
+            </li>
           </ul>
         </div>
       </div>
-      
+
       <ConfirmationModal
         isOpen={showOverwriteConfirm}
-        title="POI Already Exists"
+        title='POI Already Exists'
         message={`POI "${overwriteData?.existingPOI?.name || 'Unknown'}" already exists. Do you want to overwrite it?`}
-        confirmText="Overwrite"
-        cancelText="Cancel"
-        variant="warning"
+        confirmText='Overwrite'
+        cancelText='Cancel'
+        variant='warning'
         onConfirm={handleConfirmOverwrite}
         onCancel={handleCancelOverwrite}
       />
@@ -294,7 +308,11 @@ export default function POIFileManager({
 }
 
 // Export function for use in other components
-export const exportPOI = async (projectId: string, poiId: string, poiName: string) => {
+export const exportPOI = async (
+  projectId: string,
+  poiId: string,
+  poiName: string
+) => {
   try {
     const response = await fetch(
       `/api/poi/export-single?projectId=${encodeURIComponent(projectId)}&poiId=${encodeURIComponent(poiId)}`
@@ -307,9 +325,9 @@ export const exportPOI = async (projectId: string, poiId: string, poiName: strin
 
     const contentDisposition = response.headers.get('Content-Disposition');
     let filename = `poi-${poiName.replace(/[^a-zA-Z0-9]/g, '_')}-${poiId.substring(0, 8)}`;
-    
+
     if (contentDisposition) {
-      const filenameMatch = contentDisposition.match(/filename="(.+)"/);;
+      const filenameMatch = contentDisposition.match(/filename="(.+)"/);
       if (filenameMatch) {
         filename = filenameMatch[1];
       }

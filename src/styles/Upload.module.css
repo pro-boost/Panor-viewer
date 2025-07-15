@@ -162,6 +162,7 @@
 
 .formGroup {
   margin-bottom: var(--spacing-2xl);
+  margin-top: var(--spacing-2xl);
 }
 
 .formGroup:last-of-type {
@@ -390,7 +391,7 @@
   letter-spacing: 0.025em;
   position: relative;
   overflow: hidden;
-  margin-top: var(--spacing-xl);
+  margin-top: var(--spacing-3xl);
 }
 
 .submitButton::before {
@@ -1160,237 +1161,7 @@
   z-index: 10;
 }
 
-/* ===================================
-   POI FILE MANAGER
-   =================================== */
-.poiFileManager {
-  background: var(--glass-bg);
-  backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-  box-shadow: var(--shadow-md);
-  margin-bottom: var(--spacing-xl);
-}
 
-.poiFileManager .section {
-  margin-bottom: var(--spacing-xl);
-}
-
-.poiFileManager .section:last-child {
-  margin-bottom: 0;
-}
-
-.poiFileManager h3 {
-  margin: 0 0 var(--spacing-sm) 0;
-  color: var(--text-primary);
-  font-size: var(--font-xl);
-  font-weight: 600;
-}
-
-.poiFileManager h4 {
-  margin: 0 0 var(--spacing-md) 0;
-  color: var(--text-secondary);
-  font-size: var(--font-lg);
-  font-weight: 500;
-}
-
-.poiFileManager h5 {
-  margin: 0 0 var(--spacing-sm) 0;
-  color: var(--text-tertiary);
-  font-size: var(--font-base);
-  font-weight: 500;
-}
-
-.poiFileManager p {
-  margin: 0 0 var(--spacing-md) 0;
-  color: var(--text-tertiary);
-  line-height: 1.5;
-}
-
-.importOptions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background: var(--glass-bg);
-  border-radius: var(--radius-md);
-}
-
-.dropZone {
-  border: 2px dashed var(--glass-border);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-3xl) var(--spacing-xl);
-  text-align: center;
-  cursor: pointer;
-  transition: var(--transition-base);
-  background: var(--glass-bg);
-}
-
-.dropZone:hover {
-  border-color: var(--primary);
-  background: var(--glass-bg-hover);
-}
-
-.dropZone.dragActive {
-  border-color: var(--primary);
-  background: rgba(66, 153, 225, 0.05);
-  transform: scale(1.02);
-}
-
-.dropContent {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.uploadIcon {
-  font-size: 3rem;
-  opacity: 0.6;
-}
-
-.supportedFormats {
-  font-size: var(--font-sm);
-  color: var(--text-muted);
-  margin: 0;
-}
-
-.importing {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid var(--glass-border);
-  border-top: 3px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.exportInfo {
-  background: var(--glass-bg);
-  padding: var(--spacing-lg);
-  border-radius: var(--radius-md);
-  border-left: 4px solid var(--info);
-}
-
-.exportInfo ul {
-  margin: var(--spacing-sm) 0 0 0;
-  padding-left: var(--spacing-xl);
-}
-
-.exportInfo li {
-  margin-bottom: var(--spacing-xs);
-  color: var(--text-tertiary);
-}
-
-.exportInfo strong {
-  color: var(--text-secondary);
-}
-
-/* Export button styles */
-.exportButton {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
-  color: white;
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-sm);
-  transition: var(--transition-fast);
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
-}
-
-.exportButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
-}
-
-.exportButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: linear-gradient(135deg, var(--text-muted) 0%, #64748b 100%);
-}
-
-/* File indicators */
-.individualFileIndicator,
-.mainFileIndicator {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-sm);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  margin-left: var(--spacing-sm);
-}
-
-.individualFileIndicator {
-  color: var(--info);
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.mainFileIndicator {
-  color: var(--text-muted);
-  background: var(--glass-bg);
-}
-
-.sectionHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-lg);
-  flex-wrap: wrap;
-  gap: var(--spacing-md);
-}
-
-.fileSystemInfo {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-/* File indicators (continued) */
-.migrateButton {
-  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
-  color: white;
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: var(--font-sm);
-  transition: var(--transition-fast);
-  box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
-}
-
-.migrateButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
-  background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
-}
-
-.migrateButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  background: linear-gradient(135deg, var(--text-muted) 0%, #64748b 100%);
-}
-
-/* POI table actions */
-.poiActions {
-  display: flex;
-  gap: var(--spacing-sm);
-  align-items: center;
-}
-
-.poiTable .tableHeader > div:last-child,
-.poiTable .tableRow > div:last-child {
-  min-width: 100px;
-}
 
 /* ===================================
    RESPONSIVE DESIGN
@@ -1507,7 +1278,6 @@
   }
   
   /* Adjust sections for mobile */
-  .poiImportSection,
   .fileSummary,
   .instructions {
     padding: var(--spacing-lg);
@@ -1517,18 +1287,11 @@
     font-size: var(--font-lg);
   }
   
-  /* Responsive tables */
-  .poiTable {
-    overflow-x: auto;
-  }
-  
   /* Adjust messages for mobile */
   .message {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-sm);
   }
-  
-
   
   /* Adjust instruction list */
   .instructionsList {
@@ -1538,19 +1301,6 @@
   .instructionsList li {
     padding-left: var(--spacing-xl);
     font-size: var(--font-sm);
-  }
-  
-  /* POI file manager adjustments */
-  .poiFileManager {
-    padding: var(--spacing-lg);
-  }
-  
-  .dropZone {
-    padding: var(--spacing-2xl) var(--spacing-lg);
-  }
-  
-  .uploadIcon {
-    font-size: 2rem;
   }
   
   /* Section header responsive */
@@ -1599,7 +1349,6 @@
   
   /* Full width buttons on small screens */
   .submitButton,
-  .poiImportButton,
   .overwriteButton,
   .clearButton,
   .deleteAllButton,
@@ -1610,7 +1359,6 @@
   }
   
   /* Reduce section padding on small screens */
-  .poiImportSection,
   .fileSummary,
   .instructions,
   .overwriteOptions {
@@ -1642,10 +1390,8 @@
   }
   
   .form,
-  .poiImportSection,
   .fileSummary,
-  .instructions,
-  .poiFileManager {
+  .instructions {
     border-width: 2px;
   }
   
@@ -1671,20 +1417,16 @@
   .backLink,
   .toggleButton,
   .submitButton,
-  .poiImportButton,
   .overwriteButton,
   .clearButton,
   .deleteAllButton,
   .removeDuplicatesButton,
-  .viewPanoramasButton,
-  .exportButton,
-  .migrateButton {
+  .viewPanoramasButton {
     display: none;
   }
   
   .form,
   .message,
-  .poiImportSection,
   .fileSummary,
   .instructions {
     border: 1px solid #ccc;
@@ -1730,17 +1472,14 @@
    PERFORMANCE OPTIMIZATIONS
    =================================== */
 .form,
-.poiImportSection,
 .fileSummary,
-.instructions,
-.poiFileManager {
+.instructions {
   will-change: transform;
 }
 
 @media (hover: none) {
   /* Remove hover effects on touch devices */
   .submitButton:hover,
-  .poiImportButton:hover,
   .overwriteButton:hover,
   .clearButton:hover,
   .deleteAllButton:hover,

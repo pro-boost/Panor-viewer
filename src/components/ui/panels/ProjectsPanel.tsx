@@ -103,9 +103,7 @@ export function ProjectsPanel({ onPanelClose }: ProjectsPanelProps) {
             Loading projects...
           </div>
         ) : projects.length === 0 ? (
-          <div className={projectStyles.emptyContainer}>
-            No projects yet
-          </div>
+          <div className={projectStyles.emptyContainer}>No projects yet</div>
         ) : (
           <div className={projectStyles.projectsList}>
             {projects.map((project: Project) => (
@@ -113,11 +111,8 @@ export function ProjectsPanel({ onPanelClose }: ProjectsPanelProps) {
                 key={project.id}
                 className={`${projectStyles.projectItem} ${
                   currentProject === project.id ? projectStyles.current : ''
-                } ${
-                  isNavigating ? projectStyles.navigating : ''
-                }`}
-
-                onClick={(e) => {
+                } ${isNavigating ? projectStyles.navigating : ''}`}
+                onClick={e => {
                   if (isNavigating) {
                     e.preventDefault();
                     e.stopPropagation();
@@ -128,29 +123,25 @@ export function ProjectsPanel({ onPanelClose }: ProjectsPanelProps) {
               >
                 <div className={projectStyles.projectInfo}>
                   <div className={projectStyles.projectName}>
-                     {project.name}
-                   </div>
-                   <div className={projectStyles.projectMeta}>
-                     {formatDate(project.updatedAt)} • {project.sceneCount} scenes
-                   </div>
+                    {project.name}
+                  </div>
+                  <div className={projectStyles.projectMeta}>
+                    {formatDate(project.updatedAt)} • {project.sceneCount}{' '}
+                    scenes
+                  </div>
                 </div>
                 <div className={projectStyles.projectActions}>
                   <button
-                     onClick={e => {
-                       e.stopPropagation();
-                       onPanelClose();
-                       // Force full page navigation to ensure immediate rendering
-                       window.location.href = `/upload?project=${encodeURIComponent(project.id)}`;
-                     }}
-                     className={projectStyles.editButton}
-                     title='Edit project'
-                   >
-                    <svg
-                      width='12'
-                      height='12'
-                      viewBox='0 0 24 24'
-                      fill='none'
-                    >
+                    onClick={e => {
+                      e.stopPropagation();
+                      onPanelClose();
+                      // Force full page navigation to ensure immediate rendering
+                      window.location.href = `/upload?project=${encodeURIComponent(project.id)}`;
+                    }}
+                    className={projectStyles.editButton}
+                    title='Edit project'
+                  >
+                    <svg width='12' height='12' viewBox='0 0 24 24' fill='none'>
                       <path
                         d='M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13'
                         stroke='currentColor'
@@ -168,20 +159,20 @@ export function ProjectsPanel({ onPanelClose }: ProjectsPanelProps) {
                     </svg>
                   </button>
                   <button
-                     onClick={e => {
-                       e.stopPropagation();
-                       setProjectToDelete(project);
-                       setShowDeleteConfirm(true);
-                     }}
-                     disabled={deleting === project.id}
-                     className={`${projectStyles.deleteButton} ${
-                       deleting === project.id ? projectStyles.deleting : ''
-                     }`}
-                     title='Delete project'
-                   >
+                    onClick={e => {
+                      e.stopPropagation();
+                      setProjectToDelete(project);
+                      setShowDeleteConfirm(true);
+                    }}
+                    disabled={deleting === project.id}
+                    className={`${projectStyles.deleteButton} ${
+                      deleting === project.id ? projectStyles.deleting : ''
+                    }`}
+                    title='Delete project'
+                  >
                     {deleting === project.id ? (
-                       <div className={projectStyles.deletingSpinner}>...</div>
-                     ) : (
+                      <div className={projectStyles.deletingSpinner}>...</div>
+                    ) : (
                       <svg
                         width='12'
                         height='12'
@@ -211,14 +202,14 @@ export function ProjectsPanel({ onPanelClose }: ProjectsPanelProps) {
           </div>
         )}
       </div>
-      
+
       <ConfirmationModal
         isOpen={showDeleteConfirm}
-        title="Delete Project"
+        title='Delete Project'
         message={`Are you sure you want to delete project "${projectToDelete?.name || projectToDelete?.id}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        variant="danger"
+        confirmText='Delete'
+        cancelText='Cancel'
+        variant='danger'
         onConfirm={() => {
           if (projectToDelete) {
             deleteProject(projectToDelete.id);

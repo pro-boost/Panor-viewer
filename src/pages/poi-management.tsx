@@ -1,8 +1,7 @@
-import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
+import { useState, FormEvent, ChangeEvent, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import styles from '@/styles/Upload.module.css';
-import poiStyles from '@/styles/POIManagement.module.css';
+import styles from '@/styles/POIManagement.module.css';
 import Logo from '@/components/ui/Logo';
 import { POIData } from '@/types/poi';
 import POIFileManager, { exportPOI } from '@/components/poi/POIFileManager';
@@ -25,6 +24,75 @@ interface ProjectPOIs {
   projectName: string;
   pois: POIData[];
   sceneCount: number;
+}
+
+interface CustomSelectOption {
+  value: string;
+  label: string;
+}
+
+interface CustomSelectProps {
+  value: string;
+  onChange: (value: string) => void;
+  options: CustomSelectOption[];
+  placeholder?: string;
+}
+
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+}: CustomSelectProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  return (
+    <div className={styles.customSelect} ref={dropdownRef}>
+      <button
+        type='button'
+        className={styles.selectButton}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span>{selectedOption?.label || placeholder}</span>
+        <span className={styles.selectArrow}>▼</span>
+      </button>
+
+      {isOpen && (
+        <div className={styles.selectDropdown}>
+          {options.map(option => (
+            <div
+              key={option.value}
+              className={`${styles.selectOption} ${
+                value === option.value ? styles.selected : ''
+              }`}
+              onClick={() => {
+                onChange(option.value);
+                setIsOpen(false);
+              }}
+            >
+              {option.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function POIManagement() {
@@ -131,11 +199,11 @@ export default function POIManagement() {
         0
       );
       setMessage(
-        `✅ Loaded ${totalPOIs} POIs from ${allProjectPOIs.length} projects`
+        `Loaded ${totalPOIs} POIs from ${allProjectPOIs.length} projects`
       );
     } catch (error) {
       console.error('Failed to load projects and POIs:', error);
-      setMessage('❌ Failed to load POI data. Please try again.');
+      setMessage('Failed to load POI data. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -173,10 +241,10 @@ export default function POIManagement() {
 
       // Refresh the POI data
       await loadProjectsAndPOIs();
-      setMessage('✅ POI deleted successfully');
+      setMessage('POI deleted successfully');
     } catch (error) {
       console.error('Failed to delete POI:', error);
-      setMessage('❌ Failed to delete POI. Please try again.');
+      setMessage('Failed to delete POI. Please try again.');
     } finally {
       setDeletingPOI(null);
       setShowDeleteConfirm(false);
@@ -291,35 +359,32 @@ export default function POIManagement() {
   const getFileIcon = (type: string) => {
     switch (type) {
       case 'file':
-        return '📎';
+        return 'File';
       case 'iframe':
-        return '🌐';
+        return 'Web';
       default:
-        return '📍';
+        return 'POI';
     }
   };
 
   return (
     <div className={styles.container}>
-      {/* Logo */}
       <Logo variant='default' position='absolute' />
-
       <div className={styles.content}>
-        <div className={styles.header}>
-          <button
-            onClick={() => {
-              if (window.history.length > 1) {
-                router.back();
-              } else {
-                router.push(referrerUrl);
-              }
-            }}
-            className={styles.backLink}
-          >
-            ← Back to Panorama Viewer
-          </button>
-          <h1 className={styles.title}>POI Management</h1>
-        </div>
+        <h1 className={styles.title}>POI Management</h1>
+
+        <button
+          onClick={() => {
+            if (window.history.length > 1) {
+              router.back();
+            } else {
+              router.push(referrerUrl);
+            }
+          }}
+          className={styles.backLink}
+        >
+          ← Back to Panorama Viewer
+        </button>
 
         {fileManagerMessage && (
           <div
@@ -333,55 +398,65 @@ export default function POIManagement() {
           </div>
         )}
 
-        {/* POI File Manager */}
-        {selectedProject !== 'all' && (
-          <POIFileManager
-            projectId={selectedProject}
-            onPOIImported={handlePOIImported}
-            onError={error => handleFileManagerMessage('error', error)}
-            onSuccess={message => handleFileManagerMessage('success', message)}
-          />
-        )}
+        <form className={styles.form}>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Point of Interest Management</label>
+            <div className={styles.inputHint}>
+              Manage and view all Points of Interest across your panorama
+              projects. Filter by project, search by keywords, and perform bulk
+              operations.
+            </div>
+          </div>
 
-        <div className={styles.form}>
-          <div className={styles.label}>Point of Interest Management</div>
-          <p className={styles.inputHint}>
-            Manage and view all Points of Interest across your panorama
-            projects. Filter by project, search by keywords, and perform bulk
-            operations.
-          </p>
+          {/* POI File Manager */}
+          {selectedProject !== 'all' && (
+            <div className={styles.formGroup}>
+              <POIFileManager
+                projectId={selectedProject}
+                onPOIImported={handlePOIImported}
+                onError={error => handleFileManagerMessage('error', error)}
+                onSuccess={message =>
+                  handleFileManagerMessage('success', message)
+                }
+              />
+            </div>
+          )}
 
           {/* Filters */}
-          <div className={poiStyles.filtersGrid}>
-            <div>
-              <label className={`${styles.label} ${poiStyles.filterLabel}`}>
-                Filter by Project
+          <div className={styles.formGroup}>
+            <div className={styles.formGroup}>
+              <label htmlFor='projectFilter' className={styles.label}>
+                Filter by Project:
               </label>
-              <select
+              <CustomSelect
                 value={selectedProject}
-                onChange={e => setSelectedProject(e.target.value)}
-                className={styles.textInput}
-              >
-                <option value='all'>All Projects ({projectPOIs.length})</option>
-                {projects.map(project => {
-                  const projectPOICount =
-                    projectPOIs.find(p => p.projectId === project.id)?.pois
-                      .length || 0;
-                  return (
-                    <option key={project.id} value={project.id}>
-                      {project.name} ({projectPOICount} POIs)
-                    </option>
-                  );
-                })}
-              </select>
+                onChange={setSelectedProject}
+                placeholder='Select a project'
+                options={[
+                  {
+                    value: 'all',
+                    label: `All Projects (${projectPOIs.length})`,
+                  },
+                  ...projects.map(project => {
+                    const projectPOICount =
+                      projectPOIs.find(p => p.projectId === project.id)?.pois
+                        .length || 0;
+                    return {
+                      value: project.id,
+                      label: `${project.name} (${projectPOICount} POIs)`,
+                    };
+                  }),
+                ]}
+              />
             </div>
 
-            <div>
-              <label className={`${styles.label} ${poiStyles.filterLabel}`}>
-                Search POIs
+            <div className={styles.formGroup}>
+              <label htmlFor='searchPOIs' className={styles.label}>
+                Search POIs:
               </label>
               <input
                 type='text'
+                id='searchPOIs'
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 placeholder='Search by name, description, or type...'
@@ -392,17 +467,19 @@ export default function POIManagement() {
 
           {/* Summary */}
           {!isLoading && (
-            <div className={styles.fileSummary}>
-              <h3 className={styles.summaryTitle}>POI Summary</h3>
+            <div
+              className={`${styles.fileSummary} ${styles.poiSummaryContainer}`}
+            >
+              <h4 className={styles.summaryTitle}>POI Summary</h4>
               <div className={styles.summaryContent}>
                 <div className={styles.summaryItem}>
-                  <span className={styles.summaryIcon}></span>
+                  <span className={styles.summaryIcon}>POI</span>
                   <span className={styles.summaryText}>
                     {totalPOIs} POI{totalPOIs !== 1 ? 's' : ''} found
                   </span>
                 </div>
                 <div className={styles.summaryItem}>
-                  <span className={styles.summaryIcon}></span>
+                  <span className={styles.summaryIcon}>Projects</span>
                   <span className={styles.summaryText}>
                     {filteredProjectPOIs.length} project
                     {filteredProjectPOIs.length !== 1 ? 's' : ''} with POIs
@@ -412,180 +489,185 @@ export default function POIManagement() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className={poiStyles.actionButtons}>
-            <button
-              onClick={loadProjectsAndPOIs}
-              disabled={isLoading}
-              className={styles.submitButton}
-            >
-              {isLoading ? '🔄 Loading...' : '🔄 Refresh POI Data'}
-            </button>
-          </div>
-        </div>
+          <button
+            type='button'
+            onClick={loadProjectsAndPOIs}
+            disabled={isLoading}
+            className={styles.submitButton}
+          >
+            {isLoading && <span className={styles.loadingSpinner}></span>}
+            {isLoading ? 'Loading...' : 'Refresh POI Data'}
+          </button>
+        </form>
 
         {/* POI List */}
-        {isLoading ? (
-          <div className={styles.form}>
-            <div className={poiStyles.loadingContainer}>
-              <div className={poiStyles.loadingIcon}>🔄</div>
-              <div>Loading POI data...</div>
-            </div>
-          </div>
-        ) : filteredProjectPOIs.length === 0 ? (
-          <div className={styles.form}>
-            <div className={poiStyles.emptyContainer}>
-              <div className={poiStyles.emptyIcon}>📍</div>
-              <div>No POIs found</div>
-              <div className={poiStyles.emptySubtext}>
-                {searchTerm
-                  ? 'Try adjusting your search terms'
-                  : 'Create some POIs in your panorama projects'}
+        <div className={styles.poiListContainer}>
+          {isLoading ? (
+            <div className={styles.form}>
+              <div className={styles.formGroup}>
+                <div className={styles.loadingState}>
+                  <div className={styles.loadingTitle}>Loading</div>
+                  <div className={styles.label}>Loading POI data...</div>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          filteredProjectPOIs.map(project => (
-            <div
-              key={project.projectId}
-              className={`${styles.form} ${poiStyles.projectContainer}`}
-            >
-              <div
-                className={poiStyles.projectHeader}
-                onClick={() => toggleProjectDetails(project.projectId)}
-              >
-                <div>
-                  <h3 className={poiStyles.projectTitle}>
-                    {project.projectName}
-                  </h3>
-                  <div className={poiStyles.projectMeta}>
-                    {project.pois.length} POI
-                    {project.pois.length !== 1 ? 's' : ''} •{' '}
-                    {project.sceneCount} scene
-                    {project.sceneCount !== 1 ? 's' : ''}
+          ) : filteredProjectPOIs.length === 0 ? (
+            <div className={styles.form}>
+              <div className={styles.formGroup}>
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyTitle}>No POIs</div>
+                  <div className={styles.label}>No POIs found</div>
+                  <div className={styles.inputHint}>
+                    {searchTerm
+                      ? 'Try adjusting your search terms'
+                      : 'Create some POIs in your panorama projects'}
                   </div>
                 </div>
-                <div className={poiStyles.projectActions}>
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleExportAllPOIs(
-                        project.projectId,
-                        project.projectName
-                      );
-                    }}
-                    className={`${styles.backLink} ${poiStyles.exportButton}`}
-                    title={`Export all ${project.pois.length} POIs from this project`}
-                  >
-                    📦 Export All
-                  </button>
-                  <Link
-                    href={`/${project.projectId}`}
-                    className={`${styles.backLink} ${poiStyles.viewProjectLink}`}
-                    onClick={e => e.stopPropagation()}
-                  >
-                    View Project
-                  </Link>
-                  <span className={poiStyles.expandIcon}>
-                    {showDetails[project.projectId] ? '▼' : '▶'}
-                  </span>
-                </div>
               </div>
-
-              {showDetails[project.projectId] && (
-                <div className={poiStyles.poisGrid}>
-                  {project.pois.map(poi => (
-                    <div key={poi.id} className={poiStyles.poiCard}>
-                      <div className={poiStyles.poiHeader}>
-                        <div className={poiStyles.poiContent}>
-                          <div className={poiStyles.poiTitleRow}>
-                            <span className={poiStyles.poiIcon}>
-                              {getFileIcon(poi.type)}
-                            </span>
-                            <h4 className={poiStyles.poiTitle}>{poi.name}</h4>
-                            <span
-                              className={`${poiStyles.poiTypeBadge} ${poiStyles[poi.type]}`}
-                            >
-                              {poi.type.toUpperCase()}
-                            </span>
-                          </div>
-                          <p className={poiStyles.poiDescription}>
-                            {poi.description}
-                          </p>
-                          <div className={poiStyles.poiMeta}>
-                            <div>📍 Panorama: {poi.panoramaId}</div>
-                            <div>📅 Created: {formatDate(poi.createdAt)}</div>
-                            {poi.content && (
-                              <div>🔗 Content: {poi.content}</div>
-                            )}
-                          </div>
-                        </div>
-                        <div className={poiStyles.poiActions}>
-                          <Link
-                            href={`/${project.projectId}?scene=${poi.panoramaId}`}
-                            className={`${styles.backLink} ${poiStyles.viewButton}`}
-                          >
-                            👁️ View
-                          </Link>
-                          <button
-                            onClick={() =>
-                              handleExportPOI(poi, project.projectId)
-                            }
-                            className={poiStyles.exportPOIButton}
-                          >
-                            📤 Export
-                          </button>
-                          <button
-                            onClick={() =>
-                              handleDeletePOI(
-                                project.projectId,
-                                poi.id,
-                                poi.name
-                              )
-                            }
-                            disabled={deletingPOI === poi.id}
-                            className={poiStyles.deleteButton}
-                          >
-                            {deletingPOI === poi.id
-                              ? '⏳ Deleting...'
-                              : '🗑️ Delete'}
-                          </button>
-                        </div>
+            </div>
+          ) : (
+            filteredProjectPOIs.map(project => (
+              <div key={project.projectId} className={styles.form}>
+                <div className={styles.formGroup}>
+                  <div
+                    className={styles.projectHeaderContainer}
+                    onClick={() => toggleProjectDetails(project.projectId)}
+                  >
+                    <div>
+                      <h3 className={styles.projectTitle}>
+                        {project.projectName}
+                      </h3>
+                      <div
+                        className={`${styles.inputHint} ${styles.projectMeta}`}
+                      >
+                        {project.pois.length} POI
+                        {project.pois.length !== 1 ? 's' : ''} •{' '}
+                        {project.sceneCount} scene
+                        {project.sceneCount !== 1 ? 's' : ''}
                       </div>
                     </div>
-                  ))}
+                    <div className={styles.projectActionsContainer}>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleExportAllPOIs(
+                            project.projectId,
+                            project.projectName
+                          );
+                        }}
+                        className={styles.backLink}
+                        title={`Export all ${project.pois.length} POIs from this project`}
+                      >
+                        Export All
+                      </button>
+                      <Link
+                        href={`/${project.projectId}`}
+                        className={styles.backLink}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        View Project
+                      </Link>
+                      <span className={styles.expandIcon}>
+                        {showDetails[project.projectId] ? '▼' : '▶'}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))
-        )}
+
+                {showDetails[project.projectId] && (
+                  <div>
+                    {project.pois.map(poi => (
+                      <div key={poi.id} className={styles.fileSummary}>
+                        <h3 className={styles.summaryTitle}>POI: {poi.name}</h3>
+                        <div className={styles.summaryContent}>
+                          <div className={styles.summaryItem}>
+                            <span className={styles.summaryIcon}>📍</span>
+                            <div className={styles.summaryText}>
+                              Description: {poi.description}
+                            </div>
+                          </div>
+
+                          <div className={styles.inputHint}>
+                            <div>Panorama: {poi.panoramaId}</div>
+                            <div>Created: {formatDate(poi.createdAt)}</div>
+                            {poi.content && <div>Content: {poi.content}</div>}
+                          </div>
+
+                          <div className={styles.buttonGroup}>
+                            <Link
+                              href={`/${project.projectId}?scene=${poi.panoramaId}`}
+                              className={styles.poiButton}
+                            >
+                              View
+                            </Link>
+                            <button
+                              onClick={() =>
+                                handleExportPOI(poi, project.projectId)
+                              }
+                              className={styles.poiButton}
+                            >
+                              Export
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDeletePOI(
+                                  project.projectId,
+                                  poi.id,
+                                  poi.name
+                                )
+                              }
+                              disabled={deletingPOI === poi.id}
+                              className={`${styles.poiButton} ${styles.poiButtonDelete}`}
+                            >
+                              {deletingPOI === poi.id
+                                ? 'Deleting...'
+                                : 'Delete'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
 
         {/* Message Display */}
         {message && (
-          <div
-            className={`${styles.message} ${
-              message.includes('❌') || message.includes('Failed')
-                ? styles.messageError
-                : styles.messageSuccess
-            }`}
-          >
-            {message}
+          <div className={styles.messageContainer}>
+            <div
+              className={`${styles.message} ${
+                message.includes('Failed')
+                  ? styles.messageError
+                  : styles.messageSuccess
+              }`}
+            >
+              {message}
+            </div>
           </div>
         )}
 
         {/* Instructions */}
+
         <div className={styles.instructions}>
           <h3 className={styles.instructionsTitle}>Instructions:</h3>
           <ol className={styles.instructionsList}>
-            <li>Use the project filter to view POIs from specific projects</li>
-            <li>Search for POIs by name, description, or type</li>
-            <li>Click on project headers to expand/collapse POI details</li>
-            <li>Use "View" to navigate to the POI in the panorama viewer</li>
             <li>
-              Use "Delete" to permanently remove POIs (this cannot be undone)
+              Select your pano-poses.csv file containing panorama position data
+            </li>
+            <li>Select one or more panorama images (JPG or PNG format)</li>
+            <li>
+              (Optional) Select a POI file (JSON format) to add points of
+              interest to your panoramas
             </li>
             <li>
-              Click "View Project" to open the project in the panorama viewer
+              Click "Upload and Generate" to upload files and automatically
+              generate the configuration
+            </li>
+            <li>
+              Once complete, return to the main viewer to see your panoramas
             </li>
           </ol>
         </div>

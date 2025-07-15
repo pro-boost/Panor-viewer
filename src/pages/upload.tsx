@@ -228,10 +228,10 @@ export default function Upload() {
       }
 
       fileManager.clearDuplicateImages();
-      
+
       // Set success state with appropriate message
-      const successMessage = projectManager.isEditMode 
-        ? 'Project updated successfully!' 
+      const successMessage = projectManager.isEditMode
+        ? 'Project updated successfully!'
         : 'Project created successfully!';
       uploadState.finishUpload(true, successMessage);
     } catch (error: any) {
@@ -258,6 +258,11 @@ export default function Upload() {
         </button>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.inputHint}>
+            {projectManager.isEditMode
+              ? 'Update the name of your existing project.'
+              : 'This will create a new project folder for your panorama data.'}
+          </div>
           <div className={styles.formGroup}>
             <label htmlFor='projectName' className={styles.label}>
               Project Name:
@@ -272,11 +277,6 @@ export default function Upload() {
               required
               className={`${styles.textInput} ${validation.validationErrors.some(error => error.includes('Project name')) ? styles.inputError : ''}`}
             />
-            <div className={styles.inputHint}>
-              {projectManager.isEditMode
-                ? 'Update the name of your existing project.'
-                : 'This will create a new project folder for your panorama data.'}
-            </div>
           </div>
 
           <div className={styles.formGroup}>
@@ -391,7 +391,11 @@ export default function Upload() {
           {/* File Summary */}
           {fileManager.hasRequiredFiles() && (
             <div className={styles.fileSummary}>
-              <h4 className={styles.summaryTitle}>{projectManager.isEditMode ? 'Update Summary' : 'Upload Summary'}</h4>
+              <h4 className={styles.summaryTitle}>
+                {projectManager.isEditMode
+                  ? 'Update Summary'
+                  : 'Upload Summary'}
+              </h4>
               <div className={styles.summaryContent}>
                 {fileManager.selectedFiles.csv && (
                   <div className={styles.summaryItem}>
@@ -631,7 +635,7 @@ export default function Upload() {
 
         {uploadSuccess && (
           <div className={styles.successActions}>
-            {(createdProjectId || editingProjectId) ? (
+            {createdProjectId || editingProjectId ? (
               <Link
                 href={`/${createdProjectId || editingProjectId}`}
                 className={styles.viewPanoramasButton}
