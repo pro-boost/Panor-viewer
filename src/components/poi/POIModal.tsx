@@ -212,12 +212,12 @@ const POIModal: React.FC<POIModalProps> = ({
   };
 
   const getDisplayFilename = (filename: string, index?: number): string => {
-    // First, check if we have a custom filename for this index
-    if (index !== undefined && editingPOI?.customFilenames && editingPOI.customFilenames[index]) {
-      return editingPOI.customFilenames[index];
+    // First, check if we have a custom filename for this index (use current state)
+    if (index !== undefined && customFilenames && customFilenames[index]) {
+      return customFilenames[index];
     }
     
-    // If no custom filename is set, try to use the original filename
+    // If no custom filename is set, try to use the original filename from editingPOI
     if (index !== undefined && editingPOI?.originalFilenames && editingPOI.originalFilenames[index]) {
       return editingPOI.originalFilenames[index];
     }
