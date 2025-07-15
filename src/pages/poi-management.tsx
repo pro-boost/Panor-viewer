@@ -119,6 +119,12 @@ export default function POIManagement() {
     poiId: string;
     poiName: string;
   } | null>(null);
+  const [showImportManager, setShowImportManager] = useState(false);
+
+  // Reset import manager when project changes
+  useEffect(() => {
+    setShowImportManager(false);
+  }, [selectedProject]);
 
   useEffect(() => {
     // Capture referrer information
@@ -281,10 +287,14 @@ export default function POIManagement() {
 
   const handleFileManagerMessage = (
     type: 'success' | 'error',
-    text: string
+    message: string
   ) => {
-    setFileManagerMessage({ type, text });
+    setFileManagerMessage({ type, text: message });
     setTimeout(() => setFileManagerMessage(null), 5000);
+    // Hide import manager on successful import
+    if (type === 'success' && message.includes('imported')) {
+      setShowImportManager(false);
+    }
   };
 
   const handleExportAllPOIs = async (
@@ -408,19 +418,7 @@ export default function POIManagement() {
             </div>
           </div>
 
-          {/* POI File Manager */}
-          {selectedProject !== 'all' && (
-            <div className={styles.formGroup}>
-              <POIFileManager
-                projectId={selectedProject}
-                onPOIImported={handlePOIImported}
-                onError={error => handleFileManagerMessage('error', error)}
-                onSuccess={message =>
-                  handleFileManagerMessage('success', message)
-                }
-              />
-            </div>
-          )}
+
 
           {/* Filters */}
           <div className={styles.formGroup}>
@@ -567,6 +565,17 @@ export default function POIManagement() {
                       >
                         View Project
                       </Link>
+                      <button
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedProject(project.projectId);
+                          setShowImportManager(!showImportManager);
+                        }}
+                        className={styles.backLink}
+                        title={`Import POIs to ${project.projectName}`}
+                      >
+                        {showImportManager && selectedProject === project.projectId ? 'Hide Import' : 'Import POIs'}
+                      </button>
                       <span className={styles.expandIcon}>
                         {showDetails[project.projectId] ? '▼' : '▶'}
                       </span>
@@ -576,6 +585,19 @@ export default function POIManagement() {
 
                 {showDetails[project.projectId] && (
                   <div>
+                    {/* POI File Manager */}
+                    {selectedProject === project.projectId && showImportManager && (
+                      <div className={styles.formGroup}>
+                        <POIFileManager
+                          projectId={selectedProject}
+                          onPOIImported={handlePOIImported}
+                          onError={error => handleFileManagerMessage('error', error)}
+                          onSuccess={message =>
+                            handleFileManagerMessage('success', message)
+                          }
+                        />
+                      </div>
+                    )}
                     {project.pois.map(poi => (
                       <div key={poi.id} className={styles.fileSummary}>
                         <h3 className={styles.summaryTitle}>POI: {poi.name}</h3>
