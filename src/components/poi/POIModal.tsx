@@ -4,8 +4,9 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { POIModalProps, POIFormData, POIPosition } from '@/types/poi';
 import { validateFileType, formatFileSize } from './utils';
-import { FaTimes, FaUpload, FaFile, FaLink, FaMapPin } from 'react-icons/fa';
+import { FaTimes, FaUpload, FaFile, FaLink, FaMapPin, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import styles from './POIModal.module.css';
 
 const POIModal: React.FC<POIModalProps> = ({
@@ -21,11 +22,16 @@ const POIModal: React.FC<POIModalProps> = ({
     type: 'file',
     content: '',
   });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [existingFiles, setExistingFiles] = useState<string[]>([]);
+  const [filesToDelete, setFilesToDelete] = useState<string[]>([]);
+  const [customFilenames, setCustomFilenames] = useState<{[key: number]: string}>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [storedPosition, setStoredPosition] = useState<POIPosition | null>(
     null
   );
+  const [showContentConfirmation, setShowContentConfirmation] = useState(false);
 
   // Store the pending position when modal opens or pre-fill form when editing
   useEffect(() => {
@@ -38,9 +44,32 @@ const POIModal: React.FC<POIModalProps> = ({
           type: editingPOI.type,
           content: editingPOI.content,
         });
+        setSelectedFiles([]);
+        setCustomFilenames({});
+        // Set existing files for editing
+        if (editingPOI.files && editingPOI.files.length > 0) {
+          setExistingFiles(editingPOI.files);
+        } else if (editingPOI.content && editingPOI.type === 'file') {
+          setExistingFiles([editingPOI.content]);
+        } else {
+          setExistingFiles([]);
+        }
+        setFilesToDelete([]);
+        setCustomFilenames(editingPOI.customFilenames || {});
+        
+        // Initialize originalFilenames for existing files if not already set
+         if (editingPOI.files && !editingPOI.originalFilenames) {
+           const originalFilenames: {[key: number]: string} = {};
+           editingPOI.files.forEach((filename, index) => {
+             // For existing POIs without originalFilenames, use the stored filename as fallback
+             originalFilenames[index] = filename;
+           });
+           // Store this in the POI data so it persists
+           editingPOI.originalFilenames = originalFilenames;
+         }
         setStoredPosition(editingPOI.position);
       } else if (pendingPosition && !storedPosition) {
-        console.log('Modal position lock:', pendingPosition);
+
         setStoredPosition(pendingPosition);
       }
     }
@@ -57,29 +86,51 @@ const POIModal: React.FC<POIModalProps> = ({
         content: '',
       });
       setSelectedFile(null);
+      setSelectedFiles([]);
+      setCustomFilenames({});
+      setExistingFiles([]);
+      setFilesToDelete([]);
     }
   }, [isOpen]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const file = acceptedFiles[0];
-    if (file) {
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    for (const file of acceptedFiles) {
       if (!validateFileType(file)) {
-        toast.error(
-          'Invalid file type. Please upload images (JPG, PNG, GIF), PDFs, or videos (MP4, WebM).'
-        );
-        return;
+        errors.push(`${file.name}: Invalid file type`);
+        continue;
       }
 
       if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
-        toast.error('File size must be less than 10MB.');
-        return;
+        errors.push(`${file.name}: File size must be less than 10MB`);
+        continue;
       }
 
-      setSelectedFile(file);
-      setFormData(prev => ({ ...prev, content: file.name }));
+      validFiles.push(file);
     }
-  }, []);
+
+    if (errors.length > 0) {
+      toast.error(`Some files were rejected:\n${errors.join('\n')}`);
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedFiles(prev => {
+        const newFiles = [...prev, ...validFiles];
+        return newFiles;
+      });
+      // For backward compatibility, also set the first file as selectedFile
+      if (validFiles.length === 1 && selectedFiles.length === 0) {
+        setSelectedFile(validFiles[0]);
+        setFormData(prev => ({ ...prev, content: validFiles[0].name }));
+      } else {
+        // For multiple files, set content to indicate multiple files
+        const totalFiles = selectedFiles.length + validFiles.length;
+        setFormData(prev => ({ ...prev, content: `${totalFiles} files selected` }));
+      }
+    }
+  }, [selectedFiles]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -88,7 +139,7 @@ const POIModal: React.FC<POIModalProps> = ({
       'application/pdf': ['.pdf'],
       'video/*': ['.mp4', '.webm'],
     },
-    multiple: false,
+    multiple: true,
   });
 
   const handleInputChange = (field: keyof POIFormData, value: string) => {
@@ -98,6 +149,136 @@ const POIModal: React.FC<POIModalProps> = ({
   const handleTypeChange = (type: 'file' | 'iframe') => {
     setFormData(prev => ({ ...prev, type, content: '' }));
     setSelectedFile(null);
+    setSelectedFiles([]);
+    setCustomFilenames({});
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setSelectedFiles(prev => {
+      const newFiles = prev.filter((_, index) => index !== indexToRemove);
+      
+      // Update form content based on remaining files
+      if (newFiles.length === 0) {
+        setFormData(prev => ({ ...prev, content: '' }));
+        setSelectedFile(null);
+      } else if (newFiles.length === 1) {
+        setFormData(prev => ({ ...prev, content: newFiles[0].name }));
+        setSelectedFile(newFiles[0]);
+      } else {
+        setFormData(prev => ({ ...prev, content: `${newFiles.length} files selected` }));
+      }
+      
+      return newFiles;
+    });
+    // Remove custom filename for this index and shift others
+    setCustomFilenames(prev => {
+      const newFilenames = { ...prev };
+      const adjustedIndexToRemove = existingFiles.length + indexToRemove;
+      delete newFilenames[adjustedIndexToRemove];
+      // Shift remaining filenames down
+      const shifted: {[key: number]: string} = {};
+      Object.keys(newFilenames).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > adjustedIndexToRemove) {
+          shifted[keyNum - 1] = newFilenames[keyNum];
+        } else {
+          shifted[keyNum] = newFilenames[keyNum];
+        }
+      });
+      return shifted;
+    });
+  };
+
+  const clearAllFiles = () => {
+    setSelectedFiles([]);
+    setSelectedFile(null);
+    setFormData(prev => ({ ...prev, content: '' }));
+    setCustomFilenames({});
+  };
+
+  const handleCustomFilenameChange = (index: number, filename: string) => {
+    // Adjust index to account for existing files
+    const adjustedIndex = existingFiles.length + index;
+    setCustomFilenames(prev => ({
+      ...prev,
+      [adjustedIndex]: filename
+    }));
+  };
+
+  const getCustomFilename = (index: number, originalName: string) => {
+    // Adjust index to account for existing files
+    const adjustedIndex = existingFiles.length + index;
+    return customFilenames[adjustedIndex] || (originalName ? originalName.replace(/\.[^/.]+$/, '') : '');
+  };
+
+  const getFileExtension = (filename: string) => {
+    const lastDot = filename.lastIndexOf('.');
+    return lastDot !== -1 ? filename.substring(lastDot) : '';
+  };
+
+  const getDisplayFilename = (filename: string, index?: number): string => {
+    // First, check if we have a custom filename for this index (use current state)
+    if (index !== undefined && customFilenames && customFilenames[index]) {
+      return customFilenames[index];
+    }
+    
+    // If no custom filename is set, try to use the original filename from editingPOI
+    if (index !== undefined && editingPOI?.originalFilenames && editingPOI.originalFilenames[index]) {
+      return editingPOI.originalFilenames[index];
+    }
+    
+    // If we have a stored filename, return it, otherwise return empty string
+    return filename || '';
+  };
+
+  const removeExistingFile = (filename: string) => {
+    const fileIndex = existingFiles.indexOf(filename);
+    if (fileIndex === -1) return;
+    
+    setExistingFiles(prev => prev.filter(file => file !== filename));
+    setFilesToDelete(prev => [...prev, filename]);
+    
+    // Update customFilenames and originalFilenames to account for the removed file
+    setCustomFilenames(prev => {
+      const newFilenames = { ...prev };
+      
+      // Remove the custom filename for the deleted file
+      delete newFilenames[fileIndex];
+      
+      // Shift all subsequent indices down by 1
+      const shifted: {[key: number]: string} = {};
+      Object.keys(newFilenames).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > fileIndex) {
+          shifted[keyNum - 1] = newFilenames[keyNum];
+        } else {
+          shifted[keyNum] = newFilenames[keyNum];
+        }
+      });
+      
+      return shifted;
+    });
+    
+    // Also update the originalFilenames in the editingPOI if it exists
+    if (editingPOI && editingPOI.originalFilenames) {
+      const newOriginalFilenames = { ...editingPOI.originalFilenames };
+      
+      // Remove the original filename for the deleted file
+      delete newOriginalFilenames[fileIndex];
+      
+      // Shift all subsequent indices down by 1
+      const shiftedOriginal: {[key: number]: string} = {};
+      Object.keys(newOriginalFilenames).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > fileIndex) {
+          shiftedOriginal[keyNum - 1] = newOriginalFilenames[keyNum];
+        } else {
+          shiftedOriginal[keyNum] = newOriginalFilenames[keyNum];
+        }
+      });
+      
+      editingPOI.originalFilenames = shiftedOriginal;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,32 +294,29 @@ const POIModal: React.FC<POIModalProps> = ({
       return;
     }
 
-    if (formData.type === 'file' && !selectedFile && !editingPOI) {
-      toast.error('Please select a file to upload.');
+    // Check if POI has no content and show confirmation
+    const hasFileContent = selectedFiles.length > 0 || selectedFile || (editingPOI && existingFiles.length > 0);
+    const hasIframeContent = formData.type === 'iframe' && formData.content.trim();
+    
+    if (!hasFileContent && !hasIframeContent) {
+      setShowContentConfirmation(true);
       return;
     }
 
-    if (formData.type === 'iframe' && !formData.content.trim()) {
-      toast.error('Please enter a URL or iframe code for the iframe content.');
-      return;
-    }
-
-    if (formData.type === 'iframe' && !isValidUrlOrIframe(formData.content)) {
+    if (formData.type === 'iframe' && formData.content.trim() && !isValidUrlOrIframe(formData.content)) {
       toast.error('Please enter a valid URL or iframe HTML code.');
       return;
     }
 
+    await submitPOI();
+  };
+
+  const submitPOI = async () => {
     // Add strict position validation
     if (!storedPosition) {
       toast.error('POI position missing - please right-click again');
       return;
     }
-
-    // Enhanced position tracking with debug logs
-    console.log('Modal received position:', {
-      propPosition: pendingPosition,
-      storedPosition: storedPosition,
-    });
 
     setIsSubmitting(true);
 
@@ -146,15 +324,19 @@ const POIModal: React.FC<POIModalProps> = ({
       const submitData: POIFormData = {
         ...formData,
         file: selectedFile || undefined,
+        files: selectedFiles.length > 0 ? selectedFiles : undefined,
         position: storedPosition,
+        customFilenames: customFilenames,
+        originalFilenames: editingPOI?.originalFilenames || {},
       };
 
-      // Add POI ID for editing
+      // Add POI ID and file deletion info for editing
       if (editingPOI) {
         (submitData as any).id = editingPOI.id;
+        (submitData as any).existingFiles = existingFiles;
+        (submitData as any).filesToDelete = filesToDelete;
       }
 
-      console.log('Submitting POI data:', submitData);
       await onSubmit(submitData);
 
       // Reset form
@@ -165,6 +347,10 @@ const POIModal: React.FC<POIModalProps> = ({
         content: '',
       });
       setSelectedFile(null);
+      setSelectedFiles([]);
+      setCustomFilenames({});
+      setExistingFiles([]);
+      setFilesToDelete([]);
 
       toast.success(
         editingPOI ? 'POI updated successfully!' : 'POI created successfully!'
@@ -308,20 +494,41 @@ const POIModal: React.FC<POIModalProps> = ({
                 File Upload {editingPOI ? '' : '*'}
               </label>
 
-              {/* Show existing file info when editing */}
-              {editingPOI && editingPOI.type === 'file' && !selectedFile && (
-                <div className={styles.existingFileInfo}>
-                  <div className={styles.existingFileContent}>
-                    <FaFile className={styles.existingFileIcon} />
-                    <div>
-                      <p className={styles.existingFileName}>
-                        Current file: {editingPOI.content}
-                      </p>
-                      <p className={styles.existingFileNote}>
-                        Click below to replace with a new file (optional)
-                      </p>
-                    </div>
+              {/* Show existing files when editing */}
+              {existingFiles.length > 0 && (
+                <div className={styles.existingFilesSection}>
+                  <div className={styles.existingFilesHeader}>
+                    <span>Current Files ({existingFiles.length})</span>
                   </div>
+                  <div className={styles.existingFilesList}>
+                    {existingFiles.map((filename, index) => (
+                      <div key={`existing-${filename}-${index}`} className={styles.existingFileItem}>
+                        <div className={styles.fileInfo}>
+                          <FaFile className={styles.fileIcon} />
+                          <div className={styles.fileDetails}>
+                            <span className={styles.fileName}>
+                              {getDisplayFilename(filename, index)}
+                            </span>
+                            <span className={styles.fileType}>Existing file</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeExistingFile(filename)}
+                          className={styles.removeFileButton}
+                          disabled={isSubmitting}
+                          title="Delete file"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  {existingFiles.length > 0 && (
+                    <p className={styles.existingFileNote}>
+                      Add new files below or delete existing ones above
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -333,35 +540,98 @@ const POIModal: React.FC<POIModalProps> = ({
               >
                 <input {...getInputProps()} disabled={isSubmitting} />
                 <FaUpload className={styles.uploadIcon} size={24} />
-                {selectedFile ? (
+                {selectedFiles.length > 0 || selectedFile ? (
                   <div className={styles.selectedFileInfo}>
-                    <p className={styles.selectedFileName}>
-                      {selectedFile.name}
-                    </p>
-                    <p className={styles.selectedFileSize}>
-                      {formatFileSize(selectedFile.size)}
-                    </p>
+                    {selectedFiles.length > 0 ? (
+                      <p className={styles.selectedFileName}>
+                        {selectedFiles.length} file{selectedFiles.length > 1 ? 's' : ''} selected
+                      </p>
+                    ) : selectedFile ? (
+                      <>
+                        <p className={styles.selectedFileName}>
+                          {selectedFile.name}
+                        </p>
+                        <p className={styles.selectedFileSize}>
+                          {formatFileSize(selectedFile.size)}
+                        </p>
+                      </>
+                    ) : null}
                     {editingPOI && (
                       <p className={styles.replaceFileNote}>
-                        This will replace the current file
+                        This will replace the current file{selectedFiles.length > 1 ? 's' : ''}
                       </p>
                     )}
+                    <p className={styles.dropzoneSubtext}>
+                      Click or drag to add more files
+                    </p>
                   </div>
                 ) : (
                   <div>
                     <p className={styles.dropzoneText}>
                       {isDragActive
-                        ? 'Drop the file here'
+                        ? 'Drop the files here'
                         : editingPOI
-                          ? 'Drag & drop a new file here, or click to select'
-                          : 'Drag & drop a file here, or click to select'}
+                          ? 'Drag & drop files here, or click to select'
+                          : 'Drag & drop files here, or click to select'}
                     </p>
                     <p className={styles.dropzoneSubtext}>
-                      Supports: Images, PDFs, Videos (max 10MB)
+                      Supports: Images, PDFs, Videos (max 10MB each) • Multiple files allowed
                     </p>
                   </div>
                 )}
               </div>
+
+              {/* Display selected files list */}
+              {selectedFiles.length > 0 && (
+                <div className={styles.selectedFilesList}>
+                  <div className={styles.filesListHeader}>
+                    <span>Selected Files ({selectedFiles.length})</span>
+                    <button
+                      type="button"
+                      onClick={clearAllFiles}
+                      className={styles.clearAllButton}
+                      disabled={isSubmitting}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                  <div className={styles.filesList}>
+                    {selectedFiles.map((file, index) => (
+                      <div key={`${file.name}-${index}`} className={styles.fileItem}>
+                        <div className={styles.fileInfo}>
+                          <FaFile className={styles.fileIcon} />
+                          <div className={styles.fileDetails}>
+                            <div className={styles.fileNameSection}>
+                              <label className={styles.filenameLabel}>Filename:</label>
+                              <div className={styles.filenameInputGroup}>
+                                <input
+                                  type="text"
+                                  value={getCustomFilename(index, file.name)}
+                                  onChange={(e) => handleCustomFilenameChange(index, e.target.value)}
+                                  className={styles.filenameInput}
+                                  placeholder="Enter filename"
+                                  disabled={isSubmitting}
+                                />
+                                <span className={styles.fileExtension}>{getFileExtension(file.name)}</span>
+                              </div>
+                            </div>
+                            <span className={styles.fileSize}>{formatFileSize(file.size)}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className={styles.removeFileButton}
+                          disabled={isSubmitting}
+                          title="Remove file"
+                        >
+                          <FaTrash size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -375,13 +645,13 @@ const POIModal: React.FC<POIModalProps> = ({
                 value={formData.content}
                 onChange={e => handleInputChange('content', e.target.value)}
                 className={styles.textarea}
-                placeholder='https://example.com or <iframe src="..." width="..." height="..."></iframe>'
+                placeholder='https://www.youtube.com/watch?v=VIDEO_ID or https://example.com or <iframe src="..." width="..." height="..."></iframe>'
                 rows={4}
                 required
                 disabled={isSubmitting}
               />
               <p className={styles.inputHint}>
-                Enter a URL or paste iframe HTML code
+                Enter a URL (YouTube, Vimeo, etc.) or paste iframe HTML code. YouTube URLs will be automatically converted to embeddable format.
               </p>
             </div>
           )}
@@ -411,6 +681,20 @@ const POIModal: React.FC<POIModalProps> = ({
           </div>
         </form>
       </div>
+      
+      <ConfirmationModal
+         isOpen={showContentConfirmation}
+         onCancel={() => setShowContentConfirmation(false)}
+         onConfirm={async () => {
+           setShowContentConfirmation(false);
+           await submitPOI();
+         }}
+         title="Create POI without content?"
+         message="This POI will be created without any files or iframe content. You can add content later by editing the POI. Do you want to continue?"
+         confirmText="Create POI"
+         cancelText="Cancel"
+         variant="info"
+       />
     </div>
   );
 };

@@ -13,6 +13,9 @@ export interface POIData {
   position: POIPosition;
   type: 'file' | 'iframe';
   content: string; // filename for file type, URL for iframe type
+  files?: string[]; // array of filenames for multiple files
+  customFilenames?: {[key: number]: string}; // custom filenames for display
+  originalFilenames?: {[key: number]: string}; // original filenames as uploaded from local
   createdAt: string;
   updatedAt: string;
 }
@@ -23,6 +26,11 @@ export interface POIFormData {
   type: 'file' | 'iframe';
   content: string;
   file?: File;
+  files?: File[]; // array of files for multiple file uploads
+  existingFiles?: string[]; // array of existing filenames when editing
+  filesToDelete?: string[]; // array of filenames to delete when editing
+  customFilenames?: {[key: number]: string}; // custom filenames for uploaded files
+  originalFilenames?: {[key: number]: string}; // original filenames as uploaded from local
   position?: POIPosition;
 }
 

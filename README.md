@@ -376,7 +376,7 @@ The panorama viewer includes a comprehensive Point of Interest (POI) system that
 - **Right-click Creation**: Create POIs by right-clicking anywhere on the panorama
 - **Modal Configuration**: Configure POI details through an intuitive modal interface
 - **File Support**: Attach images, videos, PDFs, and other files to POIs
-- **URL Support**: Embed external content via iframe URLs
+- **URL Support**: Embed external content via iframe URLs (YouTube, Vimeo, and other URLs automatically converted to embeddable format)
 - **Project-Specific Data**: Each project maintains separate POI data
 - **Data Persistence**: POI data is automatically saved and loaded per project
 - **Interactive Markers**: Visual markers show POI locations on the panorama
