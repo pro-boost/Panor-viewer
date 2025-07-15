@@ -531,12 +531,13 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
          contentPath = uploadedFiles[0];
       } else if (isEditing && data.existingFiles && data.existingFiles.length > 0) {
         // For file-type POIs being updated without new files, use existing files from form
+        // Note: data.existingFiles already excludes deleted files (handled by POIModal)
         uploadedFiles = data.existingFiles;
         contentPath = uploadedFiles[0];
-      } else if (isEditing && selectedPOI) {
-        // Fallback to original POI content if no existing files specified
-        contentPath = selectedPOI.content;
-        uploadedFiles = selectedPOI.files || [selectedPOI.content];
+      } else if (isEditing) {
+        // When editing and no files remain (all deleted), clear the content and files
+        uploadedFiles = [];
+        contentPath = '';
       }
     }
 

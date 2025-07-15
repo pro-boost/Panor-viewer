@@ -6,6 +6,7 @@ import { POIModalProps, POIFormData, POIPosition } from '@/types/poi';
 import { validateFileType, formatFileSize } from './utils';
 import { FaTimes, FaUpload, FaFile, FaLink, FaMapPin, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import styles from './POIModal.module.css';
 
 const POIModal: React.FC<POIModalProps> = ({
@@ -30,6 +31,7 @@ const POIModal: React.FC<POIModalProps> = ({
   const [storedPosition, setStoredPosition] = useState<POIPosition | null>(
     null
   );
+  const [showContentConfirmation, setShowContentConfirmation] = useState(false);
 
   // Store the pending position when modal opens or pre-fill form when editing
   useEffect(() => {
@@ -292,28 +294,29 @@ const POIModal: React.FC<POIModalProps> = ({
       return;
     }
 
-    if (formData.type === 'file' && selectedFiles.length === 0 && !selectedFile && !editingPOI) {
-      toast.error('Please select at least one file to upload.');
+    // Check if POI has no content and show confirmation
+    const hasFileContent = selectedFiles.length > 0 || selectedFile || (editingPOI && existingFiles.length > 0);
+    const hasIframeContent = formData.type === 'iframe' && formData.content.trim();
+    
+    if (!hasFileContent && !hasIframeContent) {
+      setShowContentConfirmation(true);
       return;
     }
 
-    if (formData.type === 'iframe' && !formData.content.trim()) {
-      toast.error('Please enter a URL or iframe code for the iframe content.');
-      return;
-    }
-
-    if (formData.type === 'iframe' && !isValidUrlOrIframe(formData.content)) {
+    if (formData.type === 'iframe' && formData.content.trim() && !isValidUrlOrIframe(formData.content)) {
       toast.error('Please enter a valid URL or iframe HTML code.');
       return;
     }
 
+    await submitPOI();
+  };
+
+  const submitPOI = async () => {
     // Add strict position validation
     if (!storedPosition) {
       toast.error('POI position missing - please right-click again');
       return;
     }
-
-
 
     setIsSubmitting(true);
 
@@ -333,7 +336,6 @@ const POIModal: React.FC<POIModalProps> = ({
         (submitData as any).existingFiles = existingFiles;
         (submitData as any).filesToDelete = filesToDelete;
       }
-
 
       await onSubmit(submitData);
 
@@ -679,6 +681,20 @@ const POIModal: React.FC<POIModalProps> = ({
           </div>
         </form>
       </div>
+      
+      <ConfirmationModal
+         isOpen={showContentConfirmation}
+         onCancel={() => setShowContentConfirmation(false)}
+         onConfirm={async () => {
+           setShowContentConfirmation(false);
+           await submitPOI();
+         }}
+         title="Create POI without content?"
+         message="This POI will be created without any files or iframe content. You can add content later by editing the POI. Do you want to continue?"
+         confirmText="Create POI"
+         cancelText="Cancel"
+         variant="info"
+       />
     </div>
   );
 };
