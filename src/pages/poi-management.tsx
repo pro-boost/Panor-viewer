@@ -569,6 +569,13 @@ export default function POIManagement() {
                           e.stopPropagation();
                           setSelectedProject(project.projectId);
                           setShowImportManager(!showImportManager);
+                          // Auto-expand project details when opening import manager
+                          if (!showImportManager) {
+                            setShowDetails(prev => ({
+                              ...prev,
+                              [project.projectId]: true
+                            }));
+                          }
                         }}
                         className={styles.backLink}
                         title={`Import POIs to ${project.projectName}`}

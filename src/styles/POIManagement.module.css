@@ -63,6 +63,7 @@
   transition: var(--transition-base);
   position: relative;
   overflow: hidden;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .form::before {
