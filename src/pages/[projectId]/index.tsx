@@ -9,15 +9,18 @@ import Logo from '@/components/ui/Logo';
 // ProjectManager moved to PanoramaViewer component
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
-const PanoramaViewer = dynamic(() => import('@/components/viewer/PanoramaViewer'), {
-  ssr: false,
-  loading: (): ReactElement => (
-    <div id='loading'>
-      <div className='loader'></div>
-      <div>Loading panoramas...</div>
-    </div>
-  ),
-});
+const PanoramaViewer = dynamic(
+  () => import('@/components/viewer/PanoramaViewer'),
+  {
+    ssr: false,
+    loading: (): ReactElement => (
+      <div id='loading'>
+        <div className='loader'></div>
+        <div>Loading panoramas...</div>
+      </div>
+    ),
+  }
+);
 
 interface ConfigData {
   scenes: Array<{ id: string; name: string; [key: string]: any }>;
@@ -131,10 +134,10 @@ export default function ProjectViewer(): ReactElement {
   if (error) {
     return (
       <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
+        <Logo variant='default' position='absolute' />
 
         <div className={styles.content}>
-          <div className={styles.icon}>❌</div>
+          <div className={styles.icon}></div>
           <h1 className={styles.title}>Project Error</h1>
           <p className={styles.description}>{error}</p>
 
@@ -143,16 +146,13 @@ export default function ProjectViewer(): ReactElement {
               display: 'flex',
               gap: '16px',
               justifyContent: 'center',
-              marginTop: '24px',
+              marginTop: '64px',
             }}
           >
             <Link href='/' className={styles.uploadButton}>
-              <span className={styles.uploadIcon}>🏠</span>
               Back to Home
             </Link>
-
             <Link href='/upload' className={styles.uploadButton}>
-              <span className={styles.uploadIcon}>📁</span>
               Upload New Project
             </Link>
           </div>
@@ -170,7 +170,6 @@ export default function ProjectViewer(): ReactElement {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        <div className={styles.icon}>🤔</div>
         <h1 className={styles.title}>Something went wrong</h1>
         <p className={styles.description}>Unable to load project data.</p>
 

@@ -165,19 +165,22 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-md);
-  ;
   border-radius: 50px;
   font-size: var(--font-lg);
   font-weight: 700;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   position: relative;
-  overflow: hidden;
-  min-width: 220px; /* Fixed width for consistency */
-  height: 56px; /* Fixed height */
+  overflow: hidden; /* Contain shine effect within button */
+  /* Remove fixed dimensions - let content determine size */
+  min-width: auto;
+  max-width: none;
+  height: auto;
   box-shadow: var(--shadow-3xl);
   border: none;
   cursor: pointer;
+  padding: var(--spacing-md) var(--spacing-xl); /* Generous padding */
+  white-space: nowrap; /* Prevent text wrapping */
 }
 
 /* Primary button - Create/New Project */
@@ -250,14 +253,7 @@
   transform: translateY(-1px) scale(1);
 }
 
-/* Plus icon for upload button */
-.uploadButton::before {
-  content: '+';
-  font-size: 24px;
-  font-weight: 400;
-  margin-right: 6px;
-  opacity: 0.9;
-}
+/* Completely remove automatic plus icon */
 
 /* Indicator icon styling */
 .indicatorIcon {
@@ -352,18 +348,35 @@
   }
 }
 
+/* Upload icon styling */
+.uploadIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  margin-right: var(--spacing-sm);
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .actionButtons {
     flex-direction: column;
     width: 100%;
-    max-width: 320px;
+    max-width: 400px; /* Increased to accommodate longer text */
   }
   
   .uploadButton,
   .projectsIndicator {
     width: 100%;
-    min-width: unset;
+    /* Keep responsive sizing */
+    min-width: auto;
+    max-width: none;
+    padding: var(--spacing-md) var(--spacing-lg); /* Slightly reduced padding on mobile */
+  }
+  
+  .uploadIcon {
+    font-size: 1.1em;
   }
 }
 /* Add subtle pulse to view projects button */
