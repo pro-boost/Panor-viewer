@@ -360,8 +360,6 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
   };
 
   const savePOI = async (data: POIFormData) => {
-    console.log('savePOI called with data:', data);
-    
     const isEditing = !!(data as any).id;
     const editingId = (data as any).id;
     
@@ -476,6 +474,7 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
              const customName = data.customFilenames?.[index];
              const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
              const uniqueFilename = generateUniqueFilename(baseFilename, poiId);
+
              formData.append('files', file);
              formData.append('filenames', uniqueFilename);
              filenames.push(uniqueFilename);
@@ -486,6 +485,7 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
            });
            
            formData.append('projectId', projectId);
+
            
            const uploadResponse = await fetch('/api/poi/upload-multiple', {
              method: 'POST',
@@ -512,7 +512,6 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
            const uploadResult = await uploadResponse.json();
            
            if (uploadResult.errors && uploadResult.errors.length > 0) {
-             console.warn('Some files failed to upload:', uploadResult.errors);
              // Still proceed if at least some files uploaded successfully
            }
            
@@ -566,9 +565,6 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
     };
 
     const requestPayload = { ...poiData, projectId };
-    console.log(`POI ${isEditing ? 'Update' : 'Save'} Request Payload:`, requestPayload);
-    console.log('Project ID:', projectId);
-    console.log('Current Panorama ID:', currentPanoramaId);
 
     // Save or update POI data
     const saveResponse = await fetch(isEditing ? '/api/poi/update' : '/api/poi/save', {

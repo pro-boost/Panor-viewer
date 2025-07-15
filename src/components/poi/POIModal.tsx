@@ -67,7 +67,7 @@ const POIModal: React.FC<POIModalProps> = ({
          }
         setStoredPosition(editingPOI.position);
       } else if (pendingPosition && !storedPosition) {
-        console.log('Modal position lock:', pendingPosition);
+
         setStoredPosition(pendingPosition);
       }
     }
@@ -114,7 +114,10 @@ const POIModal: React.FC<POIModalProps> = ({
     }
 
     if (validFiles.length > 0) {
-      setSelectedFiles(prev => [...prev, ...validFiles]);
+      setSelectedFiles(prev => {
+        const newFiles = [...prev, ...validFiles];
+        return newFiles;
+      });
       // For backward compatibility, also set the first file as selectedFile
       if (validFiles.length === 1 && selectedFiles.length === 0) {
         setSelectedFile(validFiles[0]);
@@ -310,11 +313,7 @@ const POIModal: React.FC<POIModalProps> = ({
       return;
     }
 
-    // Enhanced position tracking with debug logs
-    console.log('Modal received position:', {
-      propPosition: pendingPosition,
-      storedPosition: storedPosition,
-    });
+
 
     setIsSubmitting(true);
 
@@ -335,7 +334,7 @@ const POIModal: React.FC<POIModalProps> = ({
         (submitData as any).filesToDelete = filesToDelete;
       }
 
-      console.log('Submitting POI data:', submitData);
+
       await onSubmit(submitData);
 
       // Reset form
