@@ -211,6 +211,21 @@ const POIModal: React.FC<POIModalProps> = ({
     return lastDot !== -1 ? filename.substring(lastDot) : '';
   };
 
+  const getDisplayFilename = (filename: string, index?: number): string => {
+    // First, check if we have a custom filename for this index
+    if (index !== undefined && editingPOI?.customFilenames && editingPOI.customFilenames[index]) {
+      return editingPOI.customFilenames[index];
+    }
+    
+    // If no custom filename is set, try to use the original filename
+    if (index !== undefined && editingPOI?.originalFilenames && editingPOI.originalFilenames[index]) {
+      return editingPOI.originalFilenames[index];
+    }
+    
+    // If we have a stored filename, return it, otherwise return empty string
+    return filename || '';
+  };
+
   const removeExistingFile = (filename: string) => {
     const fileIndex = existingFiles.indexOf(filename);
     if (fileIndex === -1) return;
@@ -491,9 +506,7 @@ const POIModal: React.FC<POIModalProps> = ({
                           <FaFile className={styles.fileIcon} />
                           <div className={styles.fileDetails}>
                             <span className={styles.fileName}>
-                              {editingPOI?.originalFilenames && editingPOI.originalFilenames[index] 
-                                ? editingPOI.originalFilenames[index] 
-                                : filename}
+                              {getDisplayFilename(filename, index)}
                             </span>
                             <span className={styles.fileType}>Existing file</span>
                           </div>
