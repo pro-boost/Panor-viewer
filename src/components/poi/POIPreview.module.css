@@ -766,3 +766,37 @@
     height: 18px;
   }
 }
+
+/* Empty Content Styles */
+.emptyContentContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  min-height: 200px;
+}
+
+.emptyContentIcon {
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.emptyContentText {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.125rem;
+  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+}
+
+.emptyContentSubtext {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+  margin: 0;
+  max-width: 300px;
+  line-height: 1.4;
+}

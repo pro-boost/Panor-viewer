@@ -384,6 +384,19 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       );
     }
 
+    // Check if POI has no files or empty content
+    if ((!poi.files || poi.files.length === 0) && (!poi.content || poi.content.trim() === '')) {
+      return (
+        <div className={styles.emptyContentContainer}>
+          <div className={styles.emptyContentIcon}>
+            <FaFile size={48} className="text-gray-400" />
+          </div>
+          <p className={styles.emptyContentText}>No content available</p>
+          <p className={styles.emptyContentSubtext}>This POI doesn't have any files or content attached.</p>
+        </div>
+      );
+    }
+
     // Fallback to single file (backward compatibility)
     return renderFileContent(poi.content);
   };
