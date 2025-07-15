@@ -334,21 +334,30 @@ export default function POIManagement() {
     }
   };
 
-  const filteredProjectPOIs = projectPOIs.filter(project => {
-    if (selectedProject !== 'all' && project.projectId !== selectedProject) {
-      return false;
-    }
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      return project.pois.some(
-        poi =>
-          poi.name.toLowerCase().includes(searchLower) ||
-          poi.description.toLowerCase().includes(searchLower) ||
-          poi.type.toLowerCase().includes(searchLower)
-      );
-    }
-    return true;
-  });
+  const filteredProjectPOIs = projectPOIs
+    .filter(project => {
+      if (selectedProject !== 'all' && project.projectId !== selectedProject) {
+        return false;
+      }
+      return true;
+    })
+    .map(project => {
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const filteredPOIs = project.pois.filter(
+          poi =>
+            poi.name.toLowerCase().includes(searchLower) ||
+            poi.description.toLowerCase().includes(searchLower) ||
+            poi.type.toLowerCase().includes(searchLower)
+        );
+        return {
+          ...project,
+          pois: filteredPOIs
+        };
+      }
+      return project;
+    })
+    .filter(project => project.pois.length > 0);
 
   const totalPOIs = filteredProjectPOIs.reduce(
     (sum, project) => sum + project.pois.length,
