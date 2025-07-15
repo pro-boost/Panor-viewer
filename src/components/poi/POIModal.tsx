@@ -445,7 +445,11 @@ const POIModal: React.FC<POIModalProps> = ({
                         <div className={styles.fileInfo}>
                           <FaFile className={styles.fileIcon} />
                           <div className={styles.fileDetails}>
-                            <span className={styles.fileName}>{filename}</span>
+                            <span className={styles.fileName}>
+                              {editingPOI?.originalFilenames && editingPOI.originalFilenames[index] 
+                                ? editingPOI.originalFilenames[index] 
+                                : filename}
+                            </span>
                             <span className={styles.fileType}>Existing file</span>
                           </div>
                         </div>
