@@ -541,10 +541,14 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       }
     }
 
-    // Preserve existing originalFilenames and merge with new ones
-    const mergedOriginalFilenames = isEditing && selectedPOI?.originalFilenames 
-      ? { ...selectedPOI.originalFilenames, ...data.originalFilenames }
-      : data.originalFilenames;
+    // Handle originalFilenames properly for editing
+    let mergedOriginalFilenames = data.originalFilenames;
+    
+    if (isEditing && selectedPOI?.originalFilenames) {
+      // When editing, use the originalFilenames from the form data (which has been updated by the modal)
+      // The modal already handles the index shifting when files are deleted
+      mergedOriginalFilenames = data.originalFilenames || selectedPOI.originalFilenames;
+    }
 
     const poiData: POIData = {
       id: poiId,

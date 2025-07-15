@@ -212,8 +212,53 @@ const POIModal: React.FC<POIModalProps> = ({
   };
 
   const removeExistingFile = (filename: string) => {
+    const fileIndex = existingFiles.indexOf(filename);
+    if (fileIndex === -1) return;
+    
     setExistingFiles(prev => prev.filter(file => file !== filename));
     setFilesToDelete(prev => [...prev, filename]);
+    
+    // Update customFilenames and originalFilenames to account for the removed file
+    setCustomFilenames(prev => {
+      const newFilenames = { ...prev };
+      
+      // Remove the custom filename for the deleted file
+      delete newFilenames[fileIndex];
+      
+      // Shift all subsequent indices down by 1
+      const shifted: {[key: number]: string} = {};
+      Object.keys(newFilenames).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > fileIndex) {
+          shifted[keyNum - 1] = newFilenames[keyNum];
+        } else {
+          shifted[keyNum] = newFilenames[keyNum];
+        }
+      });
+      
+      return shifted;
+    });
+    
+    // Also update the originalFilenames in the editingPOI if it exists
+    if (editingPOI && editingPOI.originalFilenames) {
+      const newOriginalFilenames = { ...editingPOI.originalFilenames };
+      
+      // Remove the original filename for the deleted file
+      delete newOriginalFilenames[fileIndex];
+      
+      // Shift all subsequent indices down by 1
+      const shiftedOriginal: {[key: number]: string} = {};
+      Object.keys(newOriginalFilenames).forEach(key => {
+        const keyNum = parseInt(key);
+        if (keyNum > fileIndex) {
+          shiftedOriginal[keyNum - 1] = newOriginalFilenames[keyNum];
+        } else {
+          shiftedOriginal[keyNum] = newOriginalFilenames[keyNum];
+        }
+      });
+      
+      editingPOI.originalFilenames = shiftedOriginal;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
