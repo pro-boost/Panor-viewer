@@ -352,15 +352,14 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
   };
 
   const handleModalClose = () => {
-    console.log('Modal closing, clearing pendingPOI');
+    console.log('Modal closing, clearing pendingPOI and selectedPOI');
     setShowModal(false);
     setPendingPOI(null);
     pendingPOIRef.current = null;
+    setSelectedPOI(null); // Clear selected POI to ensure clean state for next modal
   };
 
   const savePOI = async (data: POIFormData) => {
-    console.log('savePOI called with data:', data);
-    
     const isEditing = !!(data as any).id;
     const editingId = (data as any).id;
     
@@ -390,39 +389,165 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
     
     let contentPath = data.content;
     
-    // Handle file upload
-    if (data.type === 'file' && data.file) {
-      const uniqueFilename = generateUniqueFilename(data.file.name, poiId);
-      
-      // Upload file
-      const formData = new FormData();
-      formData.append('file', data.file);
-      formData.append('filename', uniqueFilename);
-      formData.append('projectId', projectId);
-      
-      const uploadResponse = await fetch('/api/poi/upload', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!uploadResponse.ok) {
-        const uploadErrorData = await uploadResponse.text();
-        console.error('File Upload API Error:', {
-          status: uploadResponse.status,
-          statusText: uploadResponse.statusText,
-          response: uploadErrorData
+    // Handle file deletion for editing POIs
+    if (isEditing && data.filesToDelete && data.filesToDelete.length > 0) {
+      try {
+        const deleteResponse = await fetch('/api/poi/delete-files', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            projectId,
+            filenames: data.filesToDelete
+          })
         });
         
-        // Try to parse error response for better user feedback
-        try {
-          const errorJson = JSON.parse(uploadErrorData);
-          throw new Error(errorJson.error || `Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText}`);
-        } catch (parseError) {
-          throw new Error(`Failed to upload file: ${uploadResponse.status} ${uploadResponse.statusText}`);
+        if (!deleteResponse.ok) {
+          console.warn('Failed to delete some files:', data.filesToDelete);
         }
+      } catch (error) {
+        console.warn('Error deleting files:', error);
       }
+    }
+    
+    // Handle file uploads (single or multiple)
+    let uploadedFiles: string[] = [];
+    
+    if (data.type === 'file') {
+      const filesToUpload = data.files && data.files.length > 0 ? data.files : (data.file ? [data.file] : []);
       
-      contentPath = uniqueFilename;
+      if (filesToUpload.length > 0) {
+         if (filesToUpload.length === 1) {
+           // Single file upload (backward compatibility)
+           const file = filesToUpload[0];
+           const customName = data.customFilenames?.[0];
+           const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
+           const uniqueFilename = generateUniqueFilename(baseFilename, poiId);
+           
+           // Store original filename with adjusted index for editing
+            if (!data.originalFilenames) {
+              data.originalFilenames = {};
+            }
+            const adjustedIndex = (data.existingFiles?.length || 0);
+            data.originalFilenames![adjustedIndex] = file.name;
+           
+           const formData = new FormData();
+           formData.append('file', file);
+           formData.append('filename', uniqueFilename);
+           formData.append('projectId', projectId);
+           
+           const uploadResponse = await fetch('/api/poi/upload', {
+             method: 'POST',
+             body: formData
+           });
+           
+           if (!uploadResponse.ok) {
+             const uploadErrorData = await uploadResponse.text();
+             console.error('File Upload API Error:', {
+               status: uploadResponse.status,
+               statusText: uploadResponse.statusText,
+               response: uploadErrorData
+             });
+             
+             // Try to parse error response for better user feedback
+             try {
+               const errorJson = JSON.parse(uploadErrorData);
+               throw new Error(errorJson.error || `Failed to upload file ${file.name}: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             } catch (parseError) {
+               throw new Error(`Failed to upload file ${file.name}: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             }
+           }
+           
+           uploadedFiles.push(uniqueFilename);
+         } else {
+           // Multiple files upload
+           const formData = new FormData();
+           const filenames: string[] = [];
+           
+           // Initialize originalFilenames if not exists
+           if (!data.originalFilenames) {
+             data.originalFilenames = {};
+           }
+           
+           filesToUpload.forEach((file, index) => {
+             const customName = data.customFilenames?.[index];
+             const baseFilename = customName ? `${customName}.${file.name.split('.').pop()}` : file.name;
+             const uniqueFilename = generateUniqueFilename(baseFilename, poiId);
+
+             formData.append('files', file);
+             formData.append('filenames', uniqueFilename);
+             filenames.push(uniqueFilename);
+             
+             // Store original filename with adjusted index for editing
+              const adjustedIndex = (data.existingFiles?.length || 0) + index;
+              data.originalFilenames![adjustedIndex] = file.name;
+           });
+           
+           formData.append('projectId', projectId);
+
+           
+           const uploadResponse = await fetch('/api/poi/upload-multiple', {
+             method: 'POST',
+             body: formData
+           });
+           
+           if (!uploadResponse.ok) {
+             const uploadErrorData = await uploadResponse.text();
+             console.error('Multiple File Upload API Error:', {
+               status: uploadResponse.status,
+               statusText: uploadResponse.statusText,
+               response: uploadErrorData
+             });
+             
+             // Try to parse error response for better user feedback
+             try {
+               const errorJson = JSON.parse(uploadErrorData);
+               throw new Error(errorJson.error || `Failed to upload files: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             } catch (parseError) {
+               throw new Error(`Failed to upload files: ${uploadResponse.status} ${uploadResponse.statusText}`);
+             }
+           }
+           
+           const uploadResult = await uploadResponse.json();
+           
+           if (uploadResult.errors && uploadResult.errors.length > 0) {
+             // Still proceed if at least some files uploaded successfully
+           }
+           
+           if (uploadResult.uploadedFiles && uploadResult.uploadedFiles.length > 0) {
+             uploadedFiles = uploadResult.uploadedFiles.map((file: any) => file.filename);
+           } else {
+             throw new Error('No files were successfully uploaded');
+           }
+         }
+         
+         // Combine newly uploaded files with existing files when editing
+         if (isEditing && data.existingFiles && data.existingFiles.length > 0) {
+           uploadedFiles = [...data.existingFiles, ...uploadedFiles];
+         }
+         
+         // Set content path to first file for backward compatibility
+         contentPath = uploadedFiles[0];
+      } else if (isEditing && data.existingFiles && data.existingFiles.length > 0) {
+        // For file-type POIs being updated without new files, use existing files from form
+        // Note: data.existingFiles already excludes deleted files (handled by POIModal)
+        uploadedFiles = data.existingFiles;
+        contentPath = uploadedFiles[0];
+      } else if (isEditing) {
+        // When editing and no files remain (all deleted), clear the content and files
+        uploadedFiles = [];
+        contentPath = '';
+      }
+    }
+
+    // Handle originalFilenames properly for editing
+    let mergedOriginalFilenames = data.originalFilenames;
+    
+    if (isEditing && selectedPOI?.originalFilenames) {
+      // When editing, use the originalFilenames from the form data (which has been updated by the modal)
+      // The modal already handles the index shifting when files are deleted
+      mergedOriginalFilenames = data.originalFilenames || selectedPOI.originalFilenames;
     }
 
     const poiData: POIData = {
@@ -433,18 +558,18 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
       position: currentPendingPOI,
       type: data.type,
       content: contentPath,
+      files: uploadedFiles.length > 0 ? uploadedFiles : undefined,
+      customFilenames: data.customFilenames,
+      originalFilenames: mergedOriginalFilenames,
       createdAt: isEditing ? (selectedPOI?.createdAt || timestamp) : timestamp,
       updatedAt: timestamp
     };
 
     const requestPayload = { ...poiData, projectId };
-    console.log(`POI ${isEditing ? 'Update' : 'Save'} Request Payload:`, requestPayload);
-    console.log('Project ID:', projectId);
-    console.log('Current Panorama ID:', currentPanoramaId);
 
     // Save or update POI data
     const saveResponse = await fetch(isEditing ? '/api/poi/update' : '/api/poi/save', {
-      method: 'POST',
+      method: isEditing ? 'PUT' : 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
@@ -500,12 +625,15 @@ const POIComponent = React.forwardRef<POIComponentRef, POIComponentProps>((
 
   const handleDeletePOI = async (poiId: string) => {
     try {
-      const response = await fetch('/api/poi/delete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ poiId, projectId })
+      // Build query parameters for the DELETE request
+      const params = new URLSearchParams({
+        projectId: projectId,
+        id: poiId,
+        useIndividual: 'false' // Default to false, can be made configurable if needed
+      });
+
+      const response = await fetch(`/api/poi/delete?${params.toString()}`, {
+        method: 'DELETE'
       });
 
       if (!response.ok) {

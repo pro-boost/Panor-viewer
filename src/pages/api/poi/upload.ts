@@ -57,6 +57,7 @@ export default async function handler(
     
     const uploadDir = getProjectUploadDir(projectId);
     
+    // Handle single file upload (backward compatibility)
     const file = Array.isArray(files.file) ? files.file[0] : files.file;
     const filename = Array.isArray(fields.filename) ? fields.filename[0] : fields.filename;
     

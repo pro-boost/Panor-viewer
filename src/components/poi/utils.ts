@@ -168,7 +168,8 @@ export const clampPitch = (pitch: number): number => {
 export const generateUniqueFilename = (originalName: string, poiId: string): string => {
   const extension = originalName.split('.').pop() || '';
   const timestamp = Date.now();
-  return `${poiId}_${timestamp}.${extension}`;
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  return `${poiId}_${timestamp}_${randomSuffix}.${extension}`;
 };
 
 /**

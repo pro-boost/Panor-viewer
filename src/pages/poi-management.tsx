@@ -229,16 +229,15 @@ export default function POIManagement() {
 
     setDeletingPOI(poiToDelete.poiId);
     try {
-      const response = await fetch('/api/poi/delete', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectId: poiToDelete.projectId,
-          poiId: poiToDelete.poiId,
-          useIndividual: useIndividualFiles,
-        }),
+      // Build query parameters for the DELETE request
+      const params = new URLSearchParams({
+        projectId: poiToDelete.projectId,
+        id: poiToDelete.poiId,
+        useIndividual: useIndividualFiles.toString()
+      });
+
+      const response = await fetch(`/api/poi/delete?${params.toString()}`, {
+        method: 'DELETE'
       });
 
       if (!response.ok) {
