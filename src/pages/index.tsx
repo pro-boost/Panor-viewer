@@ -50,6 +50,8 @@ export default function Home(): ReactElement {
   const [loading, setLoading] = useState<boolean>(true);
   const [showProjects, setShowProjects] = useState<boolean>(false);
 
+
+
   const loadProjects = async () => {
     try {
       const response = await fetch('/api/projects');
@@ -194,7 +196,7 @@ export default function Home(): ReactElement {
           <Logo variant='default' position='absolute' />
 
           <div
-            className={`${styles.content} ${hasProjects && showProjects ? styles.contentWithProjects : ''}`}
+            className={`${styles.content} ${hasProjects && showProjects ? styles.hasProjects : ''}`}
           >
             {/* Hero Section */}
             <div className={styles.heroSection}>

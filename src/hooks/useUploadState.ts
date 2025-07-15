@@ -58,7 +58,7 @@ export const useUploadState = () => {
 
     if (error.name === 'AbortError') {
       setMessage('Upload was cancelled.');
-    } else if (error.message.includes('Failed to fetch')) {
+    } else if (error.message && error.message.includes('Failed to fetch')) {
       setMessage('Network error. Please check your connection and try again.');
     } else {
       setMessage('An error occurred during upload. Please try again.');

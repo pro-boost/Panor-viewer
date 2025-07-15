@@ -24,7 +24,6 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "@types/adm-zip": "^0.5.7",
     "@types/archiver": "^6.0.3",
     "@types/formidable": "^3.4.5",
     "@types/uuid": "^10.0.0",
@@ -48,6 +47,7 @@
     "@testing-library/jest-dom": "^6.1.0",
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.5.0",
+    "@types/adm-zip": "^0.5.7",
     "@types/jest": "^29.5.14",
     "@types/node": "^20",
     "@types/react": "^18.2.0",

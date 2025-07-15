@@ -12,7 +12,10 @@ export default function Upload() {
   const projectManager = useProjectManager();
   const uploadState = useUploadState();
   const validation = useValidation();
-  const fileManager = useFileManager(projectManager.isEditMode, projectManager.existingFiles);
+  const fileManager = useFileManager(
+    projectManager.isEditMode,
+    projectManager.existingFiles
+  );
 
   // Destructure commonly used values for cleaner code
   const {
@@ -28,7 +31,7 @@ export default function Upload() {
     validateProjectName,
     createProject,
     updateProjectName,
-    getProjectStatusMessage
+    getProjectStatusMessage,
   } = projectManager;
 
   const {
@@ -47,7 +50,7 @@ export default function Upload() {
     getProgressMessage,
     handleUploadError,
     handleUploadResponse,
-    showLargeUploadWarning
+    showLargeUploadWarning,
   } = uploadState;
 
   const {
@@ -59,7 +62,7 @@ export default function Upload() {
     validateBeforeSubmit,
     handleDuplicateFiles,
     isSubmitDisabled,
-    getSubmitButtonText
+    getSubmitButtonText,
   } = validation;
 
   const {
@@ -70,7 +73,7 @@ export default function Upload() {
     handlePOIFileChange,
     removeDuplicateImages,
     getFileValidationErrors,
-    hasRequiredFiles
+    hasRequiredFiles,
   } = fileManager;
 
   // Initialize hooks with useEffect
@@ -101,8 +104,6 @@ export default function Upload() {
     }
   };
 
-
-
   const handleProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
     setProjectName(newName);
@@ -113,10 +114,6 @@ export default function Upload() {
     }
   };
 
-
-
-
-
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement> & {
       _overwriteMode?: boolean;
@@ -124,7 +121,7 @@ export default function Upload() {
     }
   ) => {
     event.preventDefault();
-    
+
     // Clear previous state
     uploadState.clearState();
     validation.clearAllValidation();
@@ -161,7 +158,10 @@ export default function Upload() {
       // Handle CSV file
       if (fileManager.selectedFiles.csv) {
         formData.append('csv', fileManager.selectedFiles.csv);
-      } else if (projectManager.isEditMode && projectManager.existingFiles.csv) {
+      } else if (
+        projectManager.isEditMode &&
+        projectManager.existingFiles.csv
+      ) {
         formData.append('existing_csv', projectManager.existingFiles.csv);
       }
 
@@ -170,10 +170,18 @@ export default function Upload() {
         fileManager.selectedFiles.images.forEach(image => {
           formData.append('images', image);
         });
-      } else if (projectManager.isEditMode && projectManager.existingFiles.images.length > 0) {
+      } else if (
+        projectManager.isEditMode &&
+        projectManager.existingFiles.images.length > 0
+      ) {
         projectManager.existingFiles.images.forEach(imageName => {
           formData.append('existing_images', imageName);
         });
+      }
+
+      // Handle POI file
+      if (fileManager.poiFile) {
+        formData.append('poiFile', fileManager.poiFile);
       }
 
       if (uploadState.allowOverwrite || event._overwriteMode) {
@@ -186,7 +194,10 @@ export default function Upload() {
       uploadState.setAllowOverwrite(false);
 
       // Show large upload warning if needed
-      const totalFiles = fileManager.selectedFiles.images.length + (fileManager.selectedFiles.csv ? 1 : 0) + (fileManager.poiFile ? 1 : 0);
+      const totalFiles =
+        fileManager.selectedFiles.images.length +
+        (fileManager.selectedFiles.csv ? 1 : 0) +
+        (fileManager.poiFile ? 1 : 0);
       uploadState.showLargeUploadWarning(totalFiles);
 
       // Create progress simulation
@@ -205,7 +216,7 @@ export default function Upload() {
       uploadState.updateProgress(100);
 
       const result = await uploadState.handleUploadResponse(response);
-      
+
       // Clear session storage on successful upload
       try {
         sessionStorage.removeItem('uploadPageFiles');
@@ -215,11 +226,16 @@ export default function Upload() {
       } catch (error) {
         console.warn('Failed to clear stored files:', error);
       }
-      
+
       fileManager.clearDuplicateImages();
+      
+      // Set success state with appropriate message
+      const successMessage = projectManager.isEditMode 
+        ? 'Project updated successfully!' 
+        : 'Project created successfully!';
+      uploadState.finishUpload(true, successMessage);
     } catch (error: any) {
       uploadState.handleUploadError(error);
-    } finally {
       uploadState.finishUpload(false, '');
     }
   };
@@ -229,7 +245,9 @@ export default function Upload() {
       <Logo variant='default' position='absolute' />
       <div className={styles.content}>
         <h1 className={styles.title}>
-          {projectManager.isEditMode ? 'Edit Project Data' : 'Upload Panorama Data'}
+          {projectManager.isEditMode
+            ? 'Edit Project Data'
+            : 'Upload Panorama Data'}
         </h1>
 
         <button
@@ -249,7 +267,7 @@ export default function Upload() {
               id='projectName'
               name='projectName'
               value={projectManager.projectName}
-              onChange={(e) => projectManager.setProjectName(e.target.value)}
+              onChange={e => projectManager.setProjectName(e.target.value)}
               placeholder='Enter a name for your project'
               required
               className={`${styles.textInput} ${validation.validationErrors.some(error => error.includes('Project name')) ? styles.inputError : ''}`}
@@ -283,7 +301,9 @@ export default function Upload() {
               id='csv'
               name='csv'
               accept='.csv'
-              required={!projectManager.isEditMode || !projectManager.existingFiles.csv}
+              required={
+                !projectManager.isEditMode || !projectManager.existingFiles.csv
+              }
               onChange={fileManager.handleFileChange}
               className={styles.fileInput}
             />
@@ -292,7 +312,8 @@ export default function Upload() {
           <div className={styles.formGroup}>
             <label htmlFor='images' className={styles.label}>
               Panorama Images
-              {projectManager.isEditMode && projectManager.existingFiles.images.length > 0
+              {projectManager.isEditMode &&
+              projectManager.existingFiles.images.length > 0
                 ? ' (Optional - will add to existing)'
                 : ''}
               :
@@ -303,7 +324,10 @@ export default function Upload() {
               name='images'
               accept='image/*'
               multiple
-              required={!projectManager.isEditMode || projectManager.existingFiles.images.length === 0}
+              required={
+                !projectManager.isEditMode ||
+                projectManager.existingFiles.images.length === 0
+              }
               onChange={fileManager.handleFileChange}
               className={styles.fileInput}
             />
@@ -335,7 +359,11 @@ export default function Upload() {
                     </p>
                     <button
                       type='button'
-                      onClick={() => projectManager.setShowExistingFiles(!projectManager.showExistingFiles)}
+                      onClick={() =>
+                        projectManager.setShowExistingFiles(
+                          !projectManager.showExistingFiles
+                        )
+                      }
                       className={styles.toggleButton}
                     >
                       {projectManager.showExistingFiles ? '▼ Hide' : '▶ Show'}
@@ -343,11 +371,17 @@ export default function Upload() {
                   </div>
                   {projectManager.showExistingFiles && (
                     <ul className={styles.fileListItems}>
-                      {projectManager.existingFiles.csv && <li>CSV: {projectManager.existingFiles.csv}</li>}
-                      {projectManager.existingFiles.poi && <li>POI: {projectManager.existingFiles.poi}</li>}
-                      {projectManager.existingFiles.images.map((imageName, index) => (
-                        <li key={index}>Image: {imageName}</li>
-                      ))}
+                      {projectManager.existingFiles.csv && (
+                        <li>CSV: {projectManager.existingFiles.csv}</li>
+                      )}
+                      {projectManager.existingFiles.poi && (
+                        <li>POI: {projectManager.existingFiles.poi}</li>
+                      )}
+                      {projectManager.existingFiles.images.map(
+                        (imageName, index) => (
+                          <li key={index}>Image: {imageName}</li>
+                        )
+                      )}
                     </ul>
                   )}
                 </div>
@@ -357,14 +391,15 @@ export default function Upload() {
           {/* File Summary */}
           {fileManager.hasRequiredFiles() && (
             <div className={styles.fileSummary}>
-              <h4 className={styles.summaryTitle}>Upload Summary</h4>
+              <h4 className={styles.summaryTitle}>{projectManager.isEditMode ? 'Update Summary' : 'Upload Summary'}</h4>
               <div className={styles.summaryContent}>
                 {fileManager.selectedFiles.csv && (
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
                       CSV: {fileManager.selectedFiles.csv.name} (
-                      {Math.round(fileManager.selectedFiles.csv.size / 1024)} KB)
+                      {Math.round(fileManager.selectedFiles.csv.size / 1024)}{' '}
+                      KB)
                     </span>
                   </div>
                 )}
@@ -389,7 +424,8 @@ export default function Upload() {
                   <div className={styles.summaryItem}>
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
-                      POI: {fileManager.poiFile.name} ({Math.round(fileManager.poiFile.size / 1024)} KB)
+                      POI: {fileManager.poiFile.name} (
+                      {Math.round(fileManager.poiFile.size / 1024)} KB)
                     </span>
                   </div>
                 )}
@@ -409,11 +445,18 @@ export default function Upload() {
             type='submit'
             disabled={validation.isSubmitDisabled()}
             className={`${styles.submitButton} ${
-              validation.validationErrors.length > 0 ? styles.submitButtonDisabled : ''
+              validation.validationErrors.length > 0
+                ? styles.submitButtonDisabled
+                : ''
             }`}
           >
-            {uploadState.isLoading && <span className={styles.loadingSpinner}></span>}
-            {validation.getSubmitButtonText(uploadState.isLoading, projectManager.isEditMode)}
+            {uploadState.isLoading && (
+              <span className={styles.loadingSpinner}></span>
+            )}
+            {validation.getSubmitButtonText(
+              uploadState.isLoading,
+              projectManager.isEditMode
+            )}
           </button>
 
           {uploadState.isLoading && uploadState.uploadProgress > 0 && (
@@ -476,7 +519,7 @@ export default function Upload() {
                 files)
               </h4>
               <button
-                type="button"
+                type='button'
                 onClick={() => setShowDuplicateDetails(!showDuplicateDetails)}
                 className={styles.toggleDetailsButton}
               >
@@ -490,20 +533,20 @@ export default function Upload() {
               </p>
               {showDuplicateDetails && (
                 <ul className={styles.duplicateList}>
-                {duplicateImages.length > 0
-                  ? duplicateImages.map((img, index) => (
-                      <li key={index} className={styles.duplicateItem}>
-                        <span className={styles.fileName}>{img.name}</span>
-                        <span className={styles.fileSize}>
-                          ({Math.round(img.size / 1024)} KB)
-                        </span>
-                      </li>
-                    ))
-                  : duplicateWarning.map((filename, index) => (
-                      <li key={index} className={styles.duplicateItem}>
-                        <span className={styles.fileName}>{filename}</span>
-                      </li>
-                    ))}
+                  {duplicateImages.length > 0
+                    ? duplicateImages.map((img, index) => (
+                        <li key={index} className={styles.duplicateItem}>
+                          <span className={styles.fileName}>{img.name}</span>
+                          <span className={styles.fileSize}>
+                            ({Math.round(img.size / 1024)} KB)
+                          </span>
+                        </li>
+                      ))
+                    : duplicateWarning.map((filename, index) => (
+                        <li key={index} className={styles.duplicateItem}>
+                          <span className={styles.fileName}>{filename}</span>
+                        </li>
+                      ))}
                 </ul>
               )}
 
@@ -569,7 +612,7 @@ export default function Upload() {
                 >
                   Delete All & Upload
                 </button>
-                  </div>
+              </div>
             </div>
           </div>
         )}
@@ -588,9 +631,9 @@ export default function Upload() {
 
         {uploadSuccess && (
           <div className={styles.successActions}>
-            {createdProjectId ? (
+            {(createdProjectId || editingProjectId) ? (
               <Link
-                href={`/${createdProjectId}`}
+                href={`/${createdProjectId || editingProjectId}`}
                 className={styles.viewPanoramasButton}
               >
                 View Project Panoramas

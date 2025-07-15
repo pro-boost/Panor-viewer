@@ -182,6 +182,75 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     console.log(`Successfully moved ${movedImages.length} image files:`, movedImages);
 
+    // Handle POI file
+    console.log('Backend - checking for POI file in files object:', Object.keys(files));
+    const poiFile = Array.isArray(files.poiFile) ? files.poiFile[0] : files.poiFile;
+    console.log('Backend - POI file found:', !!poiFile, poiFile ? poiFile.originalFilename : 'none');
+    if (poiFile) {
+      tempFilesToCleanup.push(poiFile);
+      const poiDir = path.join(dataDir, 'poi');
+      ensureDirectoryExists(poiDir);
+      
+      const originalFilename = poiFile.originalFilename || 'poi-data.json';
+      
+      // Check if it's a ZIP file that needs extraction
+      if (originalFilename.toLowerCase().endsWith('.zip')) {
+        console.log('Backend - Processing ZIP file for POI data');
+        const AdmZip = require('adm-zip');
+        
+        try {
+          const zip = new AdmZip(poiFile.filepath);
+          const zipEntries = zip.getEntries();
+          
+          // Look for poi-data.json in the ZIP
+          const poiDataEntry = zipEntries.find((entry: any) => 
+            entry.entryName.toLowerCase().includes('poi-data.json') || 
+            entry.entryName.toLowerCase().endsWith('.json')
+          );
+          
+          if (poiDataEntry) {
+            const poiDataContent = poiDataEntry.getData().toString('utf8');
+            const poiDataPath = path.join(poiDir, 'poi-data.json');
+            fs.writeFileSync(poiDataPath, poiDataContent);
+            console.log(`POI data extracted and saved to: ${poiDataPath}`);
+            
+            // Extract any attachment files
+            const attachmentsDir = path.join(poiDir, 'attachments');
+            ensureDirectoryExists(attachmentsDir);
+            
+            zipEntries.forEach((entry: any) => {
+              if (!entry.isDirectory && !entry.entryName.toLowerCase().includes('poi-data.json')) {
+                const fileName = path.basename(entry.entryName);
+                const attachmentPath = path.join(attachmentsDir, fileName);
+                fs.writeFileSync(attachmentPath, entry.getData());
+                console.log(`Attachment extracted: ${fileName}`);
+              }
+            });
+          } else {
+            console.log('No POI data found in ZIP file');
+          }
+        } catch (zipError) {
+          console.error('Error processing ZIP file:', zipError);
+          // Fallback: save the ZIP file as-is
+          const poiDestPath = path.join(poiDir, originalFilename);
+          await moveFile(poiFile.filepath, poiDestPath);
+        }
+      } else {
+        // Handle non-ZIP files (JSON, etc.)
+        const poiDestPath = path.join(poiDir, originalFilename.endsWith('.json') ? originalFilename : 'poi-data.json');
+        console.log(`Backend - Moving POI file from ${poiFile.filepath} to ${poiDestPath}`);
+        await moveFile(poiFile.filepath, poiDestPath);
+        
+        // Verify POI file was moved successfully
+        if (!fs.existsSync(poiDestPath)) {
+          throw new Error(`Failed to move POI file to ${poiDestPath}`);
+        }
+        console.log(`POI file successfully moved to: ${poiDestPath}`);
+      }
+    } else {
+      console.log('Backend - No POI file received');
+    }
+
     // Add a small delay to ensure all file operations are completed
     await new Promise(resolve => setTimeout(resolve, 100));
     

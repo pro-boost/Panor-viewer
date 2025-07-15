@@ -47,9 +47,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Check for POI files
     const poiDataDir = path.join(projectDir, 'data', 'poi');
     if (fs.existsSync(poiDataDir)) {
-      const poiDataFile = path.join(poiDataDir, 'poi-data.json');
-      if (fs.existsSync(poiDataFile)) {
-        files.poi = 'poi-data.json';
+      const poiFiles = fs.readdirSync(poiDataDir)
+        .filter(file => {
+          const ext = path.extname(file).toLowerCase();
+          return ['.json', '.zip'].includes(ext);
+        })
+        .sort();
+      
+      if (poiFiles.length > 0) {
+        files.poi = poiFiles[0]; // Use the first POI file found
       }
     }
 

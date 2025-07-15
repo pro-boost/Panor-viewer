@@ -103,6 +103,7 @@
   border-color: var(--glass-border-hover);
   transform: translateX(-4px);
   box-shadow: var(--shadow-md);
+      cursor: pointer;
 }
 
 .backLink:focus-visible {
