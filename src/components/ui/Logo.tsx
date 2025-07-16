@@ -1,4 +1,5 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 import styles from './Logo.module.css';
 
 interface LogoProps {
@@ -9,8 +10,13 @@ interface LogoProps {
 
 const Logo: React.FC<LogoProps> = React.memo(
   ({ variant = 'default', position = 'absolute', className = '' }) => {
+    const router = useRouter();
     const logoClass =
       `${styles.logoContainer} ${styles[variant]} ${styles[position]} ${className}`.trim();
+
+    const handleLogoClick = () => {
+      window.location.href = '/';
+    };
 
     return (
       <div className={logoClass}>
@@ -18,6 +24,8 @@ const Logo: React.FC<LogoProps> = React.memo(
           src='/assets/svg/primezone-logo.svg'
           alt='PrimeZone Logo'
           className={styles.logoImage}
+          style={{ cursor: 'pointer' }}
+          onClick={handleLogoClick}
         />
       </div>
     );

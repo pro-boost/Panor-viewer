@@ -125,7 +125,7 @@ export default function SceneViewer(): ReactElement {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
-          <div className={styles.icon}>⏳</div>
+
           <h1 className={styles.title}>Loading Scene</h1>
           <p className={styles.description}>
             Loading scene "{sceneId}" from project "{projectId}"...

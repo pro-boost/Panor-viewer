@@ -50,8 +50,6 @@ export default function Home(): ReactElement {
   const [loading, setLoading] = useState<boolean>(true);
   const [showProjects, setShowProjects] = useState<boolean>(false);
 
-
-
   const loadProjects = async () => {
     try {
       const response = await fetch('/api/projects');
@@ -173,7 +171,6 @@ export default function Home(): ReactElement {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
-          <div className={styles.icon}>⏳</div>
           <h1 className={styles.title}>Loading...</h1>
           <p className={styles.description}>
             Checking for projects and panoramas...

@@ -121,7 +121,6 @@ export default function ProjectViewer(): ReactElement {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
-          <div className={styles.icon}>⏳</div>
           <h1 className={styles.title}>Loading Project</h1>
           <p className={styles.description}>
             Please wait while we load your project...

@@ -528,7 +528,7 @@ export default function POIManagement() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Show POI File Manager when no POIs are found */}
               {!searchTerm && (
                 <div className={styles.formGroup}>
@@ -540,9 +540,17 @@ export default function POIManagement() {
                     <POIFileManager
                       projectId={selectedProject}
                       onPOIImported={handlePOIImported}
-                      onError={error => handleFileManagerMessage('error', error)}
-                      onSuccess={message => handleFileManagerMessage('success', message)}
-                      hasExistingPOIs={projectPOIs.some(project => project.projectId === selectedProject && project.pois.length > 0)}
+                      onError={error =>
+                        handleFileManagerMessage('error', error)
+                      }
+                      onSuccess={message =>
+                        handleFileManagerMessage('success', message)
+                      }
+                      hasExistingPOIs={projectPOIs.some(
+                        project =>
+                          project.projectId === selectedProject &&
+                          project.pois.length > 0
+                      )}
                     />
                   )}
                 </div>
@@ -633,7 +641,11 @@ export default function POIManagement() {
                             onSuccess={message =>
                               handleFileManagerMessage('success', message)
                             }
-                            hasExistingPOIs={projectPOIs.some(p => p.projectId === selectedProject && p.pois.length > 0)}
+                            hasExistingPOIs={projectPOIs.some(
+                              p =>
+                                p.projectId === selectedProject &&
+                                p.pois.length > 0
+                            )}
                           />
                         </div>
                       )}
@@ -656,7 +668,7 @@ export default function POIManagement() {
 
                           <div className={styles.buttonGroup}>
                             <Link
-                              href={`/${project.projectId}?scene=${poi.panoramaId}`}
+                              href={`/${project.projectId}/${poi.panoramaId}`}
                               className={styles.poiButton}
                             >
                               View

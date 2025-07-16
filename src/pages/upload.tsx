@@ -80,11 +80,14 @@ export default function Upload() {
   useEffect(() => {
     projectManager.initializeFromUrl();
   }, []);
-  
+
   // Update UI when existingFiles changes
   useEffect(() => {
     // Force UI update when existingFiles changes
-    console.log('ExistingFiles changed in state:', projectManager.existingFiles);
+    console.log(
+      'ExistingFiles changed in state:',
+      projectManager.existingFiles
+    );
     // This will update the project status message in the UI
   }, [projectManager.existingFiles]);
 
@@ -241,10 +244,16 @@ export default function Upload() {
 
       // Refresh project data to update the UI with new file information
       if (projectManager.isEditMode && projectManager.editingProjectId) {
-        console.log('Refreshing project data after successful upload for project:', projectManager.editingProjectId);
+        console.log(
+          'Refreshing project data after successful upload for project:',
+          projectManager.editingProjectId
+        );
         await projectManager.loadProjectData(projectManager.editingProjectId);
-        console.log('Project data refreshed, current files:', projectManager.existingFiles);
-        
+        console.log(
+          'Project data refreshed, current files:',
+          projectManager.existingFiles
+        );
+
         // Force UI update by setting a message that includes the updated file information
         const updatedStatusMessage = projectManager.getProjectStatusMessage();
         uploadState.setMessage(updatedStatusMessage);
@@ -639,12 +648,15 @@ export default function Upload() {
         {(message || uploadSuccess) && (
           <div
             className={`${styles.message} ${
-              message && (message.includes('failed') || message.includes('error'))
+              message &&
+              (message.includes('failed') || message.includes('error'))
                 ? styles.messageError
                 : styles.messageSuccess
             }`}
           >
-            {uploadSuccess ? projectManager.getProjectStatusMessage() || message : message}
+            {uploadSuccess
+              ? projectManager.getProjectStatusMessage() || message
+              : message}
           </div>
         )}
 
