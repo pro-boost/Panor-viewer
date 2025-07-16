@@ -8,6 +8,7 @@ interface POIFileManagerProps {
   onPOIImported?: (poi: POIData) => void;
   onError?: (error: string) => void;
   onSuccess?: (message: string) => void;
+  hasExistingPOIs?: boolean;
 }
 
 interface ImportOptions {
@@ -20,6 +21,7 @@ export default function POIFileManager({
   onPOIImported,
   onError,
   onSuccess,
+  hasExistingPOIs = false,
 }: POIFileManagerProps) {
   const [isImporting, setIsImporting] = useState(false);
   const [importOptions, setImportOptions] = useState<ImportOptions>({
@@ -208,36 +210,38 @@ export default function POIFileManager({
       <div className={styles.section}>
         <h4>Import POI</h4>
 
-        {/* Import Options */}
-        <div className={styles.importOptions}>
-          <label className={styles.checkbox}>
-            <input
-              type='checkbox'
-              checked={importOptions.generateNewId}
-              onChange={e =>
-                setImportOptions(prev => ({
-                  ...prev,
-                  generateNewId: e.target.checked,
-                }))
-              }
-            />
-            Generate new ID (prevents conflicts)
-          </label>
+        {/* Import Options - Only show if there are existing POIs */}
+        {hasExistingPOIs && (
+          <div className={styles.importOptions}>
+            <label className={styles.checkbox}>
+              <input
+                type='checkbox'
+                checked={importOptions.generateNewId}
+                onChange={e =>
+                  setImportOptions(prev => ({
+                    ...prev,
+                    generateNewId: e.target.checked,
+                  }))
+                }
+              />
+              Generate new ID (prevents conflicts)
+            </label>
 
-          <label className={styles.checkbox}>
-            <input
-              type='checkbox'
-              checked={importOptions.overwrite}
-              onChange={e =>
-                setImportOptions(prev => ({
-                  ...prev,
-                  overwrite: e.target.checked,
-                }))
-              }
-            />
-            Overwrite existing POIs
-          </label>
-        </div>
+            <label className={styles.checkbox}>
+              <input
+                type='checkbox'
+                checked={importOptions.overwrite}
+                onChange={e =>
+                  setImportOptions(prev => ({
+                    ...prev,
+                    overwrite: e.target.checked,
+                  }))
+                }
+              />
+              Overwrite existing POIs
+            </label>
+          </div>
+        )}
 
         {/* File Drop Zone */}
         <div

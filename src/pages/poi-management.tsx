@@ -524,10 +524,29 @@ export default function POIManagement() {
                   <div className={styles.inputHint}>
                     {searchTerm
                       ? 'Try adjusting your search terms'
-                      : 'Create some POIs in your panorama projects'}
+                      : 'Create some POIs in your panorama projects or import them below'}
                   </div>
                 </div>
               </div>
+              
+              {/* Show POI File Manager when no POIs are found */}
+              {!searchTerm && (
+                <div className={styles.formGroup}>
+                  {selectedProject === 'all' ? (
+                    <div className={styles.inputHint}>
+                      Please select a specific project to import POIs
+                    </div>
+                  ) : (
+                    <POIFileManager
+                      projectId={selectedProject}
+                      onPOIImported={handlePOIImported}
+                      onError={error => handleFileManagerMessage('error', error)}
+                      onSuccess={message => handleFileManagerMessage('success', message)}
+                      hasExistingPOIs={projectPOIs.some(project => project.projectId === selectedProject && project.pois.length > 0)}
+                    />
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             filteredProjectPOIs.map(project => (
@@ -614,6 +633,7 @@ export default function POIManagement() {
                             onSuccess={message =>
                               handleFileManagerMessage('success', message)
                             }
+                            hasExistingPOIs={projectPOIs.some(p => p.projectId === selectedProject && p.pois.length > 0)}
                           />
                         </div>
                       )}
