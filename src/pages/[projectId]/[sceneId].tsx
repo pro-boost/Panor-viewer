@@ -8,15 +8,18 @@ import styles from '@/styles/Welcome.module.css';
 import Logo from '@/components/ui/Logo';
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
-const PanoramaViewer = dynamic(() => import('@/components/viewer/PanoramaViewer'), {
-  ssr: false,
-  loading: (): ReactElement => (
-    <div id='loading'>
-      <div className='loader'></div>
-      <div>Loading panorama...</div>
-    </div>
-  ),
-});
+const PanoramaViewer = dynamic(
+  () => import('@/components/viewer/PanoramaViewer'),
+  {
+    ssr: false,
+    loading: (): ReactElement => (
+      <div id='loading'>
+        <div className='loader'></div>
+        <div>Loading panorama...</div>
+      </div>
+    ),
+  }
+);
 
 interface ConfigData {
   scenes: Array<{ id: string; name: string; [key: string]: any }>;
@@ -135,10 +138,9 @@ export default function SceneViewer(): ReactElement {
   if (error) {
     return (
       <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
+        <Logo variant='default' position='absolute' />
 
         <div className={styles.content}>
-          <div className={styles.icon}>❌</div>
           <h1 className={styles.title}>Scene Error</h1>
           <p className={styles.description}>{error}</p>
 
@@ -151,19 +153,16 @@ export default function SceneViewer(): ReactElement {
             }}
           >
             <Link href='/' className={styles.uploadButton}>
-              <span className={styles.uploadIcon}>🏠</span>
               Back to Home
             </Link>
 
             {sceneExists && (
               <Link href={`/${projectId}`} className={styles.uploadButton}>
-                <span className={styles.uploadIcon}>📁</span>
                 Back to Project
               </Link>
             )}
 
             <Link href='/upload' className={styles.uploadButton}>
-              <span className={styles.uploadIcon}>📁</span>
               Upload New Project
             </Link>
           </div>
@@ -177,7 +176,7 @@ export default function SceneViewer(): ReactElement {
     return (
       <div>
         {/* Logo */}
-        <Logo variant="default" position="absolute" />
+        <Logo variant='default' position='absolute' />
 
         <PanoramaViewer
           projectId={projectId as string}

@@ -75,6 +75,7 @@
   /* Improve rendering performance */
   will-change: transform, opacity;
   transform: translateZ(0);
+
 }
 
 .sceneHotspot:hover {
@@ -88,18 +89,22 @@
   height: 12px;
   z-index: 20;
   animation: pulse 2s infinite;
+  /* Ensure cursor pointer is always visible */
+  cursor: pointer !important;
 }
 
 .sceneHotspot.other {
-  background: #4CAF50;
+  background: #0099ff;
   border: 1.5px solid white;
   width: 8px;
   height: 8px;
   z-index: 5;
+  /* Ensure cursor pointer is always visible */
+  cursor: pointer !important;
 }
 
 .sceneHotspot.other:hover {
-  background: #66BB6A !important;
+  background:#0099ff !important;
 }
 
 .directionIndicator {
@@ -123,13 +128,13 @@
   height: 70px;
   /* Create flashlight beam cone using clip-path */
   background: radial-gradient(ellipse at bottom, 
-    rgba(255, 235, 59, 0.4) 0%, 
-    rgba(255, 235, 59, 0.25) 30%, 
-    rgba(255, 235, 59, 0.15) 50%, 
-    rgba(255, 235, 59, 0.08) 70%, 
-    rgba(255, 235, 59, 0.02) 100%);
+    rgba(255, 255, 255, 0.4) 0%, 
+    rgba(255, 255, 255, 0.25) 30%, 
+    rgba(255, 255, 255, 0.15) 50%, 
+    rgba(255, 255, 255, 0.08) 70%, 
+    rgba(255, 255, 255, 0.02) 100%);
   clip-path: polygon(50% 100%, 5% 0%, 95% 0%);
-  filter: drop-shadow(0 2px 8px rgba(255, 235, 59, 0.4)) blur(2px);
+  filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.4)) blur(2px);
   /* Add subtle animation for flashlight effect */
   animation: flashlightPulse 3s ease-in-out infinite;
   z-index: 15;
@@ -138,11 +143,11 @@
 
 @keyframes flashlightPulse {
   0%, 100% {
-    filter: drop-shadow(0 2px 8px rgba(255, 235, 59, 0.5)) blur(2px);
+    filter: drop-shadow(0 2px 8px rgba(255, 255, 255, 0.5)) blur(2px);
     opacity: 0.6;
   }
   50% {
-    filter: drop-shadow(0 2px 12px rgba(255, 235, 59, 0.6)) blur(1px);
+    filter: drop-shadow(0 2px 12px rgba(255, 255, 255, 0.6)) blur(1px);
     opacity: 0.8;
   }
 }
@@ -329,15 +334,8 @@
   }
 }
 
-@keyframes poiPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.8), 0 2px 8px rgba(0, 0, 0, 0.3);
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 8px rgba(76, 175, 80, 0), 0 2px 8px rgba(0, 0, 0, 0.3);
-    transform: translate(-50%, -50%) scale(1.1);
-  }
+.sceneHotspot.poiPulse {
+  border: 2px solid #0099ff;
 }
 
 @keyframes fadeIn {
@@ -478,7 +476,7 @@
 }
 
 .sceneHotspot:focus {
-  outline: 2px solid #ffeb3b;
+  outline: 2px solid #0099ff;
   outline-offset: 2px;
 }
 

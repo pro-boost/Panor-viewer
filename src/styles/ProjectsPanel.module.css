@@ -2,6 +2,7 @@
 
 .createButton {
   margin-bottom: var(--spacing-xl);
+  cursor: pointer;
 }
 
 .errorContainer {
