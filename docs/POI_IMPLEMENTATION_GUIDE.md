@@ -2,23 +2,19 @@
 
 ## Overview
 
-This guide provides a complete implementation of a Point of Interest (POI) system for the panorama viewer application. The system allows users to create, manage, and interact with points of interest within panoramic scenes through right-click interactions, modal configuration, and data persistence.
+This guide provides implementation details for the Point of Interest (POI) system in the panorama viewer application. The system allows users to create, manage, and interact with points of interest within panoramic scenes.
 
-## ✅ Implementation Status
+## ✅ System Components
 
-### Completed Components
+### Core Components
 
-- ✅ **POI Types & Interfaces** (`src/types/poi.ts`)
-- ✅ **Utility Functions** (`src/components/poi/utils.ts`)
-- ✅ **Context Menu Component** (`src/components/poi/POIContextMenu.tsx`)
-- ✅ **Modal Configuration** (`src/components/poi/POIModal.tsx`)
-- ✅ **Preview Component** (`src/components/poi/POIPreview.tsx`)
-- ✅ **Main POI Component** (`src/components/poi/POIComponent.tsx`)
-- ✅ **API Endpoints** (`pages/api/poi/upload.ts`, `pages/api/poi/save.ts`)
-- ✅ **Data Storage Structure** (`public/pano-app/data/poi/`)
-- ✅ **Integration with PanoramaViewer**
-- ✅ **Environment Configuration**
-- ✅ **Documentation & Tests**
+- **POI Types & Interfaces** (`src/types/poi.ts`) - TypeScript definitions
+- **Context Menu Component** (`src/components/poi/POIContextMenu.tsx`) - Right-click menu
+- **Modal Configuration** (`src/components/poi/POIModal.tsx`) - POI creation/editing form
+- **Preview Component** (`src/components/poi/POIPreview.tsx`) - Content display with YouTube/Vimeo support
+- **Main POI Component** (`src/components/poi/POIComponent.tsx`) - Integration component
+- **API Endpoints** (`pages/api/poi/`) - Backend services
+- **Utility Functions** (`src/components/poi/utils.ts`) - Helper functions
 
 ## 🚀 Features Implemented
 

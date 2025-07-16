@@ -99,20 +99,28 @@ pano-app/
 ├── docs/                  # Documentation
 │   ├── README.md         # Setup instructions
 │   ├── CONFIGURATION.md  # Configuration guide
-│   └── TROUBLESHOOTING.md # Troubleshooting guide
+│   ├── TROUBLESHOOTING.md # Comprehensive troubleshooting
+│   └── FIXES_AND_IMPROVEMENTS.md # Development history
 ├── public/               # Static assets
 │   ├── assets/js/        # Marzipano library
 │   ├── data/             # CSV data files
 │   ├── images/           # Panorama images
 │   └── config.json       # Generated configuration
 ├── scripts/              # Build and utility scripts
-│   └── generate_marzipano_config.py
+│   ├── node/            # Node.js scripts (recommended)
+│   └── generate_marzipano_config.py # Legacy Python script
 ├── src/                  # Source code
 │   ├── components/       # React components
+│   │   ├── poi/         # Point of Interest system
+│   │   ├── viewer/      # Panorama viewer components
+│   │   └── ui/          # UI components
+│   ├── hooks/           # Custom React hooks
+│   ├── contexts/        # React contexts
 │   ├── lib/             # Utility libraries
 │   ├── pages/           # Next.js pages
-│   └── types/           # TypeScript definitions
-├── tests/               # Test files
+│   ├── styles/          # CSS modules
+│   ├── types/           # TypeScript definitions
+│   └── utils/           # Utility functions
 └── package.json         # Dependencies and scripts
 ```
 

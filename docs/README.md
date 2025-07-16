@@ -2,12 +2,14 @@
 
 This documentation provides comprehensive guides for setting up, configuring, and maintaining the panorama viewer application.
 
+> 📋 **Navigation**: See [INDEX.md](./INDEX.md) for a complete documentation overview and quick navigation guide.
+
 ## Quick Start
 
 ### Prerequisites
 
 - **Node.js** (v18 or higher)
-- **Python** (v3.7 or higher) with numpy
+- **Python** (v3.7 or higher) with numpy *(optional - Node.js scripts available)*
 - **Git** (for version control)
 
 ### Installation
@@ -19,12 +21,11 @@ This documentation provides comprehensive guides for setting up, configuring, an
    npm install
    ```
 
-2. **Install Python dependencies:**
+2. **Install Python dependencies** *(optional)*:
    ```bash
    pip install numpy
-   # or
-   pip3 install numpy
    ```
+   *Note: Node.js scripts are available as an alternative to Python scripts*
 
 3. **Generate panorama configuration:**
    ```bash

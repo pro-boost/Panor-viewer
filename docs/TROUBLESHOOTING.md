@@ -1,8 +1,16 @@
-# Troubleshooting Guide
+# Comprehensive Troubleshooting Guide
 
-This guide helps resolve common issues with the panorama viewer application.
+This guide helps resolve common issues with the panorama viewer application, including installation, configuration, upload, and runtime problems.
 
-## Installation Issues
+## 🚀 Quick Diagnostics
+
+Before troubleshooting specific issues, run the built-in diagnostics:
+
+1. **System Health Check**: Visit the upload page and click "Run Diagnostics"
+2. **Manual Diagnostics**: Use the `/api/diagnostics` endpoint
+3. **WebGL Test**: Visit https://get.webgl.org/ to verify WebGL support
+
+## 📦 Installation Issues
 
 ### Python Not Found
 
@@ -47,6 +55,62 @@ pip3 install numpy
    rm -rf node_modules package-lock.json
    npm install
    ```
+
+## 📤 Upload Issues
+
+### "Internal server error during file upload"
+
+**Cause**: Configuration generation script fails after files are uploaded
+
+**Solutions**:
+
+1. **Check Python Installation**:
+   ```bash
+   python --version  # Should show Python 3.x.x
+   ```
+
+2. **Check Required Python Packages**:
+   ```bash
+   python -c "import numpy; print('numpy version:', numpy.__version__)"
+   ```
+
+3. **Install Missing Dependencies**:
+   ```bash
+   pip install numpy
+   ```
+
+4. **Manual Configuration Generation**:
+   ```bash
+   node scripts/node/generate-config.js --project "YOUR_PROJECT_NAME"
+   ```
+
+### CSV File Not Found Error
+
+**Cause**: CSV file wasn't properly uploaded or named incorrectly
+
+**Solutions**:
+1. Ensure your CSV file is named exactly `pano-poses.csv`
+2. Check file permissions in the project directory
+3. Verify the upload completed successfully
+
+### File Permission Errors
+
+**Cause**: Application doesn't have permission to create directories or move files
+
+**Solutions**:
+1. Check directory permissions for the `public/` folder
+2. Ensure the application has write access to the project directory
+3. On Windows, try running as administrator if needed
+
+### Large File Upload Issues
+
+**Symptoms**: Upload timeout or memory errors
+
+**Solutions**:
+1. Upload fewer files at once
+2. Reduce image file sizes if possible
+3. Check available disk space
+4. Increase server timeout settings if you have access
 
 ## Configuration Issues
 
