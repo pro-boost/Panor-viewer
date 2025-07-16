@@ -54,6 +54,8 @@ export const useProjectManager = () => {
 
   const loadProjectData = async (projectParam: string) => {
     try {
+      console.log('Loading project data for:', projectParam);
+      
       // Load project info
       const projectResponse = await fetch(
         `/api/projects?projectId=${encodeURIComponent(projectParam)}`
@@ -65,6 +67,7 @@ export const useProjectManager = () => {
         );
         if (project) {
           setProjectName(project.name);
+          console.log('Project name loaded:', project.name);
         }
       }
 
@@ -75,6 +78,9 @@ export const useProjectManager = () => {
       if (filesResponse.ok) {
         const filesData = await filesResponse.json();
         const { files } = filesData;
+        
+        console.log('Files loaded:', files);
+        console.log('Image count:', files.images.length);
 
         // Store existing files in state
         setExistingFiles({
@@ -82,6 +88,8 @@ export const useProjectManager = () => {
           images: files.images,
           poi: files.poi || null,
         });
+        
+        console.log('Existing files state updated');
       }
     } catch (error) {
       console.error('Failed to load project data:', error);

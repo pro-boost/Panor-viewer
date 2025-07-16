@@ -80,9 +80,19 @@ export default function Upload() {
   useEffect(() => {
     projectManager.initializeFromUrl();
   }, []);
+  
+  // Update UI when existingFiles changes
+  useEffect(() => {
+    // Force UI update when existingFiles changes
+    console.log('ExistingFiles changed in state:', projectManager.existingFiles);
+    // This will update the project status message in the UI
+  }, [projectManager.existingFiles]);
 
   const handleDeleteAllAndUpload = () => {
     validation.clearAllValidation();
+    // Clear duplicate warnings and images to hide the section
+    validation.clearDuplicateWarning();
+    fileManager.clearDuplicateImages();
     setDeleteAllAndUpload(true);
     const form = document.querySelector('form') as HTMLFormElement;
     if (form) {
@@ -228,6 +238,17 @@ export default function Upload() {
       }
 
       fileManager.clearDuplicateImages();
+
+      // Refresh project data to update the UI with new file information
+      if (projectManager.isEditMode && projectManager.editingProjectId) {
+        console.log('Refreshing project data after successful upload for project:', projectManager.editingProjectId);
+        await projectManager.loadProjectData(projectManager.editingProjectId);
+        console.log('Project data refreshed, current files:', projectManager.existingFiles);
+        
+        // Force UI update by setting a message that includes the updated file information
+        const updatedStatusMessage = projectManager.getProjectStatusMessage();
+        uploadState.setMessage(updatedStatusMessage);
+      }
 
       // Set success state with appropriate message
       const successMessage = projectManager.isEditMode
@@ -568,18 +589,12 @@ export default function Upload() {
                 </ul>
               </div>
               <div className={styles.duplicateActions}>
-                {duplicateImages.length > 0 && (
-                  <button
-                    type='button'
-                    onClick={fileManager.removeDuplicateImages}
-                    className={styles.removeDuplicatesButton}
-                  >
-                    Remove Duplicates
-                  </button>
-                )}
                 <button
                   onClick={e => {
                     e.preventDefault();
+                    // Clear duplicate warnings to hide the section
+                    validation.clearDuplicateWarning();
+                    fileManager.clearDuplicateImages();
                     const form = document.querySelector(
                       'form'
                     ) as HTMLFormElement;
@@ -621,15 +636,15 @@ export default function Upload() {
           </div>
         )}
 
-        {message && duplicateWarning.length === 0 && (
+        {(message || uploadSuccess) && (
           <div
             className={`${styles.message} ${
-              message.includes('failed') || message.includes('error')
+              message && (message.includes('failed') || message.includes('error'))
                 ? styles.messageError
                 : styles.messageSuccess
             }`}
           >
-            {projectManager.getProjectStatusMessage() || message}
+            {uploadSuccess ? projectManager.getProjectStatusMessage() || message : message}
           </div>
         )}
 

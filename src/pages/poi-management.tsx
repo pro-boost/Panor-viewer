@@ -233,11 +233,11 @@ export default function POIManagement() {
       const params = new URLSearchParams({
         projectId: poiToDelete.projectId,
         id: poiToDelete.poiId,
-        useIndividual: useIndividualFiles.toString()
+        useIndividual: useIndividualFiles.toString(),
       });
 
       const response = await fetch(`/api/poi/delete?${params.toString()}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       if (!response.ok) {
@@ -352,7 +352,7 @@ export default function POIManagement() {
         );
         return {
           ...project,
-          pois: filteredPOIs
+          pois: filteredPOIs,
         };
       }
       return project;
@@ -425,8 +425,6 @@ export default function POIManagement() {
               operations.
             </div>
           </div>
-
-
 
           {/* Filters */}
           <div className={styles.formGroup}>
@@ -521,8 +519,8 @@ export default function POIManagement() {
             <div className={styles.form}>
               <div className={styles.formGroup}>
                 <div className={styles.emptyState}>
-                  <div className={styles.emptyTitle}>No POIs</div>
-                  <div className={styles.label}>No POIs found</div>
+                  <div className={styles.emptyTitle}>No POIs found</div>
+
                   <div className={styles.inputHint}>
                     {searchTerm
                       ? 'Try adjusting your search terms'
@@ -582,14 +580,17 @@ export default function POIManagement() {
                           if (!showImportManager) {
                             setShowDetails(prev => ({
                               ...prev,
-                              [project.projectId]: true
+                              [project.projectId]: true,
                             }));
                           }
                         }}
                         className={styles.backLink}
                         title={`Import POIs to ${project.projectName}`}
                       >
-                        {showImportManager && selectedProject === project.projectId ? 'Hide Import' : 'Import POIs'}
+                        {showImportManager &&
+                        selectedProject === project.projectId
+                          ? 'Hide Import'
+                          : 'Import POIs'}
                       </button>
                       <span className={styles.expandIcon}>
                         {showDetails[project.projectId] ? '▼' : '▶'}
@@ -601,18 +602,21 @@ export default function POIManagement() {
                 {showDetails[project.projectId] && (
                   <div>
                     {/* POI File Manager */}
-                    {selectedProject === project.projectId && showImportManager && (
-                      <div className={styles.formGroup}>
-                        <POIFileManager
-                          projectId={selectedProject}
-                          onPOIImported={handlePOIImported}
-                          onError={error => handleFileManagerMessage('error', error)}
-                          onSuccess={message =>
-                            handleFileManagerMessage('success', message)
-                          }
-                        />
-                      </div>
-                    )}
+                    {selectedProject === project.projectId &&
+                      showImportManager && (
+                        <div className={styles.formGroup}>
+                          <POIFileManager
+                            projectId={selectedProject}
+                            onPOIImported={handlePOIImported}
+                            onError={error =>
+                              handleFileManagerMessage('error', error)
+                            }
+                            onSuccess={message =>
+                              handleFileManagerMessage('success', message)
+                            }
+                          />
+                        </div>
+                      )}
                     {project.pois.map(poi => (
                       <div key={poi.id} className={styles.fileSummary}>
                         <h3 className={styles.summaryTitle}>POI: {poi.name}</h3>

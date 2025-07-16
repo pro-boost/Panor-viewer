@@ -93,11 +93,37 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const deleteAll = fields.deleteAll && fields.deleteAll[0] === 'true';
 
     if (deleteAll) {
-      if (fs.existsSync(imagesDir)) {
+      // Check if we have image files to determine if we need to delete the images directory
+      const hasImageFiles = Array.isArray(files.images) ? files.images.length > 0 : !!files.images;
+      
+      // Check if we have POI file to determine if we need to delete the POI directory
+      const hasPoiFile = Array.isArray(files.poiFile) ? files.poiFile.length > 0 : !!files.poiFile;
+      
+      // Check if we have CSV file to determine if we need to delete the CSV file
+      const hasCsvFile = Array.isArray(files.csv) ? files.csv.length > 0 : !!files.csv;
+      
+      // Only delete the images directory if we have new image files
+      if (hasImageFiles && fs.existsSync(imagesDir)) {
+        console.log('Deleting images directory due to duplicate images');
         fs.rmSync(imagesDir, { recursive: true, force: true });
       }
-      if (fs.existsSync(dataDir)) {
-        fs.rmSync(dataDir, { recursive: true, force: true });
+      
+      // Only delete the POI directory if we have a new POI file
+      if (hasPoiFile && fs.existsSync(dataDir)) {
+        const poiDir = path.join(dataDir, 'poi');
+        if (fs.existsSync(poiDir)) {
+          console.log('Deleting POI directory due to duplicate POI file');
+          fs.rmSync(poiDir, { recursive: true, force: true });
+        }
+      }
+      
+      // Only delete the CSV file if we have a new CSV file
+      if (hasCsvFile && fs.existsSync(dataDir)) {
+        const csvPath = path.join(dataDir, 'pano-poses.csv');
+        if (fs.existsSync(csvPath)) {
+          console.log('Deleting CSV file due to duplicate CSV file');
+          fs.unlinkSync(csvPath);
+        }
       }
     }
     
