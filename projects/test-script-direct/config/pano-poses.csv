@@ -1,0 +1,3 @@
+filename,x,y,z,yaw,pitch,roll
+test_pano_001.jpg,0,0,0,0,0,0
+test_pano_002.jpg,5,0,0,90,0,0

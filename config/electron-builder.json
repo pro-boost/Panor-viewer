@@ -1,0 +1,124 @@
+{
+  "appId": "com.fribouz.panoramaviewer",
+  "productName": "PrimeZone Advanced Panorama Viewer",
+  "copyright": "Copyright © 2025 fribouz",
+  "icon": "public/panorama-viewer-icon.png",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "desktop/**/*",
+    ".next/standalone/**/*",
+    ".next/static/**/*",
+    "public/assets/**/*",
+    "projects/**/*",
+    "data/credential-config.json",
+    "scripts/server-production.js",
+    "config/next.config.production.js",
+    "package.json",
+    "scripts/node/**/*",
+    "!**/*.map",
+    "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+    "!**/node_modules/.cache",
+    "!scripts/python/**/*",
+    "!scripts/build-with-credentials.js",
+    "!scripts/test-credentials.js",
+    "!scripts/verify-build-contents.js",
+    "!scripts/copy-test-project-to-production.js",
+    "!scripts/create-test-project.js",
+    "!scripts/create-electron-test-project.js",
+    "!public/cars/**/*",
+    "!docs/**/*",
+    "!src/**/*",
+    "!.github/**/*",
+    "!.husky/**/*",
+    "!jest.*",
+    "!eslint.*",
+    "!.prettier*",
+    "!.lighthouserc.json",
+    "!.lintstagedrc.json",
+    "!config/**/*",
+    "!next.config.js",
+    "!instruction.md",
+    "!readmeoverview.md",
+    "!README.md",
+    "!**/*.test.*",
+    "!**/*.spec.*",
+    "!**/__tests__/**/*",
+    "!**/test/**/*",
+    "!**/tests/**/*",
+    "!tests/**/*",
+    "!**/*.log",
+    "!**/.env*",
+    "!**/coverage/**/*",
+    "!**/.nyc_output/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "public/assets",
+      "to": "assets"
+    }
+  ],
+
+  "asar": {
+    "smartUnpack": true
+  },
+  "asarUnpack": [
+    "desktop/**/*",
+    "scripts/server-production.js",
+    "next.config.production.js",
+    ".next/standalone/**/*",
+    "projects/**/*",
+    "data/credential-config.json",
+    "scripts/node/**/*"
+  ],
+  "compression": "normal",
+  "forceCodeSigning": false,
+  "afterSign": null,
+  "afterAllArtifactBuild": null,
+  "mac": {
+    "category": "public.app-category.productivity",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build-resources/entitlements.mac.plist",
+    "entitlementsInherit": "build-resources/entitlements.mac.plist"
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 410,
+        "y": 150,
+        "type": "link",
+        "path": "/Applications"
+      },
+      {
+        "x": 130,
+        "y": 150,
+        "type": "file"
+      }
+    ]
+  },
+  "win": {
+    "target": [
+      {
+        "target": "dir",
+        "arch": ["x64"]
+      }
+    ],
+    "sign": false,
+    "verifyUpdateCodeSignature": false,
+    "signAndEditExecutable": false,
+    "signDlls": false
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "differentialPackage": true
+  },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "category": "Graphics"
+  }
+}
