@@ -274,11 +274,51 @@ html {
 }
 
 /* ===================================
+   PERFORMANCE OPTIMIZATIONS
+   =================================== */
+
+/* Enable hardware acceleration for smooth animations */
+.title,
+.uploadButton,
+.projectsIndicator,
+.projectCard {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Optimize backdrop filters */
+.form,
+.logoContainer,
+.modalOverlay,
+.modalContainer {
+  will-change: backdrop-filter;
+}
+
+/* Smooth scrolling optimization */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===================================
    CUSTOM SCROLLBAR
    =================================== */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -289,7 +329,7 @@ html {
 ::-webkit-scrollbar-thumb {
   background: var(--glass-border);
   border-radius: var(--radius-full);
-  transition: var(--transition-fast);
+  transition: background 0.15s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {

@@ -42,26 +42,63 @@ export const useValidation = () => {
     projectName: string,
     hasRequiredFiles: boolean,
     fileValidationErrors: string[],
-    projectNameValidator: (name: string) => string[]
-  ): boolean => {
-    const allErrors: string[] = [];
+    projectNameValidator: (name: string) => string[],
+    csvFile?: File
+  ): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const allErrors: string[] = [];
 
-    // Validate project name
-    const nameErrors = projectNameValidator(projectName);
-    allErrors.push(...nameErrors);
+      // Validate project name
+      const nameErrors = projectNameValidator(projectName);
+      allErrors.push(...nameErrors);
 
-    // Validate required files
-    if (!hasRequiredFiles) {
-      allErrors.push('Please select required files (CSV and at least one image).');
-    }
+      // Validate required files
+      if (!hasRequiredFiles) {
+        allErrors.push('Please select required files (CSV and at least one image).');
+      }
 
-    // Add file validation errors
-    allErrors.push(...fileValidationErrors);
+      // Add file validation errors
+      allErrors.push(...fileValidationErrors);
 
-    // Set all validation errors
-    setValidationErrors(allErrors);
+      // Validate CSV file content if provided
+      if (csvFile) {
+        validateCSVContent(csvFile, allErrors).then(() => {
+          setValidationErrors(allErrors);
+          resolve(allErrors.length === 0);
+        });
+      } else {
+        setValidationErrors(allErrors);
+        resolve(allErrors.length === 0);
+      }
+    });
+  };
 
-    return allErrors.length === 0;
+  const validateCSVContent = (csvFile: File, errors: string[]): Promise<void> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result as string;
+        if (content) {
+          const lines = content.split('\n');
+          if (lines.length > 0) {
+            const header = lines[0].toLowerCase();
+            const requiredColumns = [
+              'filename',
+              'pano_pos_x', 'pano_pos_y', 'pano_pos_z',
+              'pano_ori_w', 'pano_ori_x', 'pano_ori_y', 'pano_ori_z'
+            ];
+            
+            const missingColumns = requiredColumns.filter(col => !header.includes(col));
+            if (missingColumns.length > 0) {
+              errors.push(`CSV file is missing required columns: ${missingColumns.join(', ')}. Please ensure your CSV includes position (pano_pos_x, pano_pos_y, pano_pos_z) and orientation (pano_ori_w, pano_ori_x, pano_ori_y, pano_ori_z) columns.`);
+            }
+          }
+        }
+        resolve();
+      };
+      reader.onerror = () => resolve();
+      reader.readAsText(csvFile);
+    });
   };
 
   const handleDuplicateFiles = (duplicates: string[]) => {

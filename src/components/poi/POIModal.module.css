@@ -1,27 +1,23 @@
 /* === POI Modal Styles === */
 
-/* Custom Scrollbar Styling */
+/* Optimized Scrollbar Styling */
 .modalContainer::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .modalContainer::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 .modalContainer::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  border-radius: 3px;
+  transition: background 0.15s ease;
 }
 
 .modalContainer::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
-}
-
-.modalContainer::-webkit-scrollbar-thumb:active {
-  background: rgba(255, 255, 255, 0.4);
 }
 
 /* Firefox scrollbar styling */
@@ -39,8 +35,8 @@
   align-items: center;
   justify-content: center;
  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -48,8 +44,8 @@
 /* Modal Container */
 .modalContainer {
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   max-width: 40%;

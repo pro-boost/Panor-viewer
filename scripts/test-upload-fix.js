@@ -38,17 +38,31 @@ async function testUpload() {
       filename: 'test-image2.jpg',
       contentType: 'image/jpeg'
     });
+    form.append('deleteAll', 'true');
     
     console.log('📤 Uploading files to project:', projectId);
     
     // Make upload request
-    const response = await fetch(`http://localhost:3000/api/projects/${projectId}/upload`, {
+    const response = await fetch(`http://localhost:3456/api/projects/${projectId}/upload`, {
       method: 'POST',
       body: form,
       headers: form.getHeaders()
     });
     
-    const result = await response.json();
+    console.log('📊 Response status:', response.status);
+    console.log('📊 Response headers:', response.headers.raw());
+    
+    const responseText = await response.text();
+    console.log('📊 Raw response:', responseText);
+    
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (parseError) {
+      console.log('❌ JSON parse error:', parseError.message);
+      console.log('❌ Response was not valid JSON:', responseText);
+      return false;
+    }
     
     if (response.ok) {
       console.log('✅ Upload successful!');

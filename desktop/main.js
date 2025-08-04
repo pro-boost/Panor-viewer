@@ -55,10 +55,14 @@ async function createWindow() {
       experimentalFeatures: true,
       webgl: true,
       enableRemoteModule: false,
-      allowRunningInsecureContent: false
+      allowRunningInsecureContent: false,
+      // Performance optimizations
+      hardwareAcceleration: true,
+      backgroundThrottling: false, // Prevent throttling for smooth animations
+      offscreen: false // Ensure on-screen rendering for better performance
     },
     // icon: path.join(__dirname, '../public/icon.svg'), // Temporarily disabled
-    show: true,
+    show: false, // Start hidden and show after load for smoother startup
     backgroundColor: '#ffffff',
     titleBarStyle: 'default'
   });
@@ -69,6 +73,14 @@ async function createWindow() {
   // Load the app
   console.log('Loading URL:', serverUrl);
   await mainWindow.loadURL(serverUrl);
+  
+  // Fallback: show window after 3 seconds if did-finish-load doesn't fire
+  setTimeout(() => {
+    if (!mainWindow.isVisible()) {
+      mainWindow.show();
+      mainWindow.focus();
+    }
+  }, 3000);
   
   if (isDev) {
     mainWindow.webContents.openDevTools();
@@ -81,6 +93,9 @@ async function createWindow() {
   
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('Page loaded successfully');
+    // Show window after loading for smoother startup
+    mainWindow.show();
+    mainWindow.focus();
   });
 
   mainWindow.on('closed', () => {
@@ -99,13 +114,16 @@ async function createWindow() {
   }
 }
 
-// Enable WebGL with software-only rendering
-app.commandLine.appendSwitch('disable-gpu');
-app.commandLine.appendSwitch('disable-gpu-sandbox');
+// Enable hardware acceleration for better performance with fallback
 app.commandLine.appendSwitch('enable-webgl');
-app.commandLine.appendSwitch('enable-software-rasterizer');
-app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor');
-app.commandLine.appendSwitch('use-gl', 'swiftshader');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('ignore-gpu-blacklist');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+// Use ANGLE for better compatibility
+app.commandLine.appendSwitch('use-gl', 'angle');
+app.commandLine.appendSwitch('use-angle', 'gl');
+// Enable additional performance features
+app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecoder,CanvasOopRasterization');
 
 // IPC handlers for file operations
 ipcMain.handle('app:getPath', (event, name) => {

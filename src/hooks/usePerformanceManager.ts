@@ -3,15 +3,15 @@ import { SceneInfo as SceneInfoType } from '@/types/scenes';
 import { PanoramaViewerRefs, PanoramaViewerActions } from './usePanoramaViewer';
 import { FileURLManager } from '@/utils/fileHelpers';
 
-// Performance thresholds and constants
+// Performance thresholds and constants - optimized for better performance
 const PERFORMANCE_THRESHOLDS = {
-  MAX_PRELOADED_SCENES: 8,
-  MIN_PRELOADED_SCENES: 3,
+  MAX_PRELOADED_SCENES: 4, // Reduced from 8 for better memory usage
+  MIN_PRELOADED_SCENES: 2, // Reduced from 3
   DISTANCE_THRESHOLD_CLOSE: 50,
-  DISTANCE_THRESHOLD_FAR: 200,
-  MEMORY_WARNING_THRESHOLD: 100 * 1024 * 1024, // 100MB
-  MEMORY_CRITICAL_THRESHOLD: 200 * 1024 * 1024, // 200MB
-  UNLOAD_DISTANCE_MULTIPLIER: 3,
+  DISTANCE_THRESHOLD_FAR: 150, // Reduced from 200 for more aggressive unloading
+  MEMORY_WARNING_THRESHOLD: 50 * 1024 * 1024, // 50MB - reduced from 100MB
+  MEMORY_CRITICAL_THRESHOLD: 100 * 1024 * 1024, // 100MB - reduced from 200MB
+  UNLOAD_DISTANCE_MULTIPLIER: 2, // Reduced from 3 for more aggressive cleanup
 } as const;
 
 // Performance monitoring interface
@@ -65,17 +65,17 @@ export function usePerformanceManager({
         const totalScenes = Object.keys(refs.scenesRef.current).length;
         const connections = sceneInfo.data.linkHotspots.map(h => h.target);
 
-        // Adaptive limits based on total scene count
+        // Adaptive limits based on total scene count - optimized for performance
         const maxPreloadedScenes =
           totalScenes > 200
-            ? 6
+            ? 3 // Reduced from 6
             : totalScenes > 100
-              ? 8
+              ? 4 // Reduced from 8
               : totalScenes > 50
-                ? 12
-                : 16;
+                ? 6 // Reduced from 12
+                : 8; // Reduced from 16
         const maxPriorityConnections =
-          totalScenes > 200 ? 2 : totalScenes > 100 ? 3 : 4;
+          totalScenes > 200 ? 1 : totalScenes > 100 ? 2 : 3; // Reduced by 1 across all tiers
 
         const loadedScenes = Object.values(refs.scenesRef.current).filter(
           s => s.loaded

@@ -241,9 +241,30 @@ class ServerManager {
             serverPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'scripts', 'server-production.js');
             cwd = path.join(process.resourcesPath, 'app.asar.unpacked');
           } else {
-            // Non-ASAR packaged app
-            serverPath = path.join(process.resourcesPath, 'scripts', 'server-production.js');
-            cwd = process.resourcesPath;
+            // Non-ASAR packaged app - check multiple possible locations
+            const possiblePaths = [
+              path.join(process.resourcesPath, 'server-production.js'),
+              path.join(process.resourcesPath, 'scripts', 'server-production.js'),
+              path.join(process.resourcesPath, 'app', 'scripts', 'server-production.js'),
+              path.join(process.resourcesPath, 'standalone', 'scripts', 'server-production.js')
+            ];
+            
+            serverPath = possiblePaths.find(p => fs.existsSync(p));
+            if (!serverPath) {
+              throw new Error(`server-production.js not found in any of: ${possiblePaths.join(', ')}`);
+            }
+            
+            // Set working directory to standalone if it exists, otherwise use resources
+            const possibleStandalonePaths = [
+              path.join(process.resourcesPath, 'standalone'),
+              path.join(process.resourcesPath, 'app', '.next', 'standalone'),
+              path.join(process.resourcesPath, '.next', 'standalone')
+            ];
+            const standalonePath = possibleStandalonePaths.find(p => fs.existsSync(p));
+            if (!standalonePath) {
+              throw new Error(`Standalone directory not found in any of: ${possibleStandalonePaths.join(', ')}`);
+            }
+            cwd = standalonePath;
           }
         } else {
           // Development mode

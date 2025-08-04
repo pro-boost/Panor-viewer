@@ -159,19 +159,18 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  background-size: 300% 300%;
+  background-size: 200% 200%;
   animation: 
-    cosmicShift 8s ease infinite,
-    float 3s ease-in-out infinite;
+    cosmicShift 6s ease infinite,
+    float 4s ease-in-out infinite;
 
   letter-spacing: 0.05em;
   line-height: 1.1;
   text-transform: uppercase;
 
   filter: 
-    drop-shadow(0 0 30px rgba(255, 255, 255, 0.4))
-    drop-shadow(0 0 60px rgba(66, 153, 225, 0.5))
-    drop-shadow(0 0 100px rgba(99, 179, 237, 0.4));
+    drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))
+    drop-shadow(0 0 40px rgba(66, 153, 225, 0.4));
 }
 
 
@@ -181,7 +180,7 @@
 }
 @keyframes float {
   0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-6px); }
 }
 
 .subtitle,
@@ -463,17 +462,17 @@
   color: var(--text-secondary);
   min-width: 220px;
   height: 56px;
-  animation: subtlePulse 3s ease-in-out infinite;
+  animation: subtlePulse 4s ease-in-out infinite;
 }
 
 @keyframes subtlePulse {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.2);
   }
   50% {
-    transform: scale(1.02);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+    transform: scale(1.01);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0);
   }
 }
 
@@ -501,7 +500,7 @@
   color: var(--text-secondary);
   width: 16px;
   height: 16px;
-  animation: bounce 2s ease-in-out infinite;
+  animation: bounce 3s ease-in-out infinite;
 }
 
 @keyframes bounce {
@@ -509,7 +508,7 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(3px);
+    transform: translateY(2px);
   }
 }
 

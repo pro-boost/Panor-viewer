@@ -14,10 +14,10 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-attachment: scroll;
 }
 
-/* Animated background effect */
+/* Simplified background effect */
 .container::before {
   content: '';
   position: absolute;
@@ -25,10 +25,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(66, 153, 225, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  background: radial-gradient(circle at 50% 50%, rgba(66, 153, 225, 0.08) 0%, transparent 60%);
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 /* ===================================
@@ -39,7 +38,7 @@
   top: var(--spacing-2xl);
   left: var(--spacing-2xl);
   z-index: 10;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   padding: var(--spacing-lg) var(--spacing-xl);
@@ -103,7 +102,7 @@
   border: 1px solid rgba(255, 255, 255, 0.284); ;
   border-radius: var(--radius-full);
   transition: var(--transition-base);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(6px);
 }
 
 .backLink:hover {
@@ -140,7 +139,7 @@
    =================================== */
 .form {
   background: var(--glass-bg);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-2xl);
   padding: var(--spacing-3xl);
@@ -150,15 +149,15 @@
   overflow: hidden;
 }
 
-/* Glass shine effect */
+/* Simplified shine effect */
 .form::before {
   content: '';
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  top: -25%;
+  left: -25%;
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
   transform: rotate(45deg);
   pointer-events: none;
 }
@@ -998,6 +997,79 @@
   justify-content: center;
   font-size: var(--font-sm);
   font-weight: 600;
+}
+
+.csvRequirements {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--info);
+  backdrop-filter: blur(10px);
+}
+
+.csvRequirementsTitle {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--info-light);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.csvRequirementsText {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+.csvRequirementsList {
+  margin: 0 0 var(--spacing-md) 0;
+  padding-left: var(--spacing-xl);
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  list-style: none;
+  counter-reset: csv-counter;
+}
+
+.csvRequirementsList li {
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+  position: relative;
+  padding-left: var(--spacing-lg);
+  counter-increment: csv-counter;
+}
+
+.csvRequirementsList li::before {
+  content: counter(csv-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--info);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.csvRequirementsNote {
+  margin: 0;
+  color: var(--warning);
+  font-size: var(--font-sm);
+  background: rgba(245, 158, 11, 0.1);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 3px solid var(--warning);
+  line-height: 1.5;
 }
 
 /* ===================================

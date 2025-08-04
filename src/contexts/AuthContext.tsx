@@ -47,7 +47,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // If not authenticated and not on auth pages, redirect to login
         if (!router.pathname.startsWith('/auth/') && router.isReady) {
-          if (data.requiresSetup) {
+          // Skip setup and go directly to login if configured
+          if (data.requiresSetup && process.env.NEXT_PUBLIC_SKIP_SETUP === 'true') {
+            await router.replace('/auth/login');
+          } else if (data.requiresSetup) {
             await router.replace('/auth/setup');
           } else {
             await router.replace('/auth/login');
