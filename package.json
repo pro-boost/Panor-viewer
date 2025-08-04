@@ -33,6 +33,7 @@
     "build:electron-portable": "node scripts/build-electron-packager.js",
     "desktop:build:mac": "npm run build:standalone && electron-builder --config=config/electron-builder.json --mac",
     "desktop:build:linux": "npm run build:standalone && electron-builder --config=config/electron-builder.json --linux",
+    "desktop:build:windows-safe": "npm run build:standalone && powershell -ExecutionPolicy Bypass -File scripts/build-electron-windows-safe.ps1",
     "build:electron": "node scripts/build-electron-packager.js",
     "test:credentials": "node scripts/test-credentials.js",
     "test": "cd . && jest --config=config/jest.config.js",
