@@ -1000,6 +1000,79 @@
   font-weight: 600;
 }
 
+.csvRequirements {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--info);
+  backdrop-filter: blur(10px);
+}
+
+.csvRequirementsTitle {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--info-light);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.csvRequirementsText {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+.csvRequirementsList {
+  margin: 0 0 var(--spacing-md) 0;
+  padding-left: var(--spacing-xl);
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  list-style: none;
+  counter-reset: csv-counter;
+}
+
+.csvRequirementsList li {
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+  position: relative;
+  padding-left: var(--spacing-lg);
+  counter-increment: csv-counter;
+}
+
+.csvRequirementsList li::before {
+  content: counter(csv-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--info);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.csvRequirementsNote {
+  margin: 0;
+  color: var(--warning);
+  font-size: var(--font-sm);
+  background: rgba(245, 158, 11, 0.1);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 3px solid var(--warning);
+  line-height: 1.5;
+}
+
 /* ===================================
    OVERWRITE OPTIONS
    =================================== */

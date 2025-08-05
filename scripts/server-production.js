@@ -15,8 +15,17 @@ if (process.resourcesPath) {
     // ASAR packaged app
     standalonePath = path.join(process.resourcesPath, 'app.asar.unpacked', '.next', 'standalone');
   } else {
-    // Non-ASAR packaged app
-    standalonePath = path.join(process.resourcesPath, '.next', 'standalone');
+    // Non-ASAR packaged app - check multiple possible locations
+    const possiblePaths = [
+      path.join(process.resourcesPath, 'standalone'),
+      path.join(process.resourcesPath, 'app', '.next', 'standalone'),
+      path.join(process.resourcesPath, '.next', 'standalone')
+    ];
+    
+    standalonePath = possiblePaths.find(p => fs.existsSync(p));
+    if (!standalonePath) {
+      throw new Error(`Standalone directory not found in any of: ${possiblePaths.join(', ')}`);
+    }
   }
 } else {
   // Development mode

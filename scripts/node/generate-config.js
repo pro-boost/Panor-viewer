@@ -10,6 +10,7 @@ function parseArgs() {
   const args = process.argv.slice(2);
   const options = {
     project: null,
+    projectsPath: null,
     help: false
   };
   
@@ -17,6 +18,9 @@ function parseArgs() {
     switch (args[i]) {
       case '--project':
         options.project = args[++i];
+        break;
+      case '--projects-path':
+        options.projectsPath = args[++i];
         break;
       case '--help':
       case '-h':
@@ -29,13 +33,14 @@ function parseArgs() {
 }
 
 function showHelp() {
-  console.log('Usage: node generate-config.js --project <projectId>');
+  console.log('Usage: node generate-config.js --project <projectId> [--projects-path <path>]');
   console.log('\nGenerate Marzipano configuration from panorama data');
   console.log('\nOptions:');
-  console.log('  --project <projectId>   Project ID for project-specific generation (required)');
-  console.log('  --help, -h             Show this help message');
+  console.log('  --project <projectId>      Project ID for project-specific generation (required)');
+  console.log('  --projects-path <path>     Custom projects directory path (optional)');
+  console.log('  --help, -h                Show this help message');
   console.log('\nExample:');
-  console.log('  node generate-config.js --project toyota');
+  console.log('  node generate-config.js --project toyota --projects-path /custom/projects');
 }
 
 try {
@@ -56,8 +61,9 @@ try {
 
   console.log(`Generating panorama configuration for project: ${projectId}`);
 
-  // Project-specific paths - use PROJECTS_PATH environment variable
-  const projectsPath = process.env.PROJECTS_PATH || path.join(process.cwd(), 'projects');
+  // Project-specific paths - use command line argument or environment variable
+  const projectsPath = options.projectsPath || process.env.PROJECTS_PATH || path.join(process.cwd(), 'projects');
+  console.log(`Using projects path: ${projectsPath}`);
   const csvFile = path.join(projectsPath, projectId, 'config', 'pano-poses.csv');
   const outputFile = path.join(projectsPath, projectId, 'config.json');
   const projectPath = `/${projectId}`;

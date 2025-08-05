@@ -54,11 +54,12 @@ async function createWindow() {
       webSecurity: false, // Required for local file access
       experimentalFeatures: true,
       webgl: true,
+      hardwareAcceleration: true,
       enableRemoteModule: false,
       allowRunningInsecureContent: false
     },
     // icon: path.join(__dirname, '../public/icon.svg'), // Temporarily disabled
-    show: true,
+    show: false, // Start hidden for smooth loading
     backgroundColor: '#ffffff',
     titleBarStyle: 'default'
   });
@@ -81,7 +82,17 @@ async function createWindow() {
   
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('Page loaded successfully');
+    // Show window after loading for smooth startup
+    mainWindow.show();
+    mainWindow.focus();
   });
+  
+  // Fallback to show window after timeout
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isVisible()) {
+      mainWindow.show();
+    }
+  }, 3000);
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -99,13 +110,14 @@ async function createWindow() {
   }
 }
 
-// Enable WebGL with software-only rendering
-app.commandLine.appendSwitch('disable-gpu');
-app.commandLine.appendSwitch('disable-gpu-sandbox');
+// Enable hardware acceleration with ANGLE renderer
 app.commandLine.appendSwitch('enable-webgl');
-app.commandLine.appendSwitch('enable-software-rasterizer');
-app.commandLine.appendSwitch('disable-features', 'VizDisplayCompositor');
-app.commandLine.appendSwitch('use-gl', 'swiftshader');
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('use-angle', 'gl');
+app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecoder');
+app.commandLine.appendSwitch('ignore-gpu-blacklist');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
 
 // IPC handlers for file operations
 ipcMain.handle('app:getPath', (event, name) => {

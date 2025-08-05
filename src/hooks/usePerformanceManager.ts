@@ -5,12 +5,12 @@ import { FileURLManager } from '@/utils/fileHelpers';
 
 // Performance thresholds and constants
 const PERFORMANCE_THRESHOLDS = {
-  MAX_PRELOADED_SCENES: 8,
-  MIN_PRELOADED_SCENES: 3,
+  MAX_PRELOADED_SCENES: 4,
+  MIN_PRELOADED_SCENES: 2,
   DISTANCE_THRESHOLD_CLOSE: 50,
   DISTANCE_THRESHOLD_FAR: 200,
-  MEMORY_WARNING_THRESHOLD: 100 * 1024 * 1024, // 100MB
-  MEMORY_CRITICAL_THRESHOLD: 200 * 1024 * 1024, // 200MB
+  MEMORY_WARNING_THRESHOLD: 50 * 1024 * 1024, // 50MB
+  MEMORY_CRITICAL_THRESHOLD: 100 * 1024 * 1024, // 100MB
   UNLOAD_DISTANCE_MULTIPLIER: 3,
 } as const;
 
@@ -68,14 +68,14 @@ export function usePerformanceManager({
         // Adaptive limits based on total scene count
         const maxPreloadedScenes =
           totalScenes > 200
-            ? 6
+            ? 3
             : totalScenes > 100
-              ? 8
+              ? 4
               : totalScenes > 50
-                ? 12
-                : 16;
+                ? 6
+                : 8;
         const maxPriorityConnections =
-          totalScenes > 200 ? 2 : totalScenes > 100 ? 3 : 4;
+          totalScenes > 200 ? 1 : totalScenes > 100 ? 2 : 3;
 
         const loadedScenes = Object.values(refs.scenesRef.current).filter(
           s => s.loaded

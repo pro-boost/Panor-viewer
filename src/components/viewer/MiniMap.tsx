@@ -8,7 +8,7 @@ import minimapStyles from '@/styles/MiniMap.module.css';
 interface MiniMapProps {
   scenes: SceneData[];
   currentScene: SceneData;
-  viewer: any; // Marzipano viewer
+  viewer: Marzipano.Viewer;
   onSelectScene: (sceneId: string) => void;
   rotationAngle: number;
   poiSceneCounts?: Record<string, number>;

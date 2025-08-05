@@ -337,43 +337,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       console.log(`Starting configuration generation for project: ${projectId}`);
       
-      // In Electron environment, scripts are in the standalone directory
-      const isElectron = process.env.ELECTRON_PROJECTS_PATH;
       let scriptPath, cwd;
       
-      if (isElectron) {
-        // In Electron production, use process.resourcesPath for reliable path resolution
-        const resourcesPath = (process as any).resourcesPath;
-        
-        if (resourcesPath) {
-          // Packaged app - try ASAR unpacked first, then fallback
-          const asarUnpackedPath = path.join(resourcesPath, 'app.asar.unpacked', 'scripts', 'node', 'generate-config.js');
-          const regularPath = path.join(resourcesPath, 'scripts', 'node', 'generate-config.js');
-          
-          if (fs.existsSync(asarUnpackedPath)) {
-            scriptPath = asarUnpackedPath;
-            cwd = path.join(resourcesPath, 'app.asar.unpacked');
-            console.log(`Using ASAR unpacked script path: ${scriptPath}`);
-          } else if (fs.existsSync(regularPath)) {
-            scriptPath = regularPath;
-            cwd = resourcesPath;
-            console.log(`Using regular resources script path: ${scriptPath}`);
-          } else {
-            // Fallback to process.cwd() for development or unusual setups
-            scriptPath = path.join(process.cwd(), 'scripts', 'node', 'generate-config.js');
-            cwd = process.cwd();
-            console.log(`Fallback to process.cwd() script path: ${scriptPath}`);
-          }
+      // Check if we're in a packaged Electron app
+      if ((process as any).resourcesPath) {
+        // Packaged Electron app - check for ASAR packaging
+        const isAsar = __dirname.includes('.asar');
+        if (isAsar) {
+          // ASAR packaged app - scripts are in app.asar.unpacked
+          scriptPath = path.join((process as any).resourcesPath, 'app.asar.unpacked', 'scripts', 'node', 'generate-config.js');
+          cwd = path.join((process as any).resourcesPath, 'app.asar.unpacked');
         } else {
-          // Development mode or no resourcesPath available
-          scriptPath = path.join(process.cwd(), 'scripts', 'node', 'generate-config.js');
-          cwd = process.cwd();
-          console.log(`Development mode script path: ${scriptPath}`);
+          // Non-ASAR packaged app - scripts are in resources/node directory
+          scriptPath = path.join((process as any).resourcesPath, 'node', 'generate-config.js');
+          cwd = (process as any).resourcesPath;
         }
+        console.log(`Using packaged app script path: ${scriptPath}`);
+        console.log(`ASAR mode: ${isAsar}`);
       } else {
-        // Development or standalone mode - find the correct project root
-        // The API file is in src/pages/api/projects/[projectId]/upload.ts
-        // We need to go up to the project root where scripts/ directory is located
+        // Development mode - use project root
         const currentDir = __dirname;
         const projectRoot = path.resolve(currentDir, '../../../../../..');
         scriptPath = path.join(projectRoot, 'scripts', 'node', 'generate-config.js');
@@ -383,14 +365,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!fs.existsSync(scriptPath)) {
           console.log(`Script not found at calculated path ${scriptPath}, trying alternative paths...`);
           
-          // Try relative to the current working directory (Panor-viewer)
+          // Try relative to the current working directory
           const altScriptPath1 = path.join(process.cwd(), 'scripts', 'node', 'generate-config.js');
           if (fs.existsSync(altScriptPath1)) {
             scriptPath = altScriptPath1;
             cwd = process.cwd();
             console.log(`Using process.cwd() script path: ${scriptPath}`);
           } else {
-            // Try going up one level from process.cwd() (in case we're in a subdirectory)
+            // Try going up one level from process.cwd()
             const altScriptPath2 = path.join(path.dirname(process.cwd()), 'Panor-viewer', 'scripts', 'node', 'generate-config.js');
             if (fs.existsSync(altScriptPath2)) {
               scriptPath = altScriptPath2;
@@ -409,45 +391,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`Script path: ${scriptPath}`);
       console.log(`Working directory: ${cwd}`);
       
-      // Get the correct Node.js executable path with fallback logic
+      // Get the correct Node.js executable path
       let nodePath;
-      console.log(`Environment check - isElectron: ${isElectron}`);
-      console.log(`Environment check - process.execPath: ${process.execPath}`);
-      console.log(`Environment check - process.argv0: ${process.argv0}`);
-      
-      if (isElectron) {
-        // In Electron environment, try system Node.js first, then fallback to Electron executable
-        const commonNodePaths = [
-          'C:\\Program Files\\nodejs\\node.exe',
-          'C:\\Program Files (x86)\\nodejs\\node.exe',
-          'node' // Fallback to PATH
+      if ((process as any).resourcesPath) {
+        // In packaged Electron app, find the Node.js executable
+        // Electron bundles Node.js, but we need to use it correctly
+        const electronPath = process.execPath;
+        const electronDir = path.dirname(electronPath);
+        
+        // Try to find node.exe in the Electron directory
+        const possibleNodePaths = [
+          path.join(electronDir, 'node.exe'),
+          path.join(electronDir, '..', 'node.exe'),
+          electronPath // Fallback to Electron executable with node flag
         ];
         
-        // Try to use system Node.js first
-        nodePath = 'node';
-        console.log(`Attempting to use system Node.js executable for Electron: ${nodePath}`);
-        
-        // Test if system Node.js is available
-        try {
-          const { execSync } = require('child_process');
-          execSync('node --version', { stdio: 'ignore', timeout: 5000 });
-          console.log('System Node.js is available');
-        } catch (nodeTestError) {
-          console.log('System Node.js not available, falling back to Electron executable');
-          nodePath = process.execPath; // Use Electron executable as fallback
+        nodePath = electronPath; // Use Electron with node flag as default
+        for (const possiblePath of possibleNodePaths) {
+          if (fs.existsSync(possiblePath)) {
+            nodePath = possiblePath;
+            break;
+          }
         }
       } else {
-        // Development or standalone mode
+        // Development mode - use current process executable
         nodePath = process.execPath;
-        console.log(`Using development Node.js executable: ${nodePath}`);
       }
-      
-      console.log(`Final Node executable: ${nodePath}`);
-      
-      // Additional debug info
-      console.log(`Process platform: ${process.platform}`);
-      console.log(`Process version: ${process.version}`);
-      console.log(`Process versions: ${JSON.stringify(process.versions)}`);
+      console.log(`Node executable: ${nodePath}`);
       
       // Set the environment variables for the script
       const scriptEnv = {
@@ -455,7 +425,42 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         PROJECTS_PATH: projectsPath
       };
       
-      const { stdout, stderr } = await spawnAsync(nodePath, [scriptPath, '--project', projectId], {
+      // Debug logging
+      console.log(`Setting PROJECTS_PATH to: ${projectsPath}`);
+      console.log(`Script environment PROJECTS_PATH: ${scriptEnv.PROJECTS_PATH}`);
+      console.log(`Using node executable: ${nodePath}`);
+      console.log(`Script path: ${scriptPath}`);
+      console.log(`Working directory: ${cwd}`);
+      
+      // Force use of regular Node.js executable for better environment variable handling
+      // Find the actual node.exe instead of using Electron executable
+      let actualNodePath = nodePath;
+      if ((process as any).resourcesPath) {
+        // In packaged mode, try to find the actual node.exe
+        const possibleNodePaths = [
+          'C:\\Program Files\\nodejs\\node.exe',
+          'C:\\Program Files (x86)\\nodejs\\node.exe',
+          path.join(process.env.PROGRAMFILES || 'C:\\Program Files', 'nodejs', 'node.exe'),
+          path.join(process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)', 'nodejs', 'node.exe')
+        ];
+        
+        for (const possiblePath of possibleNodePaths) {
+          if (fs.existsSync(possiblePath)) {
+            actualNodePath = possiblePath;
+            console.log(`Found Node.js executable: ${actualNodePath}`);
+            break;
+          }
+        }
+      }
+      
+      // Prepare arguments for script execution
+      // Pass PROJECTS_PATH directly as a command line argument instead of relying on environment variable
+      const scriptArgs = [scriptPath, '--project', projectId, '--projects-path', projectsPath];
+      console.log(`Final node path: ${actualNodePath}`);
+      console.log(`Script arguments: ${scriptArgs.join(' ')}`);
+      console.log(`Explicitly passing PROJECTS_PATH as argument: ${projectsPath}`);
+      
+      const { stdout, stderr } = await spawnAsync(actualNodePath, scriptArgs, {
          cwd,
          env: scriptEnv
        });
