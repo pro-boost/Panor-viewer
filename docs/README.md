@@ -49,7 +49,7 @@ This documentation provides comprehensive guides for setting up, configuring, an
 pano-app/
 ├── docs/                    # Documentation
 ├── public/
-│   ├── assets/js/          # JavaScript assets
+│   ├── lib/                # JavaScript libraries (marzipano.js)
 │   ├── data/               # Data files
 │   │   └── pano-poses.csv  # Panorama position data
 │   └── images/             # Panorama images

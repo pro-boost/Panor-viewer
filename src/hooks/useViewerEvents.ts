@@ -121,11 +121,19 @@ export function useViewerEvents({
     }
   }, [handleWebGLContextLoss, refs.viewerRef.current]);
 
-  // Check if Marzipano is already loaded on mount
+  // Initialize Marzipano on mount since it's now imported directly
   useEffect(() => {
-    // If Marzipano is already available (e.g., when navigating back)
+    // Marzipano is now imported directly, so it should be available immediately
     if ((window as any).Marzipano && !refs.marzipanoRef.current) {
       handleMarzipanoLoad();
+    } else if (!refs.marzipanoRef.current) {
+      // Small delay to ensure the import has processed
+      const timer = setTimeout(() => {
+        if ((window as any).Marzipano) {
+          handleMarzipanoLoad();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
   }, []);
 

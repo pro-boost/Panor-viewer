@@ -102,7 +102,7 @@ pano-app/
 │   ├── TROUBLESHOOTING.md # Comprehensive troubleshooting
 │   └── FIXES_AND_IMPROVEMENTS.md # Development history
 ├── public/               # Static assets
-│   ├── assets/js/        # Marzipano library
+│   ├── lib/              # JavaScript libraries (marzipano.js)
 │   ├── data/             # CSV data files
 │   ├── images/           # Panorama images
 │   └── config.json       # Generated configuration

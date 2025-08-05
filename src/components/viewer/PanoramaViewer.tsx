@@ -1,7 +1,9 @@
 'use client';
 
-import Script from 'next/script';
+// Removed Script import as marzipano is now imported directly
 import { useState, useCallback, useEffect, useRef } from 'react';
+// Import marzipano library directly
+import '../../lib/marzipano.js';
 import MiniMap from './MiniMap';
 import LoadingScreen from '../utility/LoadingScreen';
 import ControlPanel from '../ui/ControlPanel';
@@ -143,11 +145,7 @@ export default function PanoramaViewer({
 
   return (
     <>
-      <Script
-        src='/assets/js/marzipano.js'
-        strategy='afterInteractive'
-        onLoad={handleMarzipanoLoad}
-      />
+
 
       {state.isLoading && <LoadingScreen />}
 

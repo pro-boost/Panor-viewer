@@ -48,35 +48,33 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 
 ## 🛠️ Development Guides
 
-### [development/FIXES_AND_IMPROVEMENTS.md](./development/FIXES_AND_IMPROVEMENTS.md)
-**Development History**
-- Major improvements and enhancements
-- Bug fixes and their solutions
-- Performance optimizations
-- Testing and quality improvements
-- Code architecture changes
+### [development/BUILD_GUIDE.md](./development/BUILD_GUIDE.md)
+**Build Process Guide**
+- Quick start build commands
+- Reproducible build instructions
+- Multi-architecture support (32-bit/64-bit)
+- Output formats and distribution
+
+### [development/ELECTRON_BUILD_GUIDE.md](./development/ELECTRON_BUILD_GUIDE.md)
+**Detailed Electron Build Guide**
+- Comprehensive build configuration
+- Advanced build options and troubleshooting
+- Security and distribution considerations
 
 ### [development/POI_IMPLEMENTATION_GUIDE.md](./development/POI_IMPLEMENTATION_GUIDE.md)
 **Point of Interest System**
-- POI system components
-- Implementation details
-- Usage instructions
-- API reference
-- File structure and data formats
+- POI system architecture and components
+- Implementation details and code structure
+- API reference and usage instructions
+- File formats and data structures
+- Integration with panorama viewer
 
 ### [development/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md](./development/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md)
 **Centralized Credentials System**
-- Complete implementation guide
-- Architecture overview
-- Security features and caching
-- Build and deployment instructions
-
-### [development/SECURE_DISTRIBUTION.md](./development/SECURE_DISTRIBUTION.md)
-**Secure App Distribution**
-- Electron build optimization
-- File inclusion/exclusion rules
-- Security improvements
-- ASAR packaging and compression
+- Complete implementation guide (COMPLETED)
+- Architecture overview and flow diagrams
+- Security considerations and best practices
+- Configuration and deployment instructions
 
 ### [scripts/node/README.md](../scripts/node/README.md)
 **Node.js Scripts Documentation**
@@ -93,11 +91,11 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 3. Review [CONFIGURATION.md](./CONFIGURATION.md) for customization
 
 ### For Developers
-1. Read [development/FIXES_AND_IMPROVEMENTS.md](./development/FIXES_AND_IMPROVEMENTS.md) for development history
-2. Check [development/POI_IMPLEMENTATION_GUIDE.md](./development/POI_IMPLEMENTATION_GUIDE.md) for POI system details
+
+1. Check [development/POI_IMPLEMENTATION_GUIDE.md](./development/POI_IMPLEMENTATION_GUIDE.md) for POI system details
+2. Review [development/BUILD_GUIDE.md](./development/BUILD_GUIDE.md) and [development/ELECTRON_BUILD_GUIDE.md](./development/ELECTRON_BUILD_GUIDE.md) for build instructions
 3. Review [scripts/node/README.md](../scripts/node/README.md) for build scripts
 4. See [development/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md](./development/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md) for credential system
-5. Check [development/SECURE_DISTRIBUTION.md](./development/SECURE_DISTRIBUTION.md) for distribution setup
 
 ### For Troubleshooting
 1. Use the quick diagnostics in [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
