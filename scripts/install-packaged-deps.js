@@ -2,9 +2,48 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-// Path to the packaged standalone directory
-const packagedStandalonePath = path.join(__dirname, '..', 'dist-new', 'win-unpacked', 'resources', 'app', '.next', 'standalone');
-const packagedAppPath = path.join(__dirname, '..', 'dist-new', 'win-unpacked', 'resources', 'app');
+// Determine platform-specific directory structure
+function getPlatformDirectories() {
+  const platform = process.platform;
+  const distDir = path.join(__dirname, '..', 'dist-new');
+  
+  let unpackedDir, appPath;
+  
+  if (platform === 'win32') {
+    unpackedDir = 'win-unpacked';
+    appPath = path.join(distDir, unpackedDir, 'resources', 'app');
+  } else if (platform === 'darwin') {
+    // macOS app structure: dist-new/mac/AppName.app/Contents/Resources/app
+    const macDirPath = path.join(distDir, 'mac');
+    if (fs.existsSync(macDirPath)) {
+      const macDir = fs.readdirSync(macDirPath).find(dir => dir.endsWith('.app'));
+      if (macDir) {
+        unpackedDir = path.join('mac', macDir);
+        appPath = path.join(distDir, unpackedDir, 'Contents', 'Resources', 'app');
+      } else {
+        // Fallback for different macOS build structures
+        unpackedDir = 'mac-unpacked';
+        appPath = path.join(distDir, unpackedDir, 'resources', 'app');
+      }
+    } else {
+      // Default macOS structure if mac directory doesn't exist yet
+      unpackedDir = 'mac-unpacked';
+      appPath = path.join(distDir, unpackedDir, 'resources', 'app');
+    }
+  } else if (platform === 'linux') {
+    unpackedDir = 'linux-unpacked';
+    appPath = path.join(distDir, unpackedDir, 'resources', 'app');
+  } else {
+    throw new Error(`Unsupported platform: ${platform}`);
+  }
+  
+  return {
+    standalonePath: path.join(appPath, '.next', 'standalone'),
+    appPath: appPath
+  };
+}
+
+const { standalonePath: packagedStandalonePath, appPath: packagedAppPath } = getPlatformDirectories();
 
 console.log('Installing dependencies for packaged application...');
 

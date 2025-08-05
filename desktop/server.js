@@ -319,10 +319,12 @@ class ServerManager {
 
         if (process.resourcesPath) {
           // In packaged app, try to use bundled Node.js
+          // Determine the correct executable name based on platform
+          const nodeExecutableName = process.platform === 'win32' ? 'node.exe' : 'node';
           const bundledNodePath = path.join(
             process.resourcesPath,
             "node",
-            "node.exe"
+            nodeExecutableName
           );
           if (fs.existsSync(bundledNodePath)) {
             nodeExecutable = bundledNodePath;
