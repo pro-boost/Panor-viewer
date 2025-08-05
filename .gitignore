@@ -93,3 +93,4 @@ lighthouse-report.json
 # Temporary folders
 tmp/
 temp/
+dist-*

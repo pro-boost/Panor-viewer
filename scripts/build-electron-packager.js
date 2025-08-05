@@ -1,22 +1,22 @@
-const packager = require('electron-packager');
-const path = require('path');
-const fs = require('fs');
+const packager = require("electron-packager");
+const path = require("path");
+const fs = require("fs");
 
 async function buildElectronApp() {
   console.log(
-    '🚀 Building Electron app with electron-packager (no symbolic link issues)...'
+    "🚀 Building Electron app with electron-packager (no symbolic link issues)..."
   );
 
   // Clean dist directory
-  const distPath = path.join(__dirname, '..', 'dist');
+  const distPath = path.join(__dirname, "..", "dist");
   if (fs.existsSync(distPath)) {
     fs.rmSync(distPath, { recursive: true, force: true });
   }
 
   try {
     // Ensure standalone build is complete
-    console.log('📦 Verifying standalone build...');
-    const standalonePath = path.join(__dirname, '..', '.next', 'standalone');
+    console.log("📦 Verifying standalone build...");
+    const standalonePath = path.join(__dirname, "..", ".next", "standalone");
     if (!fs.existsSync(standalonePath)) {
       throw new Error(
         'Standalone build not found. Run "npm run build:standalone" first.'
@@ -24,12 +24,12 @@ async function buildElectronApp() {
     }
 
     const appPaths = await packager({
-      dir: path.join(__dirname, '..'),
-      out: path.join(__dirname, '..', 'dist'),
-      name: 'PrimeZone Panorama Viewer',
-      platform: 'win32',
-      arch: 'x64',
-      electronVersion: '27.1.3',
+      dir: path.join(__dirname, ".."),
+      out: path.join(__dirname, "..", "dist"),
+      name: "PrimeZone Panorama Viewer",
+      platform: "win32",
+      arch: "x64",
+      electronVersion: "27.1.3",
       overwrite: true,
       asar: false, // Disable ASAR to avoid issues
       prune: true,
@@ -48,17 +48,17 @@ async function buildElectronApp() {
         /\.prettier.*/,
       ],
       extraResource: [
-        path.join(__dirname, '..', '.next', 'standalone'),
-        path.join(__dirname, '..', '.next', 'static'),
-        path.join(__dirname, '..', 'public'),
-        path.join(__dirname, '..', 'package.json'),
-        path.join(__dirname, '..', 'scripts', 'server-production.js'),
-        path.join(__dirname, '..', 'scripts', 'node'),
+        path.join(__dirname, "..", ".next", "standalone"),
+        path.join(__dirname, "..", ".next", "static"),
+        path.join(__dirname, "..", "public"),
+        path.join(__dirname, "..", "package.json"),
+        path.join(__dirname, "..", "scripts", "server-production.js"),
+        path.join(__dirname, "..", "scripts", "node"),
       ],
     });
 
-    console.log('✅ Electron app built successfully!');
-    console.log('📁 Output location:', appPaths[0]);
+    console.log("✅ Electron app built successfully!");
+    console.log("📁 Output location:", appPaths[0]);
 
     // Create a simple run script
     const runScript = `@echo off
@@ -66,15 +66,15 @@ cd /d "%~dp0"
 start "" "PrimeZone Panorama Viewer.exe"
 `;
 
-    fs.writeFileSync(path.join(appPaths[0], 'run.bat'), runScript);
+    fs.writeFileSync(path.join(appPaths[0], "run.bat"), runScript);
 
-    console.log('🎯 Build completed without symbolic link issues!');
-    console.log('💡 To run the app, navigate to:', appPaths[0]);
+    console.log("🎯 Build completed without symbolic link issues!");
+    console.log("💡 To run the app, navigate to:", appPaths[0]);
     console.log(
       '   and double-click "PrimeZone Panorama Viewer.exe" or run "run.bat"'
     );
   } catch (error) {
-    console.error('❌ Build failed:', error.message);
+    console.error("❌ Build failed:", error.message);
     process.exit(1);
   }
 }

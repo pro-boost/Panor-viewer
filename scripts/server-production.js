@@ -31,7 +31,7 @@ if (process.resourcesPath) {
   // Development mode
   standalonePath = isAsar 
     ? path.join(__dirname, '..', '.next', 'standalone')  // In ASAR, go up one level from scripts
-    : path.join(__dirname, '.next', 'standalone');       // In development, use current directory
+    : path.join(__dirname, '..', '.next', 'standalone'); // In development, use parent directory
 }
 
 // In desktop environment, use the user data path for projects

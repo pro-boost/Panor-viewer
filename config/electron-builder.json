@@ -20,6 +20,8 @@
     "!**/*.map",
     "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
     "!**/node_modules/.cache",
+    "!**/node_modules/@next/swc-darwin*",
+    "!**/node_modules/@next/swc-linux*",
     "!scripts/python/**/*",
     "!scripts/build-with-credentials.js",
     "!scripts/test-credentials.js",
@@ -29,7 +31,6 @@
     "!scripts/create-electron-test-project.js",
     "!public/cars/**/*",
     "!docs/**/*",
-    "!src/**/*",
     "!.github/**/*",
     "!.husky/**/*",
     "!jest.*",
@@ -37,7 +38,13 @@
     "!.prettier*",
     "!config/.lighthouserc.json",
     "!.lintstagedrc.json",
-    "!config/**/*",
+    "!config/.eslintrc.json",
+    "!config/.prettierrc.json",
+    "!config/.prettierignore",
+    "!config/jest.config.js",
+    "!config/eslint.config.mjs",
+    "!config/postcss.config.mjs",
+    "!config/tsconfig.json",
     "!next.config.js",
     "!instruction.md",
     "!readmeoverview.md",
@@ -57,6 +64,11 @@
     {
       "from": "public/assets",
       "to": "assets"
+    },
+    {
+      "from": "resources/node",
+      "to": "node",
+      "filter": ["**/*"]
     }
   ],
   "asar": false,

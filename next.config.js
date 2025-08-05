@@ -31,6 +31,7 @@ const nextConfig = {
     outputFileTracingRoot: __dirname,
     outputFileTracingIncludes: {
       '/api/**/*': ['./scripts/node/**/*'],
+      '/**/*': ['./src/components/**/*', './src/hooks/**/*', './src/types/**/*', './src/utils/**/*', './src/lib/**/*'],
     },
   },
   
