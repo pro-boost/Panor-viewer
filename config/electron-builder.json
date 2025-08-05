@@ -35,7 +35,7 @@
     "!jest.*",
     "!eslint.*",
     "!.prettier*",
-    "!.lighthouserc.json",
+    "!config/.lighthouserc.json",
     "!.lintstagedrc.json",
     "!config/**/*",
     "!next.config.js",

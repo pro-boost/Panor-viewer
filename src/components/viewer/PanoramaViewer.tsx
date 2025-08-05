@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import Script from 'next/script';
-import { useState, useCallback, useEffect, useRef } from 'react';
-import MiniMap from './MiniMap';
-import LoadingScreen from '../utility/LoadingScreen';
-import ControlPanel from '../ui/ControlPanel';
-import PanoramaLogo from './PanoramaLogo';
-import TapHint from './TapHint';
+import Script from "next/script";
+import { useState, useCallback, useEffect, useRef } from "react";
+import MiniMap from "./MiniMap";
+import LoadingScreen from "../utility/LoadingScreen";
+import ControlPanel from "../ui/ControlPanel";
+import PanoramaLogo from "./PanoramaLogo";
+import TapHint from "./TapHint";
 // import ControlsHint from './ControlsHint';
-import PanoramaContainer from './PanoramaContainer';
-import HotspotRenderer, { HotspotRendererRef } from './HotspotRenderer';
-import POIComponent, { POIComponentRef } from '../poi/POIComponent';
-import { usePanoramaManager } from '@/hooks/usePanoramaManager';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { POIData } from '@/types/poi';
+import PanoramaContainer from "./PanoramaContainer";
+import HotspotRenderer, { HotspotRendererRef } from "./HotspotRenderer";
+import POIComponent, { POIComponentRef } from "../poi/POIComponent";
+import { usePanoramaManager } from "@/hooks/usePanoramaManager";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { POIData } from "@/types/poi";
 
 interface PanoramaViewerProps {
   projectId?: string;
@@ -54,20 +54,20 @@ export default function PanoramaViewer({
         setPoiSceneCounts(data.sceneCounts || {});
       } else {
         console.warn(
-          'Failed to fetch POI scene counts for MiniMap:',
+          "Failed to fetch POI scene counts for MiniMap:",
           response.status
         );
         setPoiSceneCounts({});
       }
     } catch (error) {
-      console.error('Error fetching POI scene counts for MiniMap:', error);
+      console.error("Error fetching POI scene counts for MiniMap:", error);
       setPoiSceneCounts({});
     }
   }, [projectId]);
 
   const handlePOICreated = useCallback(
     (poi: POIData) => {
-      console.log('POI created:', poi);
+      console.log("POI created:", poi);
       // Refresh POI scene counts to update hotspot icons immediately
       if (hotspotRendererRef.current) {
         hotspotRendererRef.current.refreshPOISceneCounts();
@@ -99,10 +99,10 @@ export default function PanoramaViewer({
 
   // Add panorama-viewer class to body when component mounts
   useEffect(() => {
-    document.body.classList.add('panorama-viewer');
-    
+    document.body.classList.add("panorama-viewer");
+
     return () => {
-      document.body.classList.remove('panorama-viewer');
+      document.body.classList.remove("panorama-viewer");
     };
   }, []);
 
@@ -114,7 +114,7 @@ export default function PanoramaViewer({
         try {
           refs.viewerRef.current.destroy();
         } catch (error) {
-          console.warn('Error destroying Marzipano viewer:', error);
+          console.warn("Error destroying Marzipano viewer:", error);
         }
         refs.viewerRef.current = null;
       }
@@ -130,10 +130,10 @@ export default function PanoramaViewer({
 
       // Clear the panorama container
       if (refs.panoRef.current) {
-        refs.panoRef.current.innerHTML = '';
+        refs.panoRef.current.innerHTML = "";
       }
 
-      console.log('PanoramaViewer cleanup completed');
+      console.log("PanoramaViewer cleanup completed");
     };
   }, []); // Empty dependency array - only run on unmount
 
@@ -144,8 +144,8 @@ export default function PanoramaViewer({
   return (
     <>
       <Script
-        src='/assets/js/marzipano.js'
-        strategy='afterInteractive'
+        src="/assets/js/marzipano.js"
+        strategy="afterInteractive"
         onLoad={handleMarzipanoLoad}
       />
 
@@ -168,7 +168,7 @@ export default function PanoramaViewer({
         onOptimize={optimizePerformance}
         projectId={projectId}
         currentPanoramaId={state.currentScene}
-        onPOIEdit={poi => {
+        onPOIEdit={(poi) => {
           // Navigate to the POI's scene first, then edit
           if (poi.panoramaId !== state.currentScene) {
             navigateToScene(poi.panoramaId);
@@ -183,15 +183,19 @@ export default function PanoramaViewer({
         }}
         onPOIDelete={async (poiId) => {
           // Extract the actual ID string from the parameter
-          const actualPoiId = typeof poiId === 'string' ? poiId : poiId.id;
-          
+          const actualPoiId = typeof poiId === "string" ? poiId : poiId.id;
+
           // Fetch POI data to determine which scene it belongs to
           try {
-            const response = await fetch(`/api/poi/load?projectId=${encodeURIComponent(projectId || '')}`);
+            const response = await fetch(
+              `/api/poi/load?projectId=${encodeURIComponent(projectId || "")}`
+            );
             if (response.ok) {
               const data = await response.json();
-              const poiToDelete = data.pois?.find((poi: any) => poi.id === actualPoiId);
-              
+              const poiToDelete = data.pois?.find(
+                (poi: any) => poi.id === actualPoiId
+              );
+
               if (poiToDelete) {
                 // Navigate to the POI's scene first if needed
                 if (poiToDelete.panoramaId !== state.currentScene) {
@@ -217,7 +221,7 @@ export default function PanoramaViewer({
               fetchPOISceneCounts();
             }
           } catch (error) {
-            console.error('Error fetching POI data for deletion:', error);
+            console.error("Error fetching POI data for deletion:", error);
             // Fallback: just try to delete it anyway
             poiComponentRef.current?.deletePOI(actualPoiId);
             fetchPOISceneCounts();
@@ -252,7 +256,7 @@ export default function PanoramaViewer({
 
             <POIComponent
               ref={poiComponentRef}
-              projectId={projectId || 'default'}
+              projectId={projectId || "default"}
               currentPanoramaId={state.currentScene}
               viewerSize={{ width: 800, height: 600 }} // You may want to get actual viewer size
               viewerRef={refs.viewerRef}
@@ -265,7 +269,7 @@ export default function PanoramaViewer({
       {/* <ControlsHint /> */}
 
       <ToastContainer
-        position='bottom-left'
+        position="bottom-left"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
@@ -274,17 +278,17 @@ export default function PanoramaViewer({
         pauseOnFocusLoss
         draggable
         pauseOnHover
-        theme='dark'
+        theme="dark"
         toastStyle={{
-          background: 'rgba(0, 0, 0, 0.65)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '1px solid rgba(255, 255, 255, 0.1)',
-          borderRadius: '8px',
-          color: '#fff',
-          fontSize: '14px',
-          fontWeight: '500',
-          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
+          background: "rgba(0, 0, 0, 0.65)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          color: "#fff",
+          fontSize: "14px",
+          fontWeight: "500",
+          boxShadow: "0 4px 16px rgba(0, 0, 0, 0.35)",
         }}
       />
     </>
