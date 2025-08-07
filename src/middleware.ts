@@ -5,6 +5,8 @@ import type { NextRequest } from 'next/server';
 const protectedRoutes = [
   '/api/poi',
   '/api/files',
+  '/api/admin', // Admin API routes
+  '/admin',     // Admin pages
   '/upload',
   '/poi-management'
   // Temporarily removed '/api/projects' for testing upload functionality

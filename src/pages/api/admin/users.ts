@@ -23,13 +23,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 async function handleGetUsers(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { type } = req.query;
-    
     let users;
+    
+    console.log('Fetching users with type:', type);
+    
     if (type === 'pending') {
       users = await userService.getPendingUsers();
+      console.log('Pending users fetched:', users?.length || 0, 'users');
     } else {
       users = await userService.getAllUsers();
+      console.log('All users fetched:', users?.length || 0, 'users');
     }
+    
+    console.log('Returning users data:', { users: users?.map(u => ({ id: u.id, email: u.email, role: u.role, approved: u.approved })) });
     
     return res.status(200).json({ users });
   } catch (error) {
