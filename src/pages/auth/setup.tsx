@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import Link from 'next/link';
-import Logo from '@/components/ui/Logo';
-import styles from '@/styles/Auth.module.css';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Head from "next/head";
+import Link from "next/link";
+import Logo from "@/components/ui/Logo";
+import styles from "@/styles/Auth.module.css";
 
 interface SetupStatus {
   configured: boolean;
@@ -12,12 +12,12 @@ interface SetupStatus {
 
 export default function Setup() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
   const [checkingStatus, setCheckingStatus] = useState(true);
 
@@ -27,14 +27,14 @@ export default function Setup() {
 
   const checkSetupStatus = async () => {
     try {
-      const response = await fetch('/api/auth/setup');
+      const response = await fetch("/api/auth/setup");
       const data = await response.json();
       setSetupStatus(data);
-      
+
       // Don't auto-redirect if already configured - let user see the status
     } catch (error) {
-      console.error('Error checking setup status:', error);
-      setError('Failed to check setup status');
+      console.error("Error checking setup status:", error);
+      setError("Failed to check setup status");
     } finally {
       setCheckingStatus(false);
     }
@@ -42,57 +42,59 @@ export default function Setup() {
 
   const validateForm = () => {
     if (!email || !password || !confirmPassword) {
-      setError('All fields are required');
+      setError("All fields are required");
       return false;
     }
-    
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+      setError("Please enter a valid email address");
       return false;
     }
-    
+
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError("Password must be at least 8 characters long");
       return false;
     }
-    
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return false;
     }
-    
+
     // Check password strength
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumbers = /\d/.test(password);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    
+
     if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
-      setError('Password must contain at least one uppercase letter, one lowercase letter, and one number');
+      setError(
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      );
       return false;
     }
-    
+
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
-    
+    setError("");
+    setSuccess("");
+
     if (!validateForm()) {
       return;
     }
-    
+
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/setup', {
-        method: 'POST',
+      const response = await fetch("/api/auth/setup", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password, confirmPassword }),
       });
@@ -100,23 +102,25 @@ export default function Setup() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Authentication configured successfully! Redirecting to login...');
+        setSuccess(
+          "Authentication configured successfully! Redirecting to login..."
+        );
         setTimeout(() => {
-          router.push('/auth/login');
+          router.push("/auth/login");
         }, 2000);
       } else {
-        setError(data.error || 'Setup failed');
+        setError(data.error || "Setup failed");
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   const getPasswordStrength = () => {
-    if (!password) return { strength: 0, label: '' };
-    
+    if (!password) return { strength: 0, label: "" };
+
     let strength = 0;
     const checks = [
       password.length >= 8,
@@ -124,14 +128,14 @@ export default function Setup() {
       /[a-z]/.test(password),
       /\d/.test(password),
       /[!@#$%^&*(),.?":{}|<>]/.test(password),
-      password.length >= 12
+      password.length >= 12,
     ];
-    
+
     strength = checks.filter(Boolean).length;
-    
-    if (strength <= 2) return { strength, label: 'Weak', color: '#ff4444' };
-    if (strength <= 4) return { strength, label: 'Medium', color: '#ffaa00' };
-    return { strength, label: 'Strong', color: '#44ff44' };
+
+    if (strength <= 2) return { strength, label: "Weak", color: "#ff4444" };
+    if (strength <= 4) return { strength, label: "Medium", color: "#ffaa00" };
+    return { strength, label: "Strong", color: "#44ff44" };
   };
 
   if (checkingStatus) {
@@ -151,15 +155,18 @@ export default function Setup() {
       <>
         <Head>
           <title>System Ready - Panorama Viewer</title>
-          <meta name="description" content="Authentication system is configured and ready" />
+          <meta
+            name="description"
+            content="Authentication system is configured and ready"
+          />
         </Head>
-        
+
         <div className={styles.container}>
           <Logo variant="default" position="absolute" />
-          
+
           <div className={styles.card}>
             <div className={styles.header}>
-              <h1>✅ System Ready</h1>
+              <h1>System Ready</h1>
               <p>Your panorama viewer is fully configured and ready to use.</p>
             </div>
 
@@ -187,12 +194,15 @@ export default function Setup() {
     <>
       <Head>
         <title>Setup Authentication - Panorama Viewer</title>
-        <meta name="description" content="Set up authentication for the panorama viewer" />
+        <meta
+          name="description"
+          content="Set up authentication for the panorama viewer"
+        />
       </Head>
-      
+
       <div className={styles.container}>
         <Logo variant="default" position="absolute" />
-        
+
         <div className={styles.card}>
           <div className={styles.header}>
             <h1>Set Up Authentication</h1>
@@ -200,17 +210,9 @@ export default function Setup() {
           </div>
 
           <form onSubmit={handleSubmit} className={styles.form}>
-            {error && (
-              <div className={styles.error}>
-                {error}
-              </div>
-            )}
-            
-            {success && (
-              <div className={styles.success}>
-                {success}
-              </div>
-            )}
+            {error && <div className={styles.error}>{error}</div>}
+
+            {success && <div className={styles.success}>{success}</div>}
 
             <div className={styles.field}>
               <label htmlFor="email">Admin Email</label>
@@ -241,11 +243,11 @@ export default function Setup() {
               />
               {password && (
                 <div className={styles.passwordStrength}>
-                  <div 
+                  <div
                     className={styles.strengthBar}
-                    style={{ 
+                    style={{
                       width: `${(passwordStrength.strength / 6) * 100}%`,
-                      backgroundColor: passwordStrength.color
+                      backgroundColor: passwordStrength.color,
                     }}
                   ></div>
                   <span style={{ color: passwordStrength.color }}>
@@ -268,28 +270,30 @@ export default function Setup() {
                 placeholder="Confirm your password"
               />
               {confirmPassword && password !== confirmPassword && (
-                <div className={styles.fieldError}>
-                  Passwords do not match
-                </div>
+                <div className={styles.fieldError}>Passwords do not match</div>
               )}
             </div>
 
             <div className={styles.requirements}>
               <h4>Password Requirements:</h4>
               <ul>
-                <li className={password.length >= 8 ? styles.met : ''}>
+                <li className={password.length >= 8 ? styles.met : ""}>
                   At least 8 characters
                 </li>
-                <li className={/[A-Z]/.test(password) ? styles.met : ''}>
+                <li className={/[A-Z]/.test(password) ? styles.met : ""}>
                   One uppercase letter
                 </li>
-                <li className={/[a-z]/.test(password) ? styles.met : ''}>
+                <li className={/[a-z]/.test(password) ? styles.met : ""}>
                   One lowercase letter
                 </li>
-                <li className={/\d/.test(password) ? styles.met : ''}>
+                <li className={/\d/.test(password) ? styles.met : ""}>
                   One number
                 </li>
-                <li className={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? styles.met : ''}>
+                <li
+                  className={
+                    /[!@#$%^&*(),.?":{}|<>]/.test(password) ? styles.met : ""
+                  }
+                >
                   One special character (recommended)
                 </li>
               </ul>
@@ -297,7 +301,13 @@ export default function Setup() {
 
             <button
               type="submit"
-              disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword}
+              disabled={
+                loading ||
+                !email ||
+                !password ||
+                !confirmPassword ||
+                password !== confirmPassword
+              }
               className={styles.submitButton}
             >
               {loading ? (
@@ -306,14 +316,14 @@ export default function Setup() {
                   Setting up...
                 </>
               ) : (
-                'Create Admin Account'
+                "Create Admin Account"
               )}
             </button>
           </form>
 
           <div className={styles.footer}>
             <p>
-              Already configured?{' '}
+              Already configured?{" "}
               <Link href="/auth/login" className={styles.link}>
                 Sign In
               </Link>

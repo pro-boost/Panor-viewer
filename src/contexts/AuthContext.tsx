@@ -1,10 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/router';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { useRouter } from "next/router";
 
 interface User {
   email: string;
   id: string;
-  role: 'admin' | 'user';
+  role: "admin" | "user";
 }
 
 interface AuthContextType {
@@ -21,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -37,31 +43,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const response = await fetch('/api/auth/status');
+      const response = await fetch("/api/auth/status");
       const data = await response.json();
-      
+
       if (data.authenticated && data.user) {
         setUser(data.user);
       } else {
         setUser(null);
-        
+
         // If not authenticated and not on auth pages, redirect to login
         // Add a small delay to prevent flash of access denied message
-        if (!router.pathname.startsWith('/auth/') && router.isReady) {
+        if (!router.pathname.startsWith("/auth/") && router.isReady) {
           setTimeout(async () => {
             // Skip setup and go directly to login if configured
-            if (data.requiresSetup && process.env.NEXT_PUBLIC_SKIP_SETUP === 'true') {
-              await router.replace('/auth/login');
+            if (
+              data.requiresSetup &&
+              process.env.NEXT_PUBLIC_SKIP_SETUP === "true"
+            ) {
+              await router.replace("/auth/login");
             } else if (data.requiresSetup) {
-              await router.replace('/auth/setup');
+              await router.replace("/auth/setup");
             } else {
-              await router.replace('/auth/login');
+              await router.replace("/auth/login");
             }
           }, 100);
         }
       }
     } catch (error) {
-      console.error('Error checking authentication:', error);
+      console.error("Error checking authentication:", error);
       setUser(null);
     } finally {
       setLoading(false);
@@ -70,10 +79,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
@@ -87,30 +96,30 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return false;
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
+      await fetch("/api/auth/logout", {
+        method: "POST",
       });
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       setUser(null);
       setLoading(false);
       // Use replace instead of push to prevent back navigation issues
-      router.replace('/auth/login');
+      router.replace("/auth/login");
     }
   };
 
   useEffect(() => {
     // Only check auth when router is ready and not on auth pages
     if (router.isReady) {
-      if (!router.pathname.startsWith('/auth/')) {
+      if (!router.pathname.startsWith("/auth/")) {
         checkAuth();
       } else {
         setLoading(false);
@@ -127,11 +136,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isAuthenticated: !!user,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;

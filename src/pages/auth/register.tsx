@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Head from 'next/head';
-import Link from 'next/link';
-import Logo from '@/components/ui/Logo';
-import styles from '@/styles/Auth.module.css';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Head from "next/head";
+import Link from "next/link";
+import Logo from "@/components/ui/Logo";
+import styles from "@/styles/Auth.module.css";
 
 interface PasswordStrength {
   strength: number;
@@ -13,41 +13,41 @@ interface PasswordStrength {
 
 function getPasswordStrength(password: string): PasswordStrength {
   let strength = 0;
-  
+
   if (password.length >= 8) strength++;
   if (/[A-Z]/.test(password)) strength++;
   if (/[a-z]/.test(password)) strength++;
   if (/\d/.test(password)) strength++;
   if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
   if (password.length >= 12) strength++;
-  
+
   const strengthMap = {
-    0: { label: 'Very Weak', color: '#ff4444' },
-    1: { label: 'Weak', color: '#ff6600' },
-    2: { label: 'Fair', color: '#ffaa00' },
-    3: { label: 'Good', color: '#88cc00' },
-    4: { label: 'Strong', color: '#44aa00' },
-    5: { label: 'Very Strong', color: '#00aa44' },
-    6: { label: 'Excellent', color: '#00aa44' }
+    0: { label: "Very Weak", color: "#ff4444" },
+    1: { label: "Weak", color: "#ff6600" },
+    2: { label: "Fair", color: "#ffaa00" },
+    3: { label: "Good", color: "#88cc00" },
+    4: { label: "Strong", color: "#44aa00" },
+    5: { label: "Very Strong", color: "#00aa44" },
+    6: { label: "Excellent", color: "#00aa44" },
   };
-  
+
   return {
     strength,
     label: strengthMap[strength as keyof typeof strengthMap].label,
-    color: strengthMap[strength as keyof typeof strengthMap].color
+    color: strengthMap[strength as keyof typeof strengthMap].color,
   };
 }
 
 export default function Register() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [componentKey, setComponentKey] = useState(Date.now());
 
   const passwordStrength = getPasswordStrength(password);
@@ -55,12 +55,12 @@ export default function Register() {
   // Reset all form states when component mounts or route changes
   useEffect(() => {
     const resetState = () => {
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
+      setEmail("");
+      setPassword("");
+      setConfirmPassword("");
       setLoading(false);
-      setError('');
-      setSuccess('');
+      setError("");
+      setSuccess("");
       setShowPassword(false);
       setShowConfirmPassword(false);
       setComponentKey(Date.now());
@@ -72,45 +72,45 @@ export default function Register() {
   // Additional reset on window focus for register page
   useEffect(() => {
     const handleFocus = () => {
-      if (router.pathname === '/auth/register') {
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+      if (router.pathname === "/auth/register") {
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
         setLoading(false);
-        setError('');
-        setSuccess('');
+        setError("");
+        setSuccess("");
         setShowPassword(false);
         setShowConfirmPassword(false);
         setComponentKey(Date.now());
       }
     };
 
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
   }, [router.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (passwordStrength.strength < 3) {
-      setError('Please choose a stronger password');
+      setError("Please choose a stronger password");
       return;
     }
 
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
       });
@@ -118,21 +118,23 @@ export default function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        setSuccess('Registration successful! Your account is pending admin approval. You will be notified once approved.');
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
-        
+        setSuccess(
+          "Registration successful! Your account is pending admin approval. You will be notified once approved."
+        );
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+
         // Redirect to login after 3 seconds
         setTimeout(() => {
-          router.push('/auth/login?message=registration-success');
+          router.push("/auth/login?message=registration-success");
         }, 3000);
       } else {
-        setError(data.error || 'Registration failed');
+        setError(data.error || "Registration failed");
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      console.error("Registration error:", error);
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -142,30 +144,29 @@ export default function Register() {
     <>
       <Head>
         <title>Create Account - Panorama Viewer</title>
-        <meta name="description" content="Create a new account for the panorama viewer" />
+        <meta
+          name="description"
+          content="Create a new account for the panorama viewer"
+        />
       </Head>
-      
+
       <div className={styles.container}>
         <Logo variant="default" position="absolute" />
-        
+
         <div className={styles.card}>
           <div className={styles.header}>
             <h1>Create Account</h1>
             <p>Register for access to the panorama viewer</p>
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form} key={`register-form-${componentKey}-${router.asPath}`}>
-            {error && (
-              <div className={styles.error}>
-                {error}
-              </div>
-            )}
-            
-            {success && (
-              <div className={styles.success}>
-                {success}
-              </div>
-            )}
+          <form
+            onSubmit={handleSubmit}
+            className={styles.form}
+            key={`register-form-${componentKey}-${router.asPath}`}
+          >
+            {error && <div className={styles.error}>{error}</div>}
+
+            {success && <div className={styles.success}>{success}</div>}
 
             <div className={styles.field}>
               <label htmlFor="email">Email Address</label>
@@ -179,7 +180,7 @@ export default function Register() {
                 autoComplete="email"
                 placeholder="Enter your email address"
                 key={`email-${componentKey}-${router.asPath}`}
-                style={{ pointerEvents: loading ? 'none' : 'auto' }}
+                style={{ pointerEvents: loading ? "none" : "auto" }}
               />
             </div>
 
@@ -197,7 +198,7 @@ export default function Register() {
                   placeholder="Enter a strong password (min. 8 characters)"
                   minLength={8}
                   key={`password-${componentKey}-${router.asPath}`}
-                  style={{ pointerEvents: loading ? 'none' : 'auto' }}
+                  style={{ pointerEvents: loading ? "none" : "auto" }}
                 />
                 <button
                   type="button"
@@ -207,25 +208,39 @@ export default function Register() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
               </div>
               {password && (
                 <div className={styles.passwordStrength}>
-                  <div 
+                  <div
                     className={styles.strengthBar}
-                    style={{ 
+                    style={{
                       width: `${(passwordStrength.strength / 6) * 100}%`,
-                      backgroundColor: passwordStrength.color
+                      backgroundColor: passwordStrength.color,
                     }}
                   ></div>
                   <span style={{ color: passwordStrength.color }}>
@@ -248,63 +263,92 @@ export default function Register() {
                   autoComplete="new-password"
                   placeholder="Confirm your password"
                   key={`confirmPassword-${componentKey}-${router.asPath}`}
-                  style={{ pointerEvents: loading ? 'none' : 'auto' }}
+                  style={{ pointerEvents: loading ? "none" : "auto" }}
                 />
                 <button
                   type="button"
                   className={styles.passwordToggle}
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   disabled={loading}
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
                   {showConfirmPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
                     </svg>
                   ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                      <circle cx="12" cy="12" r="3"/>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
                     </svg>
                   )}
                 </button>
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <div className={styles.fieldError}>
-                  Passwords do not match
-                </div>
+                <div className={styles.fieldError}>Passwords do not match</div>
               )}
             </div>
 
             <div className={styles.requirements}>
               <h4>Password Requirements:</h4>
               <ul>
-                <li className={password.length >= 8 ? styles.met : ''}>
+                <li className={password.length >= 8 ? styles.met : ""}>
                   At least 8 characters
                 </li>
-                <li className={/[A-Z]/.test(password) ? styles.met : ''}>
+                <li className={/[A-Z]/.test(password) ? styles.met : ""}>
                   One uppercase letter
                 </li>
-                <li className={/[a-z]/.test(password) ? styles.met : ''}>
+                <li className={/[a-z]/.test(password) ? styles.met : ""}>
                   One lowercase letter
                 </li>
-                <li className={/\d/.test(password) ? styles.met : ''}>
+                <li className={/\d/.test(password) ? styles.met : ""}>
                   One number
                 </li>
-                <li className={/[!@#$%^&*(),.?":{}|<>]/.test(password) ? styles.met : ''}>
+                <li
+                  className={
+                    /[!@#$%^&*(),.?":{}|<>]/.test(password) ? styles.met : ""
+                  }
+                >
                   One special character (recommended)
                 </li>
               </ul>
             </div>
 
             <div className={styles.info}>
-              <p><strong>Note:</strong> Your account will require admin approval before you can access the system. You will be notified once your account is approved.</p>
+              <p>
+                <strong>Note:</strong> Your account will require admin approval
+                before you can access the system. You will be notified once your
+                account is approved.
+              </p>
             </div>
 
             <button
               type="submit"
-              disabled={loading || !email || !password || !confirmPassword || password !== confirmPassword || passwordStrength.strength < 3}
+              disabled={
+                loading ||
+                !email ||
+                !password ||
+                !confirmPassword ||
+                password !== confirmPassword ||
+                passwordStrength.strength < 3
+              }
               className={styles.submitButton}
             >
               {loading ? (
@@ -313,14 +357,14 @@ export default function Register() {
                   Creating Account...
                 </>
               ) : (
-                'Create Account'
+                "Create Account"
               )}
             </button>
           </form>
 
           <div className={styles.footer}>
             <p>
-              Already have an account?{' '}
+              Already have an account?{" "}
               <Link href="/auth/login" className={styles.link}>
                 Sign In
               </Link>
