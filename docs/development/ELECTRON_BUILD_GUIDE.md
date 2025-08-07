@@ -1,9 +1,11 @@
 # Electron Build Guide - Reproducible App Generation
 
 ## Overview
+
 This guide provides step-by-step instructions for generating reproducible Electron builds with 32-bit and 64-bit compatibility, including unpacked folders and setup files.
 
 ## Prerequisites
+
 - Node.js 18+ installed
 - Windows development environment
 - All dependencies installed (`npm install`)
@@ -11,13 +13,15 @@ This guide provides step-by-step instructions for generating reproducible Electr
 ## Build Configuration
 
 ### Updated Configuration Features
+
 - **Dual Architecture Support**: Both 32-bit (ia32) and 64-bit (x64) builds
-- **Multiple Output Formats**: 
+- **Multiple Output Formats**:
   - Unpacked folders for both architectures
   - NSIS setup installers for both architectures
 - **Reproducible Builds**: Consistent naming and folder structure
 
 ### Output Structure
+
 After running the build command, the following outputs will be generated in the `dist/` folder:
 
 ```
@@ -38,16 +42,19 @@ dist/
 ## Build Commands
 
 ### 1. Standard Build (All Platforms)
+
 ```bash
 npm run build:electron
 ```
 
 ### 2. Windows-Only Build (Recommended)
+
 ```bash
 npm run build:electron:win
 ```
 
 ### 3. Manual Build Process
+
 If you need more control, you can run the build steps manually:
 
 ```bash
@@ -61,12 +68,15 @@ npm run electron:build
 ## Reproducible Build Checklist
 
 ### Pre-Build Steps
+
 1. **Clean previous builds**:
+
    ```bash
    npm run clean
    ```
 
 2. **Verify environment**:
+
    ```bash
    node --version
    npm --version
@@ -78,6 +88,7 @@ npm run electron:build
    ```
 
 ### Build Verification
+
 1. **Check build outputs**:
    - Verify both 32-bit and 64-bit installers exist
    - Verify unpacked folders contain all necessary files
@@ -91,12 +102,15 @@ npm run electron:build
 ## Configuration Details
 
 ### Architecture-Specific Settings
+
 - **32-bit (ia32)**: Compatible with older Windows systems
 - **64-bit (x64)**: Optimized for modern systems
 - **Dual Build**: Both architectures built simultaneously
 
 ### File Inclusion
+
 The build includes:
+
 - Desktop application files
 - Next.js standalone build
 - Static assets
@@ -105,7 +119,9 @@ The build includes:
 - Credential configuration
 
 ### Exclusions
+
 The build excludes:
+
 - Source maps
 - Development dependencies
 - Test files
@@ -116,6 +132,7 @@ The build excludes:
 ## Troubleshooting
 
 ### Common Issues
+
 1. **Build fails with memory error**:
    - Increase Node.js memory limit:
      ```bash
@@ -132,7 +149,9 @@ The build excludes:
    - Verify digital signatures (if enabled)
 
 ### Build Logs
+
 Detailed build logs are available in:
+
 - Console output during build
 - `dist/builder-debug.yml` (debug information)
 - `dist/builder-effective-config.yaml` (final configuration)
@@ -140,7 +159,9 @@ Detailed build logs are available in:
 ## Customization
 
 ### Changing Output Directory
+
 Modify in `electron-builder.json`:
+
 ```json
 {
   "directories": {
@@ -150,33 +171,35 @@ Modify in `electron-builder.json`:
 ```
 
 ### Adding Custom Files
+
 Add to `files` array in `electron-builder.json`:
+
 ```json
 {
-  "files": [
-    "additional-folder/**/*",
-    "custom-config.json"
-  ]
+  "files": ["additional-folder/**/*", "custom-config.json"]
 }
 ```
 
 ## Build Scripts
 
 ### Available Scripts in package.json
+
 ```json
 {
   "build:electron": "npm run build && electron-builder",
   "build:electron:win": "npm run build && electron-builder --win",
   "build:electron:mac": "npm run build && electron-builder --mac",
   "build:electron:linux": "npm run build && electron-builder --linux",
-  "clean": "rimraf dist .next out"
+  "clean": "rimraf dist dist-new .next out"
 }
 ```
 
 ## Testing Builds
 
 ### Quick Test
+
 1. **Test unpacked version**:
+
    ```bash
    # Run from unpacked folder
    ./dist/win-x64-unpacked/PrimeZone Advanced Panorama Viewer.exe
@@ -188,7 +211,9 @@ Add to `files` array in `electron-builder.json`:
    - Launch application from Start Menu
 
 ### System Requirements Test
+
 Test builds on:
+
 - Windows 10 (64-bit)
 - Windows 7/8 (32-bit)
 - Windows 11 (64-bit)
@@ -196,7 +221,9 @@ Test builds on:
 ## Version Management
 
 ### Version Numbering
+
 The build automatically uses the version from `package.json`:
+
 ```json
 {
   "version": "1.0.0"
@@ -204,7 +231,9 @@ The build automatically uses the version from `package.json`:
 ```
 
 ### Automatic Versioning
+
 For CI/CD builds, version can be set via environment variable:
+
 ```bash
 export npm_package_version=1.0.0-build.123
 npm run build:electron
@@ -213,7 +242,9 @@ npm run build:electron
 ## Security Considerations
 
 ### Code Signing
+
 For production releases, enable code signing:
+
 1. Obtain code signing certificate
 2. Configure in `electron-builder.json`:
    ```json
@@ -225,6 +256,7 @@ For production releases, enable code signing:
    ```
 
 ### Build Environment
+
 - Use clean build environments
 - Pin dependency versions
 - Verify checksums of downloaded tools

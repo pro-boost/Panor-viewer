@@ -26,7 +26,7 @@ async function buildElectronApp() {
     const appPaths = await packager({
       dir: path.join(__dirname, ".."),
       out: path.join(__dirname, "..", "dist"),
-      name: "PrimeZone Panorama Viewer",
+      name: "Panorama Viewer",
       platform: "win32",
       arch: "x64",
       electronVersion: "27.1.3",
@@ -63,16 +63,14 @@ async function buildElectronApp() {
     // Create a simple run script
     const runScript = `@echo off
 cd /d "%~dp0"
-start "" "PrimeZone Panorama Viewer.exe"
+start "" "Panorama Viewer.exe"
 `;
 
     fs.writeFileSync(path.join(appPaths[0], "run.bat"), runScript);
 
     console.log("🎯 Build completed without symbolic link issues!");
     console.log("💡 To run the app, navigate to:", appPaths[0]);
-    console.log(
-      '   and double-click "PrimeZone Panorama Viewer.exe" or run "run.bat"'
-    );
+    console.log('   and double-click "Panorama Viewer.exe" or run "run.bat"');
   } catch (error) {
     console.error("❌ Build failed:", error.message);
     process.exit(1);

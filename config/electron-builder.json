@@ -2,7 +2,7 @@
   "appId": "com.fribouz.panoramaviewer",
   "productName": "PrimeZone Advanced Panorama Viewer",
   "copyright": "Copyright © 2025 fribouz",
-  "icon": "public/panorama-viewer-icon.png",
+  "icon": "public/assets/images/panorama-viewer-icon.svg",
   "directories": {
     "output": "dist-new"
   },

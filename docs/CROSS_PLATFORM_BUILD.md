@@ -1,6 +1,6 @@
 # Cross-Platform Build Guide
 
-This document explains how to build the PrimeZone Advanced Panorama Viewer for different platforms (Windows, macOS, and Linux).
+This document explains how to build the Advanced Panorama Viewer for different platforms (Windows, macOS, and Linux).
 
 ## Overview
 
@@ -14,18 +14,21 @@ The application now supports cross-platform builds with the following features:
 ## Platform Support
 
 ### Windows
+
 - **Supported architectures**: x64, x86
 - **Build formats**: NSIS installer, portable directory
 - **Node.js format**: ZIP archive
 - **Can build on**: Windows
 
 ### macOS
+
 - **Supported architectures**: x64 (Intel), arm64 (Apple Silicon)
 - **Build formats**: DMG, ZIP
 - **Node.js format**: TAR.GZ archive
 - **Can build on**: macOS (due to electron-builder limitations)
 
 ### Linux
+
 - **Supported architectures**: x64, arm64
 - **Build formats**: AppImage, DEB, RPM, TAR.XZ
 - **Node.js format**: TAR.XZ archive
@@ -34,6 +37,7 @@ The application now supports cross-platform builds with the following features:
 ## Build Commands
 
 ### Windows Builds
+
 ```bash
 # Build Windows installer (production)
 npm run desktop:build:win
@@ -43,6 +47,7 @@ npm run desktop:build:win:complete
 ```
 
 ### macOS Builds
+
 ```bash
 # Build macOS DMG and ZIP (production) - requires macOS
 npm run desktop:build:mac
@@ -52,6 +57,7 @@ npm run desktop:build:mac:local
 ```
 
 ### Linux Builds
+
 ```bash
 # Build Linux packages (production) - requires Linux
 npm run desktop:build:linux
@@ -63,11 +69,13 @@ npm run desktop:build:linux:local
 ## Cross-Platform Development Workflow
 
 ### Option 1: Native Platform Builds (Recommended)
+
 1. **Windows developers**: Use `npm run desktop:build:win`
 2. **macOS developers**: Use `npm run desktop:build:mac`
 3. **Linux developers**: Use `npm run desktop:build:linux`
 
 ### Option 2: CI/CD Pipeline
+
 Set up GitHub Actions or similar CI/CD to build on multiple platforms:
 
 ```yaml
@@ -80,17 +88,18 @@ steps:
   - name: Build for Windows
     if: matrix.os == 'windows-latest'
     run: npm run desktop:build:win
-  
+
   - name: Build for macOS
     if: matrix.os == 'macos-latest'
     run: npm run desktop:build:mac
-  
+
   - name: Build for Linux
     if: matrix.os == 'ubuntu-latest'
     run: npm run desktop:build:linux
 ```
 
 ### Option 3: Docker (Advanced)
+
 Use Docker containers to build for Linux from any platform:
 
 ```bash

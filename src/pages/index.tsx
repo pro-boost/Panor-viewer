@@ -251,7 +251,9 @@ export default function Home(): ReactElement {
           >
             {/* Hero Section */}
             <div className={styles.heroSection}>
-              <h1 className={styles.title}>Welcome to PrimeZone</h1>
+              <h1 className={styles.title}>
+                Welcome to Advanced Panorama Viewer
+              </h1>
               <p className={styles.subtitle}>
                 Experience immersive 360° panoramic tours of your spaces
               </p>
