@@ -47,27 +47,6 @@ pnpm-debug.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
 
 # Python virtual environments
 venv/
