@@ -759,22 +759,7 @@ export default function Upload() {
             )}
           </ol>
           
-          <div className={styles.csvRequirements}>
-            <h4 className={styles.csvRequirementsTitle}>CSV File Requirements:</h4>
-            <p className={styles.csvRequirementsText}>
-              Your CSV file must include the following columns:
-            </p>
-            <ul className={styles.csvRequirementsList}>
-              <li><strong>filename</strong> - Name of the panorama image file</li>
-              <li><strong>title</strong> - Display title for the panorama</li>
-              <li><strong>description</strong> - Description of the panorama</li>
-              <li><strong>pano_pos_x, pano_pos_y, pano_pos_z</strong> - Position coordinates</li>
-              <li><strong>pano_ori_w, pano_ori_x, pano_ori_y, pano_ori_z</strong> - Orientation quaternion</li>
-            </ul>
-            <p className={styles.csvRequirementsNote}>
-              <strong>Note:</strong> All position and orientation values must be numeric.
-            </p>
-          </div>
+
         </div>
       </div>
     </div>

@@ -93,6 +93,48 @@
   color: var(--text-muted);
 }
 
+/* Password Input Container */
+.passwordInputContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputContainer input {
+  padding-right: 48px;
+  width: 100%;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+  border-radius: var(--radius-sm);
+}
+
+.passwordToggle:hover {
+  color: var(--text-secondary);
+  background: var(--glass-bg-hover);
+}
+
+.passwordToggle:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.passwordToggle svg {
+  width: 20px;
+  height: 20px;
+}
+
 .submitButton {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
