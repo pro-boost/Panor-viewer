@@ -626,7 +626,7 @@
 .alertIcon {
   font-size: 1.5rem;
   flex-shrink: 0;
-  animation: pulse 2s infinite;
+
   background: none;
 }
 

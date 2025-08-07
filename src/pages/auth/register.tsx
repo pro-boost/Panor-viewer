@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -48,8 +48,46 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [componentKey, setComponentKey] = useState(Date.now());
 
   const passwordStrength = getPasswordStrength(password);
+
+  // Reset all form states when component mounts or route changes
+  useEffect(() => {
+    const resetState = () => {
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setLoading(false);
+      setError('');
+      setSuccess('');
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+      setComponentKey(Date.now());
+    };
+
+    resetState();
+  }, [router.pathname]);
+
+  // Additional reset on window focus for register page
+  useEffect(() => {
+    const handleFocus = () => {
+      if (router.pathname === '/auth/register') {
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+        setLoading(false);
+        setError('');
+        setSuccess('');
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        setComponentKey(Date.now());
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [router.pathname]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +154,7 @@ export default function Register() {
             <p>Register for access to the panorama viewer</p>
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <form onSubmit={handleSubmit} className={styles.form} key={`register-form-${componentKey}-${router.asPath}`}>
             {error && (
               <div className={styles.error}>
                 {error}
@@ -140,6 +178,8 @@ export default function Register() {
                 disabled={loading}
                 autoComplete="email"
                 placeholder="Enter your email address"
+                key={`email-${componentKey}-${router.asPath}`}
+                style={{ pointerEvents: loading ? 'none' : 'auto' }}
               />
             </div>
 
@@ -156,6 +196,8 @@ export default function Register() {
                   autoComplete="new-password"
                   placeholder="Enter a strong password (min. 8 characters)"
                   minLength={8}
+                  key={`password-${componentKey}-${router.asPath}`}
+                  style={{ pointerEvents: loading ? 'none' : 'auto' }}
                 />
                 <button
                   type="button"
@@ -205,6 +247,8 @@ export default function Register() {
                   disabled={loading}
                   autoComplete="new-password"
                   placeholder="Confirm your password"
+                  key={`confirmPassword-${componentKey}-${router.asPath}`}
+                  style={{ pointerEvents: loading ? 'none' : 'auto' }}
                 />
                 <button
                   type="button"

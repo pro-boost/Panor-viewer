@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import Link from 'next/link';
-import { ReactElement, useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import styles from '@/styles/Welcome.module.css';
-import { FileURLManager } from '@/utils/fileHelpers';
-import Logo from '@/components/ui/Logo';
-import LogoutButton from '@/components/ui/LogoutButton';
-import { useAuth } from '@/contexts/AuthContext';
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { ReactElement, useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import styles from "@/styles/Welcome.module.css";
+import { FileURLManager } from "@/utils/fileHelpers";
+import Logo from "@/components/ui/Logo";
+import LogoutButton from "@/components/ui/LogoutButton";
+import { useAuth } from "@/contexts/AuthContext";
 // ProjectManager moved to PanoramaViewer component
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
 const PanoramaViewer = dynamic(
-  () => import('@/components/viewer/PanoramaViewer'),
+  () => import("@/components/viewer/PanoramaViewer"),
   {
     ssr: false,
     loading: (): ReactElement => (
-      <div id='loading'>
-        <div className='loader'></div>
+      <div id="loading">
+        <div className="loader"></div>
         <div>Loading panoramas...</div>
       </div>
     ),
@@ -49,14 +49,14 @@ export default function Home(): ReactElement {
   const [hasPanoramas, setHasPanoramas] = useState<boolean>(false);
   const [hasProjects, setHasProjects] = useState<boolean>(false);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<string>('');
+  const [selectedProject, setSelectedProject] = useState<string>("");
   const [config, setConfig] = useState<ConfigData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [showProjects, setShowProjects] = useState<boolean>(false);
 
   const loadProjects = async () => {
     try {
-      const response = await fetch('/api/projects');
+      const response = await fetch("/api/projects");
       if (response.ok) {
         const data = await response.json();
         setProjects(data.projects);
@@ -65,21 +65,21 @@ export default function Home(): ReactElement {
         // Do not auto-select a project to ensure the welcome page is always shown first.
       }
     } catch (error) {
-      console.error('Error loading projects:', error);
+      console.error("Error loading projects:", error);
     }
   };
 
   const checkForPanoramas = async (projectId?: string) => {
     try {
       let configResponse;
-      let imagePathPrefix = '';
+      let imagePathPrefix = "";
 
       if (projectId) {
         // Check project-specific config
         configResponse = await fetch(
           `/api/projects/${encodeURIComponent(projectId)}/config`,
           {
-            cache: 'no-store',
+            cache: "no-store",
           }
         );
         imagePathPrefix = `/${projectId}`;
@@ -117,8 +117,8 @@ export default function Home(): ReactElement {
             ? `${imagePathPrefix}/images/${scene.id}-pano.jpg`
             : `/images/${scene.id}-pano.jpg`;
           const imageResponse = await fetch(imagePath, {
-            method: 'HEAD',
-            cache: 'no-store',
+            method: "HEAD",
+            cache: "no-store",
           });
           if (imageResponse.ok) {
             imageExists = true;
@@ -130,7 +130,7 @@ export default function Home(): ReactElement {
       }
       setHasPanoramas(imageExists);
     } catch (error) {
-      console.error('Error checking for panoramas:', error);
+      console.error("Error checking for panoramas:", error);
       setHasPanoramas(false);
       setConfig(null);
     }
@@ -176,10 +176,11 @@ export default function Home(): ReactElement {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
-          <div className={styles.loadingSpinner}></div>
           <h1 className={styles.title}>Loading...</h1>
           <p className={styles.description}>
-            {authLoading ? 'Checking authentication...' : 'Checking for projects and panoramas...'}
+            {authLoading
+              ? "Checking authentication..."
+              : "Checking for projects and panoramas..."}
           </p>
         </div>
       </div>
@@ -193,9 +194,7 @@ export default function Home(): ReactElement {
       <div className={styles.container}>
         <div className={styles.content}>
           <div className={styles.loadingSpinner}></div>
-          <p className={styles.description}>
-            Redirecting to login...
-          </p>
+          <p className={styles.description}>Redirecting to login...</p>
         </div>
       </div>
     );
@@ -211,26 +210,44 @@ export default function Home(): ReactElement {
         // Show welcome screen
         <div className={styles.container}>
           {/* Logo */}
-          <Logo variant='default' position='absolute' />
-          
+          <Logo variant="default" position="absolute" />
+
           {/* User Menu */}
           <div className={styles.userMenu}>
-            {user?.role === 'admin' && (
-              <Link href='/admin/users' className={styles.adminLink}>
+            {user?.role === "admin" && (
+              <Link href="/admin/users" className={styles.adminLink}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M8.5 11C10.7091 11 12.5 9.20914 12.5 7C12.5 4.79086 10.7091 3 8.5 3C6.29086 3 4.5 4.79086 4.5 7C4.5 9.20914 6.29086 11 8.5 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M17 11L19 13L23 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path
+                    d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M8.5 11C10.7091 11 12.5 9.20914 12.5 7C12.5 4.79086 10.7091 3 8.5 3C6.29086 3 4.5 4.79086 4.5 7C4.5 9.20914 6.29086 11 8.5 11Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M17 11L19 13L23 9"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 <span className={styles.adminText}>Admin</span>
                 <span className={styles.adminTextHover}>Manage Users</span>
               </Link>
             )}
-            <LogoutButton variant='minimal' />
+            <LogoutButton variant="minimal" />
           </div>
 
           <div
-            className={`${styles.content} ${hasProjects && showProjects ? styles.hasProjects : ''}`}
+            className={`${styles.content} ${hasProjects && showProjects ? styles.hasProjects : ""}`}
           >
             {/* Hero Section */}
             <div className={styles.heroSection}>
@@ -240,16 +257,16 @@ export default function Home(): ReactElement {
               </p>
               <p className={styles.description}>
                 {hasProjects
-                  ? `You have ${projects.length} project${projects.length !== 1 ? 's' : ''}. Select one to get started or create a new one.`
-                  : 'Get started by creating your first project and uploading panoramic images.'}
+                  ? `You have ${projects.length} project${projects.length !== 1 ? "s" : ""}. Select one to get started or create a new one.`
+                  : "Get started by creating your first project and uploading panoramic images."}
               </p>
             </div>
 
             {/* Action Buttons */}
             <div className={styles.actionButtons}>
-              <Link href='/upload' className={styles.uploadButton}>
+              <Link href="/upload" className={styles.uploadButton}>
                 <div className={styles.buttonTitle}>
-                  {hasProjects ? 'New Project' : 'Create Project'}
+                  {hasProjects ? "New Project" : "Create Project"}
                 </div>
               </Link>
 
@@ -263,27 +280,27 @@ export default function Home(): ReactElement {
                       {projects.length}
                     </span>
                     <svg
-                      width='24'
-                      height='24'
-                      viewBox='0 0 24 24'
-                      fill='none'
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
                       style={{
                         transform: showProjects
-                          ? 'rotate(180deg)'
-                          : 'rotate(0deg)',
+                          ? "rotate(180deg)"
+                          : "rotate(0deg)",
                       }}
                     >
                       <path
-                        d='M19 9L12 16L5 9'
-                        stroke='currentColor'
-                        strokeWidth='2'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
+                        d="M19 9L12 16L5 9"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
                     </svg>
                   </div>
                   <div className={styles.buttonTitle}>
-                    {showProjects ? 'Hide Projects' : 'View Projects'}
+                    {showProjects ? "Hide Projects" : "View Projects"}
                   </div>
                 </button>
               )}
@@ -299,7 +316,7 @@ export default function Home(): ReactElement {
                   </p>
                 </div>
                 <div className={styles.projectList}>
-                  {projects.map(project => (
+                  {projects.map((project) => (
                     <div
                       key={project.id}
                       className={styles.projectCard}
@@ -308,23 +325,26 @@ export default function Home(): ReactElement {
                       <div className={styles.projectThumbnail}>
                         {project.firstSceneId ? (
                           <img
-                            src={FileURLManager.getPanoramaImageURL(project.id, `${project.firstSceneId}-pano.jpg`)}
+                            src={FileURLManager.getPanoramaImageURL(
+                              project.id,
+                              `${project.firstSceneId}-pano.jpg`
+                            )}
                             alt={`${project.name} thumbnail`}
                             className={styles.projectThumbnailImage}
-                            onError={e => {
+                            onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.style.display = 'none';
+                              target.style.display = "none";
                               const placeholder =
                                 target.nextElementSibling as HTMLElement;
                               if (placeholder)
-                                placeholder.style.display = 'flex';
+                                placeholder.style.display = "flex";
                             }}
                           />
                         ) : null}
                         <div
                           className={styles.projectThumbnailPlaceholder}
                           style={{
-                            display: project.firstSceneId ? 'none' : 'flex',
+                            display: project.firstSceneId ? "none" : "flex",
                           }}
                         >
                           🏢
@@ -337,7 +357,7 @@ export default function Home(): ReactElement {
                         </div>
                         <div className={styles.projectMeta}>
                           <div className={styles.projectInfo}>
-                            Updated{' '}
+                            Updated{" "}
                             {new Date(project.updatedAt).toLocaleDateString()}
                           </div>
                         </div>

@@ -101,7 +101,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.error('Logout error:', error);
     } finally {
       setUser(null);
-      router.push('/auth/login');
+      setLoading(false);
+      // Use replace instead of push to prevent back navigation issues
+      router.replace('/auth/login');
     }
   };
 

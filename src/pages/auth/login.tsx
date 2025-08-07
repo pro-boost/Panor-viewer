@@ -21,6 +21,7 @@ export default function Login() {
   const [success, setSuccess] = useState("");
   const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [componentKey, setComponentKey] = useState(Date.now());
 
   useEffect(() => {
     checkAuthStatus();
@@ -32,6 +33,49 @@ export default function Login() {
       );
     }
   }, [router.query]);
+
+  // Reset form state when component mounts or when returning to login page
+  useEffect(() => {
+    // Reset all form states to ensure inputs are not disabled
+    setEmail("");
+    setPassword("");
+    setLoading(false);
+    setError("");
+    setShowPassword(false);
+    setComponentKey(Date.now());
+    
+    // Immediately set checkingAuth to false for login page
+    if (router.pathname === '/auth/login') {
+      setCheckingAuth(false);
+    }
+  }, [router.pathname]);
+
+  // Additional cleanup when component mounts
+  useEffect(() => {
+    // Force a complete state reset on component mount
+    const resetState = () => {
+      setEmail("");
+      setPassword("");
+      setLoading(false);
+      setError("");
+      setSuccess("");
+      setShowPassword(false);
+      setCheckingAuth(false); // Ensure inputs are enabled
+      setComponentKey(Date.now());
+    };
+    
+    resetState();
+    
+    // Also reset on window focus (when user returns to tab)
+    const handleFocus = () => {
+      if (router.pathname === '/auth/login') {
+        resetState();
+      }
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const checkAuthStatus = async () => {
     try {
@@ -131,7 +175,7 @@ export default function Login() {
             <p>Please sign in to access the panorama viewer</p>
           </div>
 
-          <form onSubmit={handleSubmit} className={styles.form}>
+          <form onSubmit={handleSubmit} className={styles.form} key={`form-${componentKey}-${router.asPath}`}>
             {error && <div className={styles.error}>{error}</div>}
 
             {success && <div className={styles.success}>{success}</div>}
@@ -144,9 +188,11 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
+                disabled={loading || checkingAuth}
                 autoComplete="email"
                 placeholder="Enter your email"
+                key={`email-${componentKey}-${router.asPath}`}
+                style={{ pointerEvents: (loading || checkingAuth) ? 'none' : 'auto' }}
               />
             </div>
 
@@ -159,15 +205,17 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  disabled={loading}
+                  disabled={loading || checkingAuth}
                   autoComplete="current-password"
                   placeholder="Enter your password"
+                  key={`password-${componentKey}-${router.asPath}`}
+                  style={{ pointerEvents: (loading || checkingAuth) ? 'none' : 'auto' }}
                 />
                 <button
                   type="button"
                   className={styles.passwordToggle}
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={loading}
+                  disabled={loading || checkingAuth}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (

@@ -239,7 +239,7 @@ export default function AdminUsers() {
 
       <div className={styles.container}>
         <Logo variant="default" position="absolute" />
-        
+
         <div className={styles.header}>
           <h1>User Management</h1>
           <p>Manage user accounts, approvals, and permissions</p>
