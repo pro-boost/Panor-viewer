@@ -281,6 +281,7 @@ export default function Upload() {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
+          <div className={styles.loadingSpinner}></div>
           <p>Checking authentication...</p>
         </div>
       </div>

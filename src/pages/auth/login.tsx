@@ -88,8 +88,10 @@ export default function Login() {
   if (checkingAuth) {
     return (
       <div className={styles.container}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Checking authentication...</p>
+        <div className={styles.card}>
+          <div className={styles.loadingSpinner}></div>
+          <p>Checking authentication...</p>
+        </div>
       </div>
     );
   }

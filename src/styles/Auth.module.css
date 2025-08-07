@@ -236,6 +236,18 @@
   margin: 0 auto 16px;
 }
 
+/* Loading state container */
+.container .loadingSpinner {
+  display: block;
+}
+
+.container p {
+  text-align: center;
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: var(--font-base);
+}
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
