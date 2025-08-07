@@ -1,13 +1,13 @@
-import { useState, FormEvent, ChangeEvent, useEffect, useRef } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import styles from '@/styles/POIManagement.module.css';
-import Logo from '@/components/ui/Logo';
-import LogoutButton from '@/components/ui/LogoutButton';
-import { POIData } from '@/types/poi';
-import POIFileManager, { exportPOI } from '@/components/poi/POIFileManager';
-import ConfirmationModal from '@/components/ui/ConfirmationModal';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, FormEvent, ChangeEvent, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
+import Link from "next/link";
+import styles from "@/styles/POIManagement.module.css";
+import Logo from "@/components/ui/Logo";
+import LogoutButton from "@/components/ui/LogoutButton";
+import { POIData } from "@/types/poi";
+import POIFileManager, { exportPOI } from "@/components/poi/POIFileManager";
+import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Project {
   id: string;
@@ -58,16 +58,16 @@ function CustomSelect({
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const selectedOption = options.find(opt => opt.value === value);
+  const selectedOption = options.find((opt) => opt.value === value);
 
   return (
     <div className={styles.customSelect} ref={dropdownRef}>
       <button
-        type='button'
+        type="button"
         className={styles.selectButton}
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -77,11 +77,11 @@ function CustomSelect({
 
       {isOpen && (
         <div className={styles.selectDropdown}>
-          {options.map(option => (
+          {options.map((option) => (
             <div
               key={option.value}
               className={`${styles.selectOption} ${
-                value === option.value ? styles.selected : ''
+                value === option.value ? styles.selected : ""
               }`}
               onClick={() => {
                 onChange(option.value);
@@ -100,22 +100,22 @@ function CustomSelect({
 export default function POIManagement() {
   // Initialize authentication
   const { isAuthenticated, loading: authLoading } = useAuth();
-  
+
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectPOIs, setProjectPOIs] = useState<ProjectPOIs[]>([]);
-  const [referrerUrl, setReferrerUrl] = useState<string>('/');
+  const [referrerUrl, setReferrerUrl] = useState<string>("/");
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [message, setMessage] = useState('');
+  const [selectedProject, setSelectedProject] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [message, setMessage] = useState("");
   const [showDetails, setShowDetails] = useState<{ [key: string]: boolean }>(
     {}
   );
   const [deletingPOI, setDeletingPOI] = useState<string | null>(null);
   const [useIndividualFiles, setUseIndividualFiles] = useState(false);
   const [fileManagerMessage, setFileManagerMessage] = useState<{
-    type: 'success' | 'error';
+    type: "success" | "error";
     text: string;
   } | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -135,8 +135,8 @@ export default function POIManagement() {
     // Capture referrer information
     const referrer = document.referrer;
     const urlParams = new URLSearchParams(window.location.search);
-    const fromProject = urlParams.get('from');
-    const fromScene = urlParams.get('scene');
+    const fromProject = urlParams.get("from");
+    const fromScene = urlParams.get("scene");
 
     if (fromProject && fromScene) {
       setReferrerUrl(`/${fromProject}?scene=${fromScene}`);
@@ -144,8 +144,8 @@ export default function POIManagement() {
       setReferrerUrl(`/${fromProject}`);
     } else if (referrer && referrer.includes(window.location.origin)) {
       // If referrer is from the same origin, use it
-      const referrerPath = referrer.replace(window.location.origin, '');
-      setReferrerUrl(referrerPath || '/');
+      const referrerPath = referrer.replace(window.location.origin, "");
+      setReferrerUrl(referrerPath || "/");
     }
 
     loadProjectsAndPOIs();
@@ -155,9 +155,9 @@ export default function POIManagement() {
     setIsLoading(true);
     try {
       // Load all projects
-      const projectsResponse = await fetch('/api/projects');
+      const projectsResponse = await fetch("/api/projects");
       if (!projectsResponse.ok) {
-        throw new Error('Failed to load projects');
+        throw new Error("Failed to load projects");
       }
       const projectsData = await projectsResponse.json();
       setProjects(projectsData.projects || []);
@@ -180,7 +180,7 @@ export default function POIManagement() {
                 pois: poisData.pois,
                 sceneCount: project.sceneCount,
               });
-              setUseIndividualFiles(poisData.source === 'individual');
+              setUseIndividualFiles(poisData.source === "individual");
             }
           } else {
             // Fallback to main file
@@ -213,8 +213,8 @@ export default function POIManagement() {
         `Loaded ${totalPOIs} POIs from ${allProjectPOIs.length} projects`
       );
     } catch (error) {
-      console.error('Failed to load projects and POIs:', error);
-      setMessage('Failed to load POI data. Please try again.');
+      console.error("Failed to load projects and POIs:", error);
+      setMessage("Failed to load POI data. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -242,19 +242,19 @@ export default function POIManagement() {
       });
 
       const response = await fetch(`/api/poi/delete?${params.toString()}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete POI');
+        throw new Error("Failed to delete POI");
       }
 
       // Refresh the POI data
       await loadProjectsAndPOIs();
-      setMessage('POI deleted successfully');
+      setMessage("POI deleted successfully");
     } catch (error) {
-      console.error('Failed to delete POI:', error);
-      setMessage('Failed to delete POI. Please try again.');
+      console.error("Failed to delete POI:", error);
+      setMessage("Failed to delete POI. Please try again.");
     } finally {
       setDeletingPOI(null);
       setShowDeleteConfirm(false);
@@ -263,7 +263,7 @@ export default function POIManagement() {
   };
 
   const toggleProjectDetails = (projectId: string) => {
-    setShowDetails(prev => ({
+    setShowDetails((prev) => ({
       ...prev,
       [projectId]: !prev[projectId],
     }));
@@ -278,25 +278,25 @@ export default function POIManagement() {
     try {
       await exportPOI(projectId, poi.id, poi.name);
       setFileManagerMessage({
-        type: 'success',
+        type: "success",
         text: `POI "${poi.name}" exported successfully`,
       });
     } catch (error) {
       setFileManagerMessage({
-        type: 'error',
-        text: error instanceof Error ? error.message : 'Failed to export POI',
+        type: "error",
+        text: error instanceof Error ? error.message : "Failed to export POI",
       });
     }
   };
 
   const handleFileManagerMessage = (
-    type: 'success' | 'error',
+    type: "success" | "error",
     message: string
   ) => {
     setFileManagerMessage({ type, text: message });
     setTimeout(() => setFileManagerMessage(null), 5000);
     // Hide import manager on successful import
-    if (type === 'success' && message.includes('imported')) {
+    if (type === "success" && message.includes("imported")) {
       setShowImportManager(false);
     }
   };
@@ -312,13 +312,13 @@ export default function POIManagement() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to export POIs');
+        throw new Error(errorData.error || "Failed to export POIs");
       }
 
       // Create download link
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `${projectId}-all-pois-export.zip`;
       document.body.appendChild(link);
@@ -327,30 +327,30 @@ export default function POIManagement() {
       window.URL.revokeObjectURL(url);
 
       setFileManagerMessage({
-        type: 'success',
+        type: "success",
         text: `All POIs from "${projectName}" exported successfully`,
       });
     } catch (error) {
       setFileManagerMessage({
-        type: 'error',
+        type: "error",
         text:
-          error instanceof Error ? error.message : 'Failed to export all POIs',
+          error instanceof Error ? error.message : "Failed to export all POIs",
       });
     }
   };
 
   const filteredProjectPOIs = projectPOIs
-    .filter(project => {
-      if (selectedProject !== 'all' && project.projectId !== selectedProject) {
+    .filter((project) => {
+      if (selectedProject !== "all" && project.projectId !== selectedProject) {
         return false;
       }
       return true;
     })
-    .map(project => {
+    .map((project) => {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const filteredPOIs = project.pois.filter(
-          poi =>
+          (poi) =>
             poi.name.toLowerCase().includes(searchLower) ||
             poi.description.toLowerCase().includes(searchLower) ||
             poi.type.toLowerCase().includes(searchLower)
@@ -362,7 +362,7 @@ export default function POIManagement() {
       }
       return project;
     })
-    .filter(project => project.pois.length > 0);
+    .filter((project) => project.pois.length > 0);
 
   const totalPOIs = filteredProjectPOIs.reduce(
     (sum, project) => sum + project.pois.length,
@@ -370,23 +370,23 @@ export default function POIManagement() {
   );
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getFileIcon = (type: string) => {
     switch (type) {
-      case 'file':
-        return 'File';
-      case 'iframe':
-        return 'Web';
+      case "file":
+        return "File";
+      case "iframe":
+        return "Web";
       default:
-        return 'POI';
+        return "POI";
     }
   };
 
@@ -416,7 +416,7 @@ export default function POIManagement() {
 
   return (
     <div className={styles.container}>
-      <Logo variant='default' position='absolute' />
+      <Logo variant="default" position="absolute" />
       <div className={styles.logoutContainer}>
         <LogoutButton variant="minimal" />
       </div>
@@ -439,7 +439,7 @@ export default function POIManagement() {
         {fileManagerMessage && (
           <div
             className={`${styles.message} ${
-              fileManagerMessage.type === 'error'
+              fileManagerMessage.type === "error"
                 ? styles.messageError
                 : styles.messageSuccess
             }`}
@@ -461,21 +461,21 @@ export default function POIManagement() {
           {/* Filters */}
           <div className={styles.formGroup}>
             <div className={styles.formGroup}>
-              <label htmlFor='projectFilter' className={styles.label}>
+              <label htmlFor="projectFilter" className={styles.label}>
                 Filter by Project:
               </label>
               <CustomSelect
                 value={selectedProject}
                 onChange={setSelectedProject}
-                placeholder='Select a project'
+                placeholder="Select a project"
                 options={[
                   {
-                    value: 'all',
+                    value: "all",
                     label: `All Projects (${projectPOIs.length})`,
                   },
-                  ...projects.map(project => {
+                  ...projects.map((project) => {
                     const projectPOICount =
-                      projectPOIs.find(p => p.projectId === project.id)?.pois
+                      projectPOIs.find((p) => p.projectId === project.id)?.pois
                         .length || 0;
                     return {
                       value: project.id,
@@ -487,15 +487,15 @@ export default function POIManagement() {
             </div>
 
             <div className={styles.formGroup}>
-              <label htmlFor='searchPOIs' className={styles.label}>
+              <label htmlFor="searchPOIs" className={styles.label}>
                 Search POIs:
               </label>
               <input
-                type='text'
-                id='searchPOIs'
+                type="text"
+                id="searchPOIs"
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
-                placeholder='Search by name, description, or type...'
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by name, description, or type..."
                 className={styles.textInput}
               />
             </div>
@@ -511,14 +511,14 @@ export default function POIManagement() {
                 <div className={styles.summaryItem}>
                   <span className={styles.summaryIcon}>POI</span>
                   <span className={styles.summaryText}>
-                    {totalPOIs} POI{totalPOIs !== 1 ? 's' : ''} found
+                    {totalPOIs} POI{totalPOIs !== 1 ? "s" : ""} found
                   </span>
                 </div>
                 <div className={styles.summaryItem}>
                   <span className={styles.summaryIcon}>Projects</span>
                   <span className={styles.summaryText}>
                     {filteredProjectPOIs.length} project
-                    {filteredProjectPOIs.length !== 1 ? 's' : ''} with POIs
+                    {filteredProjectPOIs.length !== 1 ? "s" : ""} with POIs
                   </span>
                 </div>
               </div>
@@ -526,13 +526,13 @@ export default function POIManagement() {
           )}
 
           <button
-            type='button'
+            type="button"
             onClick={loadProjectsAndPOIs}
             disabled={isLoading}
             className={styles.submitButton}
           >
             {isLoading && <span className={styles.loadingSpinner}></span>}
-            {isLoading ? 'Loading...' : 'Refresh POI Data'}
+            {isLoading ? "Loading..." : "Refresh POI Data"}
           </button>
         </form>
 
@@ -555,8 +555,8 @@ export default function POIManagement() {
 
                   <div className={styles.inputHint}>
                     {searchTerm
-                      ? 'Try adjusting your search terms'
-                      : 'Create some POIs in your panorama projects or import them below'}
+                      ? "Try adjusting your search terms"
+                      : "Create some POIs in your panorama projects or import them below"}
                   </div>
                 </div>
               </div>
@@ -564,7 +564,7 @@ export default function POIManagement() {
               {/* Show POI File Manager when no POIs are found */}
               {!searchTerm && (
                 <div className={styles.formGroup}>
-                  {selectedProject === 'all' ? (
+                  {selectedProject === "all" ? (
                     <div className={styles.inputHint}>
                       Please select a specific project to import POIs
                     </div>
@@ -572,14 +572,14 @@ export default function POIManagement() {
                     <POIFileManager
                       projectId={selectedProject}
                       onPOIImported={handlePOIImported}
-                      onError={error =>
-                        handleFileManagerMessage('error', error)
+                      onError={(error) =>
+                        handleFileManagerMessage("error", error)
                       }
-                      onSuccess={message =>
-                        handleFileManagerMessage('success', message)
+                      onSuccess={(message) =>
+                        handleFileManagerMessage("success", message)
                       }
                       hasExistingPOIs={projectPOIs.some(
-                        project =>
+                        (project) =>
                           project.projectId === selectedProject &&
                           project.pois.length > 0
                       )}
@@ -589,7 +589,7 @@ export default function POIManagement() {
               )}
             </div>
           ) : (
-            filteredProjectPOIs.map(project => (
+            filteredProjectPOIs.map((project) => (
               <div key={project.projectId} className={styles.form}>
                 <div className={styles.formGroup}>
                   <div
@@ -604,14 +604,14 @@ export default function POIManagement() {
                         className={`${styles.inputHint} ${styles.projectMeta}`}
                       >
                         {project.pois.length} POI
-                        {project.pois.length !== 1 ? 's' : ''} •{' '}
+                        {project.pois.length !== 1 ? "s" : ""} •{" "}
                         {project.sceneCount} scene
-                        {project.sceneCount !== 1 ? 's' : ''}
+                        {project.sceneCount !== 1 ? "s" : ""}
                       </div>
                     </div>
                     <div className={styles.projectActionsContainer}>
                       <button
-                        onClick={e => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           handleExportAllPOIs(
                             project.projectId,
@@ -626,18 +626,18 @@ export default function POIManagement() {
                       <Link
                         href={`/${project.projectId}`}
                         className={styles.backLink}
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                       >
                         View Project
                       </Link>
                       <button
-                        onClick={e => {
+                        onClick={(e) => {
                           e.stopPropagation();
                           setSelectedProject(project.projectId);
                           setShowImportManager(!showImportManager);
                           // Auto-expand project details when opening import manager
                           if (!showImportManager) {
-                            setShowDetails(prev => ({
+                            setShowDetails((prev) => ({
                               ...prev,
                               [project.projectId]: true,
                             }));
@@ -648,11 +648,11 @@ export default function POIManagement() {
                       >
                         {showImportManager &&
                         selectedProject === project.projectId
-                          ? 'Hide Import'
-                          : 'Import POIs'}
+                          ? "Hide Import"
+                          : "Import POIs"}
                       </button>
                       <span className={styles.expandIcon}>
-                        {showDetails[project.projectId] ? '▼' : '▶'}
+                        {showDetails[project.projectId] ? "▼" : "▶"}
                       </span>
                     </div>
                   </div>
@@ -667,21 +667,21 @@ export default function POIManagement() {
                           <POIFileManager
                             projectId={selectedProject}
                             onPOIImported={handlePOIImported}
-                            onError={error =>
-                              handleFileManagerMessage('error', error)
+                            onError={(error) =>
+                              handleFileManagerMessage("error", error)
                             }
-                            onSuccess={message =>
-                              handleFileManagerMessage('success', message)
+                            onSuccess={(message) =>
+                              handleFileManagerMessage("success", message)
                             }
                             hasExistingPOIs={projectPOIs.some(
-                              p =>
+                              (p) =>
                                 p.projectId === selectedProject &&
                                 p.pois.length > 0
                             )}
                           />
                         </div>
                       )}
-                    {project.pois.map(poi => (
+                    {project.pois.map((poi) => (
                       <div key={poi.id} className={styles.fileSummary}>
                         <h3 className={styles.summaryTitle}>POI: {poi.name}</h3>
                         <div className={styles.summaryContent}>
@@ -725,8 +725,8 @@ export default function POIManagement() {
                               className={`${styles.poiButton} ${styles.poiButtonDelete}`}
                             >
                               {deletingPOI === poi.id
-                                ? 'Deleting...'
-                                : 'Delete'}
+                                ? "Deleting..."
+                                : "Delete"}
                             </button>
                           </div>
                         </div>
@@ -744,7 +744,7 @@ export default function POIManagement() {
           <div className={styles.messageContainer}>
             <div
               className={`${styles.message} ${
-                message.includes('Failed')
+                message.includes("Failed")
                   ? styles.messageError
                   : styles.messageSuccess
               }`}
@@ -768,8 +768,8 @@ export default function POIManagement() {
               interest to your panoramas
             </li>
             <li>
-              Click &quot;Upload and Generate&quot; to upload files and automatically
-              generate the configuration
+              Click &quot;Upload and Generate&quot; to upload files and
+              automatically generate the configuration
             </li>
             <li>
               Once complete, return to the main viewer to see your panoramas
@@ -786,11 +786,11 @@ export default function POIManagement() {
           setPOIToDelete(null);
         }}
         onConfirm={confirmDeletePOI}
-        title='Delete POI'
+        title="Delete POI"
         message={`Are you sure you want to delete the POI &quot;${poiToDelete?.poiName}&quot;? This action cannot be undone.`}
-        confirmText='Delete'
-        cancelText='Cancel'
-        variant='danger'
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
       />
     </div>
   );

@@ -46,15 +46,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(null);
         
         // If not authenticated and not on auth pages, redirect to login
+        // Add a small delay to prevent flash of access denied message
         if (!router.pathname.startsWith('/auth/') && router.isReady) {
-          // Skip setup and go directly to login if configured
-          if (data.requiresSetup && process.env.NEXT_PUBLIC_SKIP_SETUP === 'true') {
-            await router.replace('/auth/login');
-          } else if (data.requiresSetup) {
-            await router.replace('/auth/setup');
-          } else {
-            await router.replace('/auth/login');
-          }
+          setTimeout(async () => {
+            // Skip setup and go directly to login if configured
+            if (data.requiresSetup && process.env.NEXT_PUBLIC_SKIP_SETUP === 'true') {
+              await router.replace('/auth/login');
+            } else if (data.requiresSetup) {
+              await router.replace('/auth/setup');
+            } else {
+              await router.replace('/auth/login');
+            }
+          }, 100);
         }
       }
     } catch (error) {

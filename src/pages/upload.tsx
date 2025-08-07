@@ -1,18 +1,18 @@
-import { FormEvent, ChangeEvent, useEffect } from 'react';
-import Link from 'next/link';
-import styles from '@/styles/Upload.module.css';
-import Logo from '@/components/ui/Logo';
-import LogoutButton from '@/components/ui/LogoutButton';
-import { useFileManager } from '@/hooks/useFileManager';
-import { useUploadState } from '@/hooks/useUploadState';
-import { useProjectManager } from '@/hooks/useProjectManager';
-import { useValidation } from '@/hooks/useValidation';
-import { useAuth } from '@/contexts/AuthContext';
+import { FormEvent, ChangeEvent, useEffect } from "react";
+import Link from "next/link";
+import styles from "@/styles/Upload.module.css";
+import Logo from "@/components/ui/Logo";
+import LogoutButton from "@/components/ui/LogoutButton";
+import { useFileManager } from "@/hooks/useFileManager";
+import { useUploadState } from "@/hooks/useUploadState";
+import { useProjectManager } from "@/hooks/useProjectManager";
+import { useValidation } from "@/hooks/useValidation";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Upload() {
   // Initialize authentication
   const { isAuthenticated, loading: authLoading } = useAuth();
-  
+
   // Initialize custom hooks
   const projectManager = useProjectManager();
   const uploadState = useUploadState();
@@ -90,7 +90,7 @@ export default function Upload() {
   useEffect(() => {
     // Force UI update when existingFiles changes
     console.log(
-      'ExistingFiles changed in state:',
+      "ExistingFiles changed in state:",
       projectManager.existingFiles
     );
     // This will update the project status message in the UI
@@ -102,20 +102,20 @@ export default function Upload() {
     validation.clearDuplicateWarning();
     fileManager.clearDuplicateImages();
     setDeleteAllAndUpload(true);
-    const form = document.querySelector('form') as HTMLFormElement;
+    const form = document.querySelector("form") as HTMLFormElement;
     if (form) {
       const syntheticEvent = {
         preventDefault: () => {},
         currentTarget: form,
         target: form,
-        nativeEvent: new Event('submit'),
+        nativeEvent: new Event("submit"),
         bubbles: true,
         cancelable: true,
         defaultPrevented: false,
         eventPhase: 0,
         isTrusted: true,
         timeStamp: Date.now(),
-        type: 'submit',
+        type: "submit",
         _deleteAllMode: true,
       } as any;
       handleSubmit(syntheticEvent);
@@ -172,43 +172,43 @@ export default function Upload() {
 
       // Prepare form data
       const formData = new FormData();
-      formData.append('projectName', projectManager.projectName.trim());
+      formData.append("projectName", projectManager.projectName.trim());
 
       // Handle CSV file
       if (fileManager.selectedFiles.csv) {
-        formData.append('csv', fileManager.selectedFiles.csv);
+        formData.append("csv", fileManager.selectedFiles.csv);
       } else if (
         projectManager.isEditMode &&
         projectManager.existingFiles.csv
       ) {
-        formData.append('existing_csv', projectManager.existingFiles.csv);
+        formData.append("existing_csv", projectManager.existingFiles.csv);
       }
 
       // Handle image files
       if (fileManager.selectedFiles.images.length > 0) {
-        fileManager.selectedFiles.images.forEach(image => {
-          formData.append('images', image);
+        fileManager.selectedFiles.images.forEach((image) => {
+          formData.append("images", image);
         });
       } else if (
         projectManager.isEditMode &&
         projectManager.existingFiles.images.length > 0
       ) {
-        projectManager.existingFiles.images.forEach(imageName => {
-          formData.append('existing_images', imageName);
+        projectManager.existingFiles.images.forEach((imageName) => {
+          formData.append("existing_images", imageName);
         });
       }
 
       // Handle POI file
       if (fileManager.poiFile) {
-        formData.append('poiFile', fileManager.poiFile);
+        formData.append("poiFile", fileManager.poiFile);
       }
 
       if (uploadState.allowOverwrite || event._overwriteMode) {
-        formData.append('overwrite', 'true');
+        formData.append("overwrite", "true");
       }
 
       if (uploadState.deleteAllAndUpload || event._deleteAllMode) {
-        formData.append('deleteAll', 'true');
+        formData.append("deleteAll", "true");
       }
       uploadState.setAllowOverwrite(false);
 
@@ -226,7 +226,7 @@ export default function Upload() {
       const response = await fetch(
         `/api/projects/${encodeURIComponent(projectId)}/upload`,
         {
-          method: 'POST',
+          method: "POST",
           body: formData,
         }
       );
@@ -238,12 +238,12 @@ export default function Upload() {
 
       // Clear session storage on successful upload
       try {
-        sessionStorage.removeItem('uploadPageFiles');
-        if (typeof window !== 'undefined') {
+        sessionStorage.removeItem("uploadPageFiles");
+        if (typeof window !== "undefined") {
           delete (window as any).__uploadPageFiles;
         }
       } catch (error) {
-        console.warn('Failed to clear stored files:', error);
+        console.warn("Failed to clear stored files:", error);
       }
 
       fileManager.clearDuplicateImages();
@@ -251,12 +251,12 @@ export default function Upload() {
       // Refresh project data to update the UI with new file information
       if (projectManager.isEditMode && projectManager.editingProjectId) {
         console.log(
-          'Refreshing project data after successful upload for project:',
+          "Refreshing project data after successful upload for project:",
           projectManager.editingProjectId
         );
         await projectManager.loadProjectData(projectManager.editingProjectId);
         console.log(
-          'Project data refreshed, current files:',
+          "Project data refreshed, current files:",
           projectManager.existingFiles
         );
 
@@ -267,12 +267,12 @@ export default function Upload() {
 
       // Set success state with appropriate message
       const successMessage = projectManager.isEditMode
-        ? 'Project updated successfully!'
-        : 'Project created successfully!';
+        ? "Project updated successfully!"
+        : "Project created successfully!";
       uploadState.finishUpload(true, successMessage);
     } catch (error: any) {
       uploadState.handleUploadError(error);
-      uploadState.finishUpload(false, '');
+      uploadState.finishUpload(false, "");
     }
   };
 
@@ -302,15 +302,15 @@ export default function Upload() {
 
   return (
     <div className={styles.container}>
-      <Logo variant='default' position='absolute' />
+      <Logo variant="default" position="absolute" />
       <div className={styles.logoutContainer}>
         <LogoutButton variant="minimal" />
       </div>
       <div className={styles.content}>
         <h1 className={styles.title}>
           {projectManager.isEditMode
-            ? 'Edit Project Data'
-            : 'Upload Panorama Data'}
+            ? "Edit Project Data"
+            : "Upload Panorama Data"}
         </h1>
 
         <button
@@ -323,47 +323,47 @@ export default function Upload() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.inputHint}>
             {projectManager.isEditMode
-              ? 'Update the name of your existing project.'
-              : 'This will create a new project folder for your panorama data.'}
+              ? "Update the name of your existing project."
+              : "This will create a new project folder for your panorama data."}
           </div>
           <div className={styles.formGroup}>
-            <label htmlFor='projectName' className={styles.label}>
+            <label htmlFor="projectName" className={styles.label}>
               Project Name:
             </label>
             <input
-              type='text'
-              id='projectName'
-              name='projectName'
+              type="text"
+              id="projectName"
+              name="projectName"
               value={projectManager.projectName}
-              onChange={e => projectManager.setProjectName(e.target.value)}
-              placeholder='Enter a name for your project'
+              onChange={(e) => projectManager.setProjectName(e.target.value)}
+              placeholder="Enter a name for your project"
               required
-              className={`${styles.textInput} ${validation.validationErrors.some(error => error.includes('Project name')) ? styles.inputError : ''}`}
+              className={`${styles.textInput} ${validation.validationErrors.some((error) => error.includes("Project name")) ? styles.inputError : ""}`}
             />
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor='csv' className={styles.label}>
+            <label htmlFor="csv" className={styles.label}>
               CSV File
               {projectManager.isEditMode && projectManager.existingFiles.csv
-                ? ' (Optional - will replace existing)'
-                : ''}
+                ? " (Optional - will replace existing)"
+                : ""}
               :
             </label>
             {fileManager.selectedFiles.csv &&
-              fileManager.selectedFiles.csv.name !== 'pano-poses.csv' && (
+              fileManager.selectedFiles.csv.name !== "pano-poses.csv" && (
                 <div className={styles.csvInstruction}>
                   <p>
-                    Important: Your CSV file must be named exactly{' '}
+                    Important: Your CSV file must be named exactly{" "}
                     <strong>&quot;pano-poses.csv&quot;</strong>
                   </p>
                 </div>
               )}
             <input
-              type='file'
-              id='csv'
-              name='csv'
-              accept='.csv'
+              type="file"
+              id="csv"
+              name="csv"
+              accept=".csv"
               required={
                 !projectManager.isEditMode || !projectManager.existingFiles.csv
               }
@@ -373,19 +373,19 @@ export default function Upload() {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor='images' className={styles.label}>
+            <label htmlFor="images" className={styles.label}>
               Panorama Images
               {projectManager.isEditMode &&
               projectManager.existingFiles.images.length > 0
-                ? ' (Optional - will add to existing)'
-                : ''}
+                ? " (Optional - will add to existing)"
+                : ""}
               :
             </label>
             <input
-              type='file'
-              id='images'
-              name='images'
-              accept='image/*'
+              type="file"
+              id="images"
+              name="images"
+              accept="image/*"
               multiple
               required={
                 !projectManager.isEditMode ||
@@ -397,14 +397,14 @@ export default function Upload() {
           </div>
 
           <div className={styles.formGroup}>
-            <label htmlFor='poiFile' className={styles.label}>
+            <label htmlFor="poiFile" className={styles.label}>
               POI File (Optional):
             </label>
             <input
-              type='file'
-              id='poiFile'
-              name='poiFile'
-              accept='.json,.zip'
+              type="file"
+              id="poiFile"
+              name="poiFile"
+              accept=".json,.zip"
               onChange={fileManager.handlePOIFileChange}
               className={styles.fileInput}
             />
@@ -421,7 +421,7 @@ export default function Upload() {
                       Current Project Files
                     </p>
                     <button
-                      type='button'
+                      type="button"
                       onClick={() =>
                         projectManager.setShowExistingFiles(
                           !projectManager.showExistingFiles
@@ -429,7 +429,7 @@ export default function Upload() {
                       }
                       className={styles.toggleButton}
                     >
-                      {projectManager.showExistingFiles ? '▼ Hide' : '▶ Show'}
+                      {projectManager.showExistingFiles ? "▼ Hide" : "▶ Show"}
                     </button>
                   </div>
                   {projectManager.showExistingFiles && (
@@ -456,8 +456,8 @@ export default function Upload() {
             <div className={styles.fileSummary}>
               <h4 className={styles.summaryTitle}>
                 {projectManager.isEditMode
-                  ? 'Update Summary'
-                  : 'Upload Summary'}
+                  ? "Update Summary"
+                  : "Upload Summary"}
               </h4>
               <div className={styles.summaryContent}>
                 {fileManager.selectedFiles.csv && (
@@ -465,7 +465,7 @@ export default function Upload() {
                     <span className={styles.summaryIcon}></span>
                     <span className={styles.summaryText}>
                       CSV: {fileManager.selectedFiles.csv.name} (
-                      {Math.round(fileManager.selectedFiles.csv.size / 1024)}{' '}
+                      {Math.round(fileManager.selectedFiles.csv.size / 1024)}{" "}
                       KB)
                     </span>
                   </div>
@@ -482,7 +482,7 @@ export default function Upload() {
                         ) /
                           1024 /
                           1024
-                      )}{' '}
+                      )}{" "}
                       MB total)
                     </span>
                   </div>
@@ -509,12 +509,12 @@ export default function Upload() {
           )}
 
           <button
-            type='submit'
+            type="submit"
             disabled={validation.isSubmitDisabled()}
             className={`${styles.submitButton} ${
               validation.validationErrors.length > 0
                 ? styles.submitButtonDisabled
-                : ''
+                : ""
             }`}
           >
             {uploadState.isLoading && (
@@ -535,7 +535,7 @@ export default function Upload() {
                 <span className={styles.progressPercentage}>
                   {uploadState.uploadProgress < 100
                     ? `${Math.round(uploadState.uploadProgress)}%`
-                    : '99%'}
+                    : "99%"}
                 </span>
               </div>
               <div className={styles.progressBar}>
@@ -582,15 +582,15 @@ export default function Upload() {
             <div className={styles.duplicateHeader}>
               <h4>
                 Duplicate Files Detected (
-                {Math.max(duplicateImages.length, duplicateWarning.length)}{' '}
+                {Math.max(duplicateImages.length, duplicateWarning.length)}{" "}
                 files)
               </h4>
               <button
-                type='button'
+                type="button"
                 onClick={() => setShowDuplicateDetails(!showDuplicateDetails)}
                 className={styles.toggleDetailsButton}
               >
-                {showDuplicateDetails ? 'Hide Details' : 'Show Details'}
+                {showDuplicateDetails ? "Hide Details" : "Show Details"}
               </button>
             </div>
             <div>
@@ -632,27 +632,27 @@ export default function Upload() {
               </div>
               <div className={styles.duplicateActions}>
                 <button
-                  onClick={e => {
+                  onClick={(e) => {
                     e.preventDefault();
                     // Clear duplicate warnings to hide the section
                     validation.clearDuplicateWarning();
                     fileManager.clearDuplicateImages();
                     const form = document.querySelector(
-                      'form'
+                      "form"
                     ) as HTMLFormElement;
                     if (form) {
                       const syntheticEvent = {
                         preventDefault: () => {},
                         currentTarget: form,
                         target: form,
-                        nativeEvent: new Event('submit'),
+                        nativeEvent: new Event("submit"),
                         bubbles: true,
                         cancelable: true,
                         defaultPrevented: false,
                         eventPhase: 0,
                         isTrusted: true,
                         timeStamp: Date.now(),
-                        type: 'submit',
+                        type: "submit",
                         _overwriteMode: true,
                       } as unknown as FormEvent<HTMLFormElement> & {
                         _overwriteMode: boolean;
@@ -664,10 +664,10 @@ export default function Upload() {
                   className={styles.overwriteButton}
                 >
                   {isLoading && <span className={styles.loadingSpinner}></span>}
-                  {isLoading ? 'Overwriting...' : 'Upload and Overwrite'}
+                  {isLoading ? "Overwriting..." : "Upload and Overwrite"}
                 </button>
                 <button
-                  type='button'
+                  type="button"
                   onClick={handleDeleteAllAndUpload}
                   className={styles.deleteAllButton}
                 >
@@ -682,7 +682,7 @@ export default function Upload() {
           <div
             className={`${styles.message} ${
               message &&
-              (message.includes('failed') || message.includes('error'))
+              (message.includes("failed") || message.includes("error"))
                 ? styles.messageError
                 : styles.messageSuccess
             }`}
@@ -703,7 +703,7 @@ export default function Upload() {
                 View Project Panoramas
               </Link>
             ) : (
-              <Link href='/' className={styles.viewPanoramasButton}>
+              <Link href="/" className={styles.viewPanoramasButton}>
                 View Panoramas
               </Link>
             )}
@@ -712,7 +712,7 @@ export default function Upload() {
 
         <div className={styles.instructions}>
           <h3 className={styles.instructionsTitle}>
-            {isEditMode ? 'Update Instructions:' : 'Instructions:'}
+            {isEditMode ? "Update Instructions:" : "Instructions:"}
           </h3>
           <ol className={styles.instructionsList}>
             {isEditMode ? (
@@ -730,8 +730,8 @@ export default function Upload() {
                   interest in your panoramas
                 </li>
                 <li>
-                  Click &quot;Update Project&quot; to upload new files and regenerate the
-                  configuration
+                  Click &quot;Update Project&quot; to upload new files and
+                  regenerate the configuration
                 </li>
                 <li>
                   Once complete, return to the main viewer to see your updated
@@ -750,8 +750,8 @@ export default function Upload() {
                   interest to your panoramas
                 </li>
                 <li>
-                  Click &quot;Upload and Generate&quot; to upload files and automatically
-                  generate the configuration
+                  Click &quot;Upload and Generate&quot; to upload files and
+                  automatically generate the configuration
                 </li>
                 <li>
                   Once complete, return to the main viewer to see your panoramas
@@ -759,8 +759,6 @@ export default function Upload() {
               </>
             )}
           </ol>
-          
-
         </div>
       </div>
     </div>

@@ -176,6 +176,7 @@ export default function Home(): ReactElement {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
+          <div className={styles.loadingSpinner}></div>
           <h1 className={styles.title}>Loading...</h1>
           <p className={styles.description}>
             {authLoading ? 'Checking authentication...' : 'Checking for projects and panoramas...'}
@@ -185,14 +186,15 @@ export default function Home(): ReactElement {
     );
   }
 
-  // If not authenticated, the AuthContext will handle redirecting
+  // If not authenticated after loading is complete, the AuthContext will handle redirecting
+  // We don't show access denied here to prevent flash, let AuthContext handle the redirect
   if (!isAuthenticated) {
     return (
       <div className={styles.container}>
         <div className={styles.content}>
-          <h1 className={styles.title}>Access Denied</h1>
+          <div className={styles.loadingSpinner}></div>
           <p className={styles.description}>
-            Please log in to access the panorama viewer.
+            Redirecting to login...
           </p>
         </div>
       </div>
