@@ -90,6 +90,9 @@ lighthouse-report.json
 /electron-dist/
 /release/
 
+# Node resources
+/resources/node/
+
 # Temporary folders
 tmp/
 temp/
