@@ -13,14 +13,29 @@ function getPlatformDirectories() {
     unpackedDir = "win-unpacked";
     appPath = path.join(distDir, unpackedDir, "resources", "app");
   } else if (platform === "darwin") {
-    // macOS app structure: dist/mac/AppName.app/Contents/Resources/app
+    // macOS app structure: check for architecture-specific directories first
+    const macArm64DirPath = path.join(distDir, "mac-arm64");
+    const macX64DirPath = path.join(distDir, "mac-x64");
     const macDirPath = path.join(distDir, "mac");
-    if (fs.existsSync(macDirPath)) {
+    
+    let macDirToUse = null;
+    if (fs.existsSync(macArm64DirPath)) {
+      macDirToUse = macArm64DirPath;
+      unpackedDir = "mac-arm64";
+    } else if (fs.existsSync(macX64DirPath)) {
+      macDirToUse = macX64DirPath;
+      unpackedDir = "mac-x64";
+    } else if (fs.existsSync(macDirPath)) {
+      macDirToUse = macDirPath;
+      unpackedDir = "mac";
+    }
+    
+    if (macDirToUse) {
       const macDir = fs
-        .readdirSync(macDirPath)
+        .readdirSync(macDirToUse)
         .find((dir) => dir.endsWith(".app"));
       if (macDir) {
-        unpackedDir = path.join("mac", macDir);
+        unpackedDir = path.join(unpackedDir, macDir);
         appPath = path.join(
           distDir,
           unpackedDir,
@@ -34,7 +49,7 @@ function getPlatformDirectories() {
         appPath = path.join(distDir, unpackedDir, "resources", "app");
       }
     } else {
-      // Default macOS structure if mac directory doesn't exist yet
+      // Default macOS structure if no mac directory exists yet
       unpackedDir = "mac-unpacked";
       appPath = path.join(distDir, unpackedDir, "resources", "app");
     }
