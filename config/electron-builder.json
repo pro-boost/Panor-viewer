@@ -2,7 +2,7 @@
   "appId": "com.fribouz.panoramaviewer",
   "productName": "Advanced Panorama Viewer",
   "copyright": "Copyright © 2025 fribouz",
-  "icon": "public/panorama-viewer-icon.ico",
+  "icon": "public/panorama-viewer-icon-multi.ico",
   "directories": {
     "output": "dist"
   },
@@ -84,14 +84,14 @@
   "win": {
     "target": "nsis",
     "signAndEditExecutable": false,
-    "icon": "public/panorama-viewer-icon.ico"
+    "icon": "public/panorama-viewer-icon-multi.ico"
   },
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false,
-    "installerIcon": "public/panorama-viewer-icon.ico",
-    "uninstallerIcon": "public/panorama-viewer-icon.ico"
+    "installerIcon": "public/panorama-viewer-icon-multi.ico",
+    "uninstallerIcon": "public/panorama-viewer-icon-multi.ico"
   },
   "mac": {
     "target": [
