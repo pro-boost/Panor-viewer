@@ -77,7 +77,8 @@
   "compression": "normal",
   "win": {
     "target": "nsis",
-    "signAndEditExecutable": false
+    "signAndEditExecutable": false,
+    "icon": "public/panorama-viewer-icon.png"
   },
   "nsis": {
     "oneClick": false,

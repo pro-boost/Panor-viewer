@@ -5,7 +5,7 @@ const path = require("path");
 // When running desktop:test, we want to force production mode
 const forceProduction = process.argv.includes("--force-production");
 const isDev = !app.isPackaged && !forceProduction;
-const { ServerManager } = require("./server");
+const { EnhancedServerManager } = require("./server");
 const { setupFileProtocol } = require("./file-server");
 // Test project copying functionality removed - no longer auto-copies test projects
 
@@ -34,8 +34,8 @@ async function createWindow() {
     const serverUrl = isDev
       ? "http://localhost:3000"
       : await (async () => {
-          // Initialize server manager for production
-          serverManager = new ServerManager(app.getPath("userData"));
+          // Initialize enhanced server manager for production
+          serverManager = new EnhancedServerManager(app.getPath("userData"));
           console.log("Starting server...");
           const url = await serverManager.start();
           console.log(`Server running at: ${url}`);
