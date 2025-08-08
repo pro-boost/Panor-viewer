@@ -191,18 +191,6 @@ function getDefaultCredentials() {
  * Get credentials with caching and fallback
  */
 async function getCredentials() {
-  // In development mode, check if environment variables are already set
-  if (!process.resourcesPath && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.log("Using environment variables for development mode");
-    return {
-      supabase: {
-        url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY
-      }
-    };
-  }
-
   try {
     // Try cached credentials first
     const cached = loadCachedCredentials();
@@ -211,8 +199,8 @@ async function getCredentials() {
       return cached;
     }
 
-    // Fetch fresh credentials
-    console.log("Fetching credentials from server...");
+    // Fetch fresh credentials from Vercel server
+    console.log("Fetching credentials from Vercel server...");
     const credentials = await fetchCredentials();
 
     // Cache for future use
@@ -220,7 +208,7 @@ async function getCredentials() {
 
     return credentials;
   } catch (error) {
-    console.error("Failed to fetch credentials:", error);
+    console.error("Failed to fetch credentials from server:", error);
 
     // Try cached credentials as fallback
     const cached = loadCachedCredentials();
