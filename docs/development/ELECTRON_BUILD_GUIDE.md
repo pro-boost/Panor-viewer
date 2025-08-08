@@ -190,7 +190,7 @@ Add to `files` array in `electron-builder.json`:
   "build:electron:win": "npm run build && electron-builder --win",
   "build:electron:mac": "npm run build && electron-builder --mac",
   "build:electron:linux": "npm run build && electron-builder --linux",
-  "clean": "rimraf dist dist-new .next out"
+  "clean": "rimraf dist .next out"
 }
 ```
 

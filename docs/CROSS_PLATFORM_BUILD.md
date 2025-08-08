@@ -177,7 +177,7 @@ To debug build issues, check:
 
 1. **Platform detection**: The download script logs the detected platform
 2. **Node.js bundling**: Check `resources/node/` directory
-3. **Build output**: Check `dist-new/` directory structure
+3. **Build output**: Check `dist/` directory structure
 4. **Logs**: Review the complete build output for errors
 
 ## File Structure
@@ -185,7 +185,7 @@ To debug build issues, check:
 After a successful build, the output structure will be:
 
 ```
-dist-new/
+dist/
 ├── win-unpacked/          # Windows build
 │   └── resources/
 │       ├── app/           # Application files

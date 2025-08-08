@@ -7,7 +7,7 @@
   "main": "desktop/main.js",
   "scripts": {
     "dev": "next dev",
-    "dev:desktop": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron desktop/main.js\"",
+    "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron desktop/main.js\"",
     "build": "cross-env NODE_OPTIONS='--max-old-space-size=4096' next build && npm run postbuild",
     "postbuild": "node -e \"const fs = require('fs'); const path = require('path'); const standaloneDir = '.next/standalone'; const staticSrc = '.next/static'; const staticDest = path.join(standaloneDir, '.next/static'); const scriptsSrc = 'scripts'; const scriptsDest = path.join(standaloneDir, 'scripts'); if (fs.existsSync(staticSrc) && fs.existsSync(standaloneDir)) { try { fs.cpSync(staticSrc, staticDest, { recursive: true, force: true }); console.log('✅ Static files copied to standalone build'); } catch (error) { console.warn('⚠️ Failed to copy static files:', error.message); } } if (fs.existsSync(scriptsSrc) && fs.existsSync(standaloneDir)) { try { fs.cpSync(scriptsSrc, scriptsDest, { recursive: true, force: true }); console.log('✅ Scripts directory copied to standalone build'); } catch (error) { console.warn('⚠️ Failed to copy scripts directory:', error.message); } }\"",
     "build:standalone": "node -e \"const fs = require('fs'); fs.copyFileSync('config/next.config.production.js', 'next.config.js.bak'); fs.copyFileSync('config/next.config.production.js', 'next.config.js');\" && cross-env NODE_OPTIONS='--max-old-space-size=4096' next build && node -e \"const fs = require('fs'); fs.renameSync('next.config.js.bak', 'next.config.js');\"",

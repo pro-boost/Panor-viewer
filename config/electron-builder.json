@@ -1,10 +1,10 @@
 {
   "appId": "com.fribouz.panoramaviewer",
-  "productName": "PrimeZone Advanced Panorama Viewer",
+  "productName": "Advanced Panorama Viewer",
   "copyright": "Copyright © 2025 fribouz",
   "icon": "public/panorama-viewer-icon.ico",
   "directories": {
-    "output": "dist-new"
+    "output": "dist"
   },
   "files": [
     "desktop/**/*",
@@ -85,7 +85,8 @@
   "compression": "normal",
   "win": {
     "target": "nsis",
-    "signAndEditExecutable": false
+    "signAndEditExecutable": false,
+    "icon": "public/panorama-viewer-icon.ico"
   },
   "nsis": {
     "oneClick": false,
