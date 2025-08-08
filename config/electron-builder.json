@@ -1,10 +1,10 @@
 {
   "appId": "com.fribouz.panoramaviewer",
-  "productName": "PrimeZone Advanced Panorama Viewer",
+  "productName": "Advanced Panorama Viewer",
   "copyright": "Copyright © 2025 fribouz",
-  "icon": "public/assets/images/panorama-viewer-icon.svg",
+  "icon": "public/panorama-viewer-icon.png",
   "directories": {
-    "output": "dist-new"
+    "output": "dist"
   },
   "files": [
     "desktop/**/*",
