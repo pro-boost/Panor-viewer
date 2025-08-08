@@ -2,7 +2,7 @@
   "appId": "com.fribouz.panoramaviewer",
   "productName": "PrimeZone Advanced Panorama Viewer",
   "copyright": "Copyright © 2025 fribouz",
-  "icon": "public/assets/images/panorama-viewer-icon.svg",
+  "icon": "public/panorama-viewer-icon.ico",
   "directories": {
     "output": "dist-new"
   },
@@ -11,6 +11,14 @@
     ".next/standalone/**/*",
     ".next/static/**/*",
     "public/assets/**/*",
+    "public/panorama-viewer-icon.ico",
+    "public/panorama-viewer-icon.png",
+    "public/panorama-viewer-icon 16x16.ico",
+    "public/panorama-viewer-icon 24x24.ico",
+    "public/panorama-viewer-icon 32x32.ico",
+    "public/panorama-viewer-icon 64x64.ico",
+    "public/panorama-viewer-icon 128x128.ico",
+    "public/panorama-viewer-icon 256x256.ico",
     "projects/**/*",
     "data/credential-config.json",
     "scripts/server-production.js",
@@ -82,7 +90,9 @@
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+    "deleteAppDataOnUninstall": false,
+    "installerIcon": "public/panorama-viewer-icon.ico",
+    "uninstallerIcon": "public/panorama-viewer-icon.ico"
   },
   "mac": {
     "target": [
