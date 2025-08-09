@@ -84,14 +84,18 @@
   "win": {
     "target": "nsis",
     "signAndEditExecutable": false,
-    "icon": "public/panorama-viewer-icon-multi.ico"
+    "icon": "public/panorama-viewer-icon-multi.ico",
+    "requestedExecutionLevel": "requireAdministrator"
   },
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false,
     "installerIcon": "public/panorama-viewer-icon-multi.ico",
-    "uninstallerIcon": "public/panorama-viewer-icon-multi.ico"
+    "uninstallerIcon": "public/panorama-viewer-icon-multi.ico",
+    "displayLanguageSelector": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
   },
   "mac": {
     "target": [
