@@ -7,10 +7,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if (!isSupabaseConfigured()) {
+    console.warn('Auth status check: Supabase not configured');
     return res.status(200).json({ 
       authenticated: false, 
       configured: false,
-      requiresSetup: true
+      requiresSetup: true,
+      error: 'Authentication service not configured'
     });
   }
 
@@ -19,10 +21,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const refreshToken = req.cookies['supabase-refresh-token'];
     
     if (!accessToken) {
+      console.log('Auth status check: No access token found');
       return res.status(200).json({ 
         authenticated: false, 
         configured: true,
-        requiresSetup: false
+        requiresSetup: false,
+        reason: 'No authentication token'
       });
     }
 
@@ -33,10 +37,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (error || !user) {
+      console.warn('Auth status check: Session validation failed', {
+        hasError: !!error,
+        errorMessage: error?.message,
+        hasUser: !!user
+      });
       return res.status(200).json({ 
         authenticated: false, 
         configured: true,
-        requiresSetup: false
+        requiresSetup: false,
+        reason: error?.message || 'Invalid session'
       });
     }
 
@@ -44,15 +54,29 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const profile = await userService.getUserProfile(user.id);
     
     // Check if user is approved
-    if (!profile || !profile.approved) {
+    if (!profile) {
+      console.error('Auth status check: User profile not found', { userId: user.id, email: user.email });
       return res.status(200).json({ 
         authenticated: false, 
         configured: true,
         requiresSetup: false,
-        error: 'Account pending approval'
+        error: 'User profile not found',
+        code: 'PROFILE_NOT_FOUND'
       });
     }
     
+    if (!profile.approved) {
+      console.warn('Auth status check: User not approved', { userId: user.id, email: user.email, role: profile.role });
+      return res.status(200).json({ 
+        authenticated: false, 
+        configured: true,
+        requiresSetup: false,
+        error: 'Account pending approval',
+        code: 'ACCOUNT_PENDING_APPROVAL'
+      });
+    }
+    
+    console.log('Auth status check: User authenticated', { userId: user.id, email: user.email, role: profile.role });
     res.status(200).json({ 
       authenticated: true, 
       configured: true,
@@ -64,11 +88,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     });
   } catch (error) {
-    console.error('Auth status error:', error);
+    console.error('Auth status error:', {
+      message: error.message,
+      code: error.code,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+    
+    // Handle specific errors
+    if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      return res.status(200).json({ 
+        authenticated: false, 
+        configured: true,
+        requiresSetup: false,
+        error: 'Authentication service temporarily unavailable',
+        code: 'SERVICE_UNAVAILABLE'
+      });
+    }
+    
     res.status(200).json({ 
       authenticated: false, 
       configured: true,
-      requiresSetup: false
+      requiresSetup: false,
+      error: 'Authentication check failed',
+      code: 'AUTH_CHECK_FAILED',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 }

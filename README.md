@@ -493,6 +493,60 @@ POI markers use Tailwind CSS classes and can be customized by modifying the comp
 - `react-toastify` - Toast notifications
 - `formidable` - File upload handling
 
+## 🔧 Troubleshooting
+
+### Authentication Issues
+
+If you encounter "internal server error" or authentication problems:
+
+#### Clear Electron App Data
+
+```bash
+# Clear authentication data only (recommended)
+npm run clear-electron-auth
+
+# Clear all app data
+npm run clear-electron-data
+```
+
+#### Manual Data Clearing
+
+**Windows:** `C:\Users\[USERNAME]\AppData\Roaming\Advanced Panorama Viewer`
+**macOS:** `~/Library/Application Support/Advanced Panorama Viewer`
+**Linux:** `~/.config/Advanced Panorama Viewer`
+
+#### Enhanced Error Handling
+
+The application now provides detailed error codes for authentication issues:
+
+- `AUTH_FAILED` - Invalid credentials
+- `PROFILE_NOT_FOUND` - User profile missing
+- `ACCOUNT_PENDING_APPROVAL` - Account needs approval
+- `SERVICE_UNAVAILABLE` - Supabase service issues
+- `SUPABASE_CONFIG_ERROR` - Configuration problems
+
+#### Diagnostic Tools
+
+```bash
+# Test credential server connectivity
+node scripts/test-credentials.js
+
+# Test enhanced server functionality
+node scripts/test-enhanced-server.js
+
+# Diagnose credential flow
+node scripts/diagnose-electron-credentials.js
+```
+
+For detailed troubleshooting steps, see [TROUBLESHOOTING_AUTH.md](docs/TROUBLESHOOTING_AUTH.md).
+
+### Common Issues
+
+- **"Internal server error"**: Usually authentication-related, try clearing app data
+- **"Failed to fetch credentials"**: Check network connectivity and credential server
+- **"Supabase not configured"**: Verify credential-config.json exists and is valid
+- **Build issues**: Ensure all dependencies are installed and Python/NumPy are available
+
 ## 🙏 Acknowledgments
 
 - [Marzipano](https://www.marzipano.net/) - Panorama viewing library

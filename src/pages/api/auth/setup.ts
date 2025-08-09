@@ -17,15 +17,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const allUsers = await userService.getAllUsers();
       const hasAdminUsers = allUsers.some(user => user.role === 'admin');
       
+      console.log('Setup status check:', { configured: true, hasAdminUsers, totalUsers: allUsers.length });
       return res.status(200).json({ 
         configured: true,
         hasUsers: hasAdminUsers
       });
     } catch (error) {
-      console.error('Error checking setup status:', error);
+      console.error('Error checking setup status:', {
+        message: error.message,
+        code: error.code,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+      
+      // If we can't check users, assume not configured
       return res.status(200).json({ 
         configured: false,
-        hasUsers: false
+        hasUsers: false,
+        error: 'Unable to check authentication status',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }
   }
@@ -184,8 +193,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
       }
     } catch (error) {
-      console.error('Error setting up authentication:', error);
-      res.status(500).json({ error: 'Failed to configure authentication' });
+      console.error('Error setting up authentication:', {
+        message: error.message,
+        code: error.code,
+        email,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+      
+      // Handle specific errors
+      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+        return res.status(503).json({ 
+          error: 'Authentication service temporarily unavailable. Please try again.',
+          code: 'SERVICE_UNAVAILABLE'
+        });
+      }
+      
+      if (error.message?.includes('Supabase')) {
+        return res.status(500).json({ 
+          error: 'Authentication service configuration error. Please check your Supabase settings.',
+          code: 'SUPABASE_CONFIG_ERROR',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+      }
+      
+      res.status(500).json({ 
+        error: 'Failed to configure authentication. Please try again.',
+        code: 'SETUP_FAILED',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
     }
   } else {
     res.setHeader('Allow', ['GET', 'POST']);

@@ -70,7 +70,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error("Error checking authentication:", error);
+      console.error("Error checking authentication:", {
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
       setUser(null);
     } finally {
       setLoading(false);
@@ -93,10 +96,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(data.user);
         return true;
       } else {
+        // Log specific error for debugging
+        console.error('Login failed:', {
+          status: response.status,
+          error: data.error,
+          code: data.code
+        });
         return false;
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login network error:", {
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
       return false;
     }
   };
@@ -107,7 +119,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         method: "POST",
       });
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error("Logout error:", {
+        message: error.message,
+        stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     } finally {
       setUser(null);
       setLoading(false);
