@@ -123,7 +123,7 @@ async function fetchCredentials(retries = 3, delay = 2000) {
 
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      log("info", `Fetching credentials (attempt ${attempt}/${retries})...`);
+      log("info", `Fetching credentials from ${credentialConfig.url} (attempt ${attempt}/${retries})...`);
 
       const credentials = await new Promise((resolve, reject) => {
         const url = new URL(credentialConfig.url);
