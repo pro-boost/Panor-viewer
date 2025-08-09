@@ -62,61 +62,69 @@ function loadCredentialConfig() {
 // Enhanced credential validation
 function validateCredentials(credentials) {
   const issues = [];
-  
-  if (!credentials || typeof credentials !== 'object') {
-    issues.push('Credentials object is missing or invalid');
+
+  if (!credentials || typeof credentials !== "object") {
+    issues.push("Credentials object is missing or invalid");
     return issues;
   }
-  
+
   if (!credentials.supabase) {
-    issues.push('Missing supabase configuration in credentials');
+    issues.push("Missing supabase configuration in credentials");
     return issues;
   }
-  
+
   const { url, anonKey, serviceRoleKey } = credentials.supabase;
-  
+
   // Validate URL
   if (!url) {
-    issues.push('Missing Supabase URL');
-  } else if (url === 'https://placeholder.supabase.co') {
-    issues.push('Supabase URL is still placeholder - server may be returning default credentials');
-  } else if (!url.includes('.supabase.co')) {
+    issues.push("Missing Supabase URL");
+  } else if (url === "https://placeholder.supabase.co") {
+    issues.push(
+      "Supabase URL is still placeholder - server may be returning default credentials"
+    );
+  } else if (!url.includes(".supabase.co")) {
     issues.push(`Supabase URL format looks unusual: ${url}`);
   }
-  
+
   // Validate anon key
   if (!anonKey) {
-    issues.push('Missing Supabase anon key');
-  } else if (anonKey === 'placeholder-anon-key') {
-    issues.push('Supabase anon key is still placeholder - server may be returning default credentials');
+    issues.push("Missing Supabase anon key");
+  } else if (anonKey === "placeholder-anon-key") {
+    issues.push(
+      "Supabase anon key is still placeholder - server may be returning default credentials"
+    );
   } else if (anonKey.length < 100) {
     issues.push(`Supabase anon key seems too short: ${anonKey.length} chars`);
   }
-  
+
   // Validate service role key
   if (!serviceRoleKey) {
-    issues.push('Missing Supabase service role key');
-  } else if (serviceRoleKey === 'placeholder-service-role-key') {
-    issues.push('Supabase service role key is still placeholder - server may be returning default credentials');
+    issues.push("Missing Supabase service role key");
+  } else if (serviceRoleKey === "placeholder-service-role-key") {
+    issues.push(
+      "Supabase service role key is still placeholder - server may be returning default credentials"
+    );
   } else if (serviceRoleKey.length < 100) {
-    issues.push(`Supabase service role key seems too short: ${serviceRoleKey.length} chars`);
+    issues.push(
+      `Supabase service role key seems too short: ${serviceRoleKey.length} chars`
+    );
   }
-  
+
   return issues;
 }
 
 // Enhanced credential fetching with retry logic
 async function fetchCredentials(retries = 3, delay = 2000) {
   const credentialConfig = loadCredentialConfig();
-  
+
   if (!credentialConfig.url || !credentialConfig.apiSecret) {
-    throw new Error('Credential server configuration is incomplete');
+    throw new Error("Credential server configuration is incomplete");
   }
-  
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       log("info", `Fetching credentials (attempt ${attempt}/${retries})...`);
-      
+
       const credentials = await new Promise((resolve, reject) => {
         const url = new URL(credentialConfig.url);
         const options = {
@@ -147,7 +155,11 @@ async function fetchCredentials(retries = 3, delay = 2000) {
                 reject(new Error(`HTTP ${res.statusCode}: ${data}`));
               }
             } catch (error) {
-              reject(new Error(`Failed to parse credentials response: ${error.message}`));
+              reject(
+                new Error(
+                  `Failed to parse credentials response: ${error.message}`
+                )
+              );
             }
           });
         });
@@ -163,37 +175,40 @@ async function fetchCredentials(retries = 3, delay = 2000) {
 
         req.end();
       });
-      
+
       // Validate fetched credentials
       const validationIssues = validateCredentials(credentials);
       if (validationIssues.length > 0) {
         log("warn", "Credential validation issues:", validationIssues);
-        
+
         // If we have critical issues (placeholder values), treat as failure
-        const hasCriticalIssues = validationIssues.some(issue => 
-          issue.includes('placeholder') || issue.includes('Missing')
+        const hasCriticalIssues = validationIssues.some(
+          (issue) => issue.includes("placeholder") || issue.includes("Missing")
         );
-        
+
         if (hasCriticalIssues && attempt < retries) {
           log("warn", "Critical credential issues detected, retrying...");
-          await new Promise(resolve => setTimeout(resolve, delay * attempt));
+          await new Promise((resolve) => setTimeout(resolve, delay * attempt));
           continue;
         }
       }
-      
+
       return credentials;
-      
     } catch (error) {
-      log("error", `Credential fetch attempt ${attempt} failed:`, error.message);
-      
+      log(
+        "error",
+        `Credential fetch attempt ${attempt} failed:`,
+        error.message
+      );
+
       if (attempt === retries) {
         throw error;
       }
-      
+
       // Wait before retrying with exponential backoff
       const waitTime = delay * Math.pow(2, attempt - 1);
       log("info", `Waiting ${waitTime}ms before retry...`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
 }
@@ -216,7 +231,7 @@ function cacheCredentials(credentials) {
       path.join(cacheDir, "credentials-cache.json"),
       JSON.stringify(cacheData, null, 2)
     );
-    
+
     log("info", "Credentials cached successfully");
   } catch (error) {
     log("warn", "Failed to cache credentials:", error.message);
@@ -265,7 +280,10 @@ function getDefaultCredentials() {
     }
   }
 
-  log("warn", "Using hardcoded fallback credentials - app will be in offline mode");
+  log(
+    "warn",
+    "Using hardcoded fallback credentials - app will be in offline mode"
+  );
   return {
     supabase: {
       url: "https://placeholder.supabase.co",
@@ -278,14 +296,18 @@ function getDefaultCredentials() {
 // Enhanced credential getter with better error handling
 async function getCredentials() {
   // In development mode, check if environment variables are already set
-  if (!process.resourcesPath && process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  if (
+    !process.resourcesPath &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
     log("info", "Using environment variables for development mode");
     return {
       supabase: {
         url: process.env.NEXT_PUBLIC_SUPABASE_URL,
         anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY
-      }
+        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+      },
     };
   }
 
@@ -297,7 +319,10 @@ async function getCredentials() {
       if (validationIssues.length === 0) {
         return cached;
       } else {
-        log("warn", "Cached credentials have validation issues, fetching fresh ones");
+        log(
+          "warn",
+          "Cached credentials have validation issues, fetching fresh ones"
+        );
       }
     }
 
@@ -346,17 +371,29 @@ class EnhancedServerManager {
         // Fetch credentials before starting server
         log("info", "Fetching credentials before starting server...");
         const credentials = await getCredentials();
-        
+
         // Final validation before starting server
         const validationIssues = validateCredentials(credentials);
         if (validationIssues.length > 0) {
-          log("warn", "Starting server with credential validation issues:", validationIssues);
+          log(
+            "warn",
+            "Starting server with credential validation issues:",
+            validationIssues
+          );
         }
 
         log("info", "Starting server with fetched credentials...");
         log("info", "Supabase URL:", credentials.supabase.url);
-        log("info", "Anon key length:", credentials.supabase.anonKey?.length || 0);
-        log("info", "Service key length:", credentials.supabase.serviceRoleKey?.length || 0);
+        log(
+          "info",
+          "Anon key length:",
+          credentials.supabase.anonKey?.length || 0
+        );
+        log(
+          "info",
+          "Service key length:",
+          credentials.supabase.serviceRoleKey?.length || 0
+        );
 
         // Handle ASAR packaging - get the correct path to server-production.js
         const isAsar = __dirname.includes(".asar");
@@ -424,7 +461,8 @@ class EnhancedServerManager {
         let nodeExecutable = process.execPath;
 
         if (process.resourcesPath) {
-          const nodeExecutableName = process.platform === 'win32' ? 'node.exe' : 'node';
+          const nodeExecutableName =
+            process.platform === "win32" ? "node.exe" : "node";
           const bundledNodePath = path.join(
             process.resourcesPath,
             "node",
@@ -434,7 +472,11 @@ class EnhancedServerManager {
             nodeExecutable = bundledNodePath;
             log("info", "Using bundled Node.js runtime:", bundledNodePath);
           } else {
-            log("info", "Bundled Node.js not found, using system Node.js:", nodeExecutable);
+            log(
+              "info",
+              "Bundled Node.js not found, using system Node.js:",
+              nodeExecutable
+            );
           }
         }
 
@@ -523,25 +565,25 @@ class EnhancedServerManager {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       let attempts = 0;
-      
+
       const checkServer = () => {
         attempts++;
         log("info", `Checking server readiness (attempt ${attempts})...`);
 
         // Test multiple endpoints to ensure server is fully ready
-        const endpoints = [
-          `/api/hello`,
-          `/api/admin/config-status`
-        ];
-        
+        const endpoints = [`/api/hello`, `/api/admin/config-status`];
+
         let completedChecks = 0;
         let hasError = false;
-        
-        endpoints.forEach(endpoint => {
+
+        endpoints.forEach((endpoint) => {
           const req = http.get(`http://127.0.0.1:${port}${endpoint}`, (res) => {
             completedChecks++;
-            log("info", `Server responding to ${endpoint} with status ${res.statusCode}`);
-            
+            log(
+              "info",
+              `Server responding to ${endpoint} with status ${res.statusCode}`
+            );
+
             if (completedChecks === endpoints.length && !hasError) {
               log("info", "All server endpoints are responding");
               resolve();
@@ -551,8 +593,11 @@ class EnhancedServerManager {
           req.on("error", (err) => {
             if (!hasError) {
               hasError = true;
-              log("info", `Server check failed for ${endpoint}: ${err.message}`);
-              
+              log(
+                "info",
+                `Server check failed for ${endpoint}: ${err.message}`
+              );
+
               if (Date.now() - startTime > timeout) {
                 reject(new Error(`Server failed to start within ${timeout}ms`));
               } else {
@@ -580,4 +625,9 @@ class EnhancedServerManager {
   }
 }
 
-module.exports = { EnhancedServerManager, getCredentials, validateCredentials, log };
+module.exports = {
+  EnhancedServerManager,
+  getCredentials,
+  validateCredentials,
+  log,
+};

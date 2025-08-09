@@ -7,6 +7,7 @@ This guide helps resolve authentication issues in the Panorama Viewer applicatio
 ### 1. Internal Server Error on Client Machines
 
 **Symptoms:**
+
 - App works fine on developer machine
 - Client gets "internal server error" when trying to log in
 - Fresh installations fail to authenticate
@@ -33,21 +34,25 @@ node scripts/clear-electron-data.js
 #### Option B: Manual Data Clearing
 
 **Windows:**
+
 ```
 C:\Users\[USERNAME]\AppData\Roaming\Advanced Panorama Viewer
 ```
 
 **macOS:**
+
 ```
 ~/Library/Application Support/Advanced Panorama Viewer
 ```
 
 **Linux:**
+
 ```
 ~/.config/Advanced Panorama Viewer
 ```
 
 Delete the entire folder or specific files:
+
 - `Cookies` - Authentication cookies
 - `Session Storage` - Session data
 - `Local Storage` - Local storage data
@@ -55,6 +60,7 @@ Delete the entire folder or specific files:
 ### 2. Credential Server Issues
 
 **Symptoms:**
+
 - "Failed to fetch credentials" errors
 - Connection timeouts
 - Network-related authentication failures
@@ -62,6 +68,7 @@ Delete the entire folder or specific files:
 **Solutions:**
 
 1. **Verify Credential Server:**
+
    ```bash
    # Test if the credential server is accessible
    curl -s https://your-credential-server.vercel.app/api/credentials
@@ -78,6 +85,7 @@ Delete the entire folder or specific files:
 ### 3. Supabase Configuration Issues
 
 **Symptoms:**
+
 - "Supabase not configured" errors
 - Invalid session errors
 - Profile not found errors
@@ -85,6 +93,7 @@ Delete the entire folder or specific files:
 **Solutions:**
 
 1. **Verify Configuration:**
+
    ```bash
    # Check if setup endpoint is accessible
    curl -s http://localhost:3000/api/auth/setup
@@ -129,13 +138,14 @@ The application now includes improved error handling with specific error codes:
    - Network errors are logged separately from authentication errors
 
 3. **Test API Endpoints Directly:**
+
    ```bash
    # Test setup endpoint
    curl -X GET http://localhost:3000/api/auth/setup
-   
+
    # Test status endpoint
    curl -X GET http://localhost:3000/api/auth/status
-   
+
    # Test login endpoint
    curl -X POST http://localhost:3000/api/auth/login \
      -H "Content-Type: application/json" \
@@ -147,6 +157,7 @@ The application now includes improved error handling with specific error codes:
 ### For Developers
 
 1. **Test with Fresh Environment:**
+
    ```bash
    # Clear your local data before testing
    npm run clear-electron-auth
@@ -179,6 +190,7 @@ The application now includes improved error handling with specific error codes:
 ### ENOENT Error with Darwin Packages (Windows)
 
 If you encounter an error like:
+
 ```
 ENOENT: no such file or directory, scandir 'node_modules/@next/swc-darwin-arm64'
 ```
@@ -193,6 +205,7 @@ node scripts/fix-darwin-packages.js
 ## Quick Reference
 
 ### Diagnostic Commands
+
 ```bash
 # Check authentication status
 curl -s http://localhost:3000/api/auth/setup
@@ -227,6 +240,7 @@ If issues persist after following this guide:
 5. Test API endpoints directly to isolate the issue
 
 For additional support, provide:
+
 - Operating system and version
 - Error codes from console logs
 - Network configuration details
