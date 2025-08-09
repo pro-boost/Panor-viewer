@@ -21,8 +21,8 @@
     "clear-electron-auth": "node scripts/clear-electron-data.js --auth-only",
     "download-node": "node scripts/download-node.js",
     "desktop:build": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json",
-    "desktop:build:win": "npm run download-node && npm run build:standalone && node scripts/fix-darwin-packages.js && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js",
-    "desktop:build:win:dist": "npm run download-node && npm run build:standalone && node scripts/fix-darwin-packages.js && electron-builder --config=config/electron-builder.json --win && node scripts/install-packaged-deps.js",
+    "desktop:build:win": "npm run download-node && npm run build:standalone && node scripts/fix-darwin-packages.js && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js && node scripts/fix-icon-post-build.js",
+    "desktop:build:win:dist": "npm run download-node && npm run build:standalone && node scripts/fix-darwin-packages.js && electron-builder --config=config/electron-builder.json --win && node scripts/install-packaged-deps.js && node scripts/fix-icon-post-build.js",
     "build:electron": "node scripts/build-electron-packager.js",
     "desktop:build:linux:local": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --linux --dir",
     "desktop:build:mac": "npm run download-node && npm run build:standalone && mkdir -p node_modules/@next/swc-darwin-x64 && touch node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node && echo '{\"name\":\"@next/swc-darwin-x64\",\"version\":\"14.2.30\",\"main\":\"next-swc.darwin-x64.node\",\"license\":\"MIT\"}' > node_modules/@next/swc-darwin-x64/package.json && electron-builder --config=config/electron-builder.json --mac --dir && node scripts/install-packaged-deps.js",
@@ -58,6 +58,7 @@
     "react-dropzone": "^14.3.8",
     "react-icons": "^5.5.0",
     "react-toastify": "^11.0.5",
+    "to-ico": "^1.0.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -81,7 +82,7 @@
     "@types/ws": "^8.18.1",
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",
-    "electron": "^27.1.3",
+    "electron": "^37.2.6",
     "electron-builder": "^26.0.12",
     "electron-builder-squirrel-windows": "^24.13.3",
     "electron-packager": "^17.1.2",
