@@ -22,12 +22,21 @@ function loadCredentialConfig() {
       "credential-config.json"
     );
     if (!fs.existsSync(configPath)) {
-      // Fallback to resources/data for non-ASAR builds
+      // Fallback to resources/app/data for non-ASAR builds
       configPath = path.join(
         process.resourcesPath,
+        "app",
         "data",
         "credential-config.json"
       );
+      if (!fs.existsSync(configPath)) {
+        // Additional fallback to resources/data
+        configPath = path.join(
+          process.resourcesPath,
+          "data",
+          "credential-config.json"
+        );
+      }
     }
   } else {
     // Development mode
@@ -245,12 +254,21 @@ function getOfflineCredentials() {
         "credential-config.json"
       );
       if (!fs.existsSync(configPath)) {
-        // Fallback to resources/data for non-ASAR builds
+        // Fallback to resources/app/data for non-ASAR builds
         configPath = path.join(
           process.resourcesPath,
+          "app",
           "data",
           "credential-config.json"
         );
+        if (!fs.existsSync(configPath)) {
+          // Additional fallback to resources/data
+          configPath = path.join(
+            process.resourcesPath,
+            "data",
+            "credential-config.json"
+          );
+        }
       }
     } else {
       // Development mode
@@ -266,13 +284,15 @@ function getOfflineCredentials() {
         config.offlineMode.fallbackCredentials.supabase
       ) {
         const supabaseConfig = config.offlineMode.fallbackCredentials.supabase;
-        // Only use if they're not placeholder values
-        if (
-          supabaseConfig.url !== "https://placeholder.supabase.co" &&
-          supabaseConfig.anonKey !== "placeholder-anon-key" &&
-          supabaseConfig.serviceRoleKey !== "placeholder-service-role-key"
-        ) {
-          console.log("Using valid offline credentials from config");
+        const isPlaceholder = (
+          supabaseConfig.url === "https://placeholder.supabase.co" ||
+          supabaseConfig.anonKey === "placeholder-anon-key" ||
+          supabaseConfig.serviceRoleKey === "placeholder-service-role-key"
+        );
+        
+        // Use credentials if they're real OR if placeholders are explicitly allowed
+        if (!isPlaceholder || config.offlineMode.allowPlaceholders) {
+          console.log(isPlaceholder ? "Using placeholder offline credentials (allowed by config)" : "Using valid offline credentials from config");
           return config.offlineMode.fallbackCredentials;
         } else {
           console.log("Offline credentials in config are placeholder values, skipping");
