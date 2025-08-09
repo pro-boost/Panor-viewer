@@ -1,36 +1,45 @@
-#!/usr/bin/env node
-
-/**
- * Fix for ENOENT error with @next/swc-darwin packages during Windows builds
- * 
- * This script creates empty directories for darwin packages that are referenced
- * in package-lock.json but don't exist in node_modules on Windows systems.
- * This prevents electron-builder from failing with ENOENT errors.
- */
-
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Fix for ENOENT error with @next/swc-darwin-arm64 package
+ * This script creates placeholder darwin packages to prevent build issues on Windows
+ */
+
+const nodeModulesPath = path.join(__dirname, '..', 'node_modules');
 const darwinPackages = [
-  'node_modules/@next/swc-darwin-arm64',
-  'node_modules/@next/swc-darwin-x64'
+  { name: '@next/swc-darwin-arm64', cpu: 'arm64' },
+  { name: '@next/swc-darwin-x64', cpu: 'x64' }
 ];
 
-console.log('🔧 Fixing darwin package directories for Windows build...');
+console.log('Fixing darwin packages...');
 
-darwinPackages.forEach(packagePath => {
-  const fullPath = path.resolve(packagePath);
+darwinPackages.forEach(({ name, cpu }) => {
+  const packagePath = path.join(nodeModulesPath, name);
+  const packageJsonPath = path.join(packagePath, 'package.json');
   
-  if (!fs.existsSync(fullPath)) {
+  if (!fs.existsSync(packagePath)) {
+    console.log(`Creating placeholder directory for ${name}...`);
     try {
-      fs.mkdirSync(fullPath, { recursive: true });
-      console.log(`✅ Created directory: ${packagePath}`);
+      fs.mkdirSync(packagePath, { recursive: true });
+      
+      const packageJson = {
+        name: name,
+        version: '0.0.0',
+        description: 'Placeholder package for Windows build compatibility',
+        main: 'index.js',
+        os: ['darwin'],
+        cpu: [cpu]
+      };
+      
+      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
+      console.log(`✓ Successfully created placeholder for ${name}`);
     } catch (error) {
-      console.warn(`⚠️ Failed to create directory ${packagePath}:`, error.message);
+      console.error(`✗ Failed to create placeholder for ${name}:`, error.message);
     }
   } else {
-    console.log(`ℹ️ Directory already exists: ${packagePath}`);
+    console.log(`✓ ${name} already exists`);
   }
 });
 
-console.log('✅ Darwin package fix completed');
+console.log('Darwin packages fix completed.');
