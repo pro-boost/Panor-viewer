@@ -169,6 +169,47 @@ function clearElectronData() {
       // Clear logs
       if (paths.logsPath) deleteDirectory(paths.logsPath);
       
+      // Clear additional Electron data directories and files
+      const additionalPaths = [
+        path.join(paths.userDataPath, 'blob_storage'),
+        path.join(paths.userDataPath, 'Code Cache'),
+        path.join(paths.userDataPath, 'DawnCache'),
+        path.join(paths.userDataPath, 'DawnGraphiteCache'),
+        path.join(paths.userDataPath, 'DawnWebGPUCache'),
+        path.join(paths.userDataPath, 'GPUCache'),
+        path.join(paths.userDataPath, 'Network'),
+        path.join(paths.userDataPath, 'projects'),
+        path.join(paths.userDataPath, 'Shared Dictionary'),
+        path.join(paths.userDataPath, 'DIPS'),
+        path.join(paths.userDataPath, 'Local State')
+      ];
+      
+      additionalPaths.forEach(additionalPath => {
+        if (fs.existsSync(additionalPath)) {
+          const stats = fs.statSync(additionalPath);
+          if (stats.isDirectory()) {
+            deleteDirectory(additionalPath);
+          } else {
+            deleteFile(additionalPath);
+          }
+        }
+      });
+      
+      // Remove the entire app directory if it's empty after clearing
+      try {
+        if (fs.existsSync(paths.userDataPath)) {
+          const files = fs.readdirSync(paths.userDataPath);
+          if (files.length === 0) {
+            fs.rmdirSync(paths.userDataPath);
+            console.log(`   ✅ Empty ${paths.appName} directory removed`);
+          } else {
+            console.log(`   ℹ️  ${paths.appName} directory contains ${files.length} remaining files/folders`);
+          }
+        }
+      } catch (error) {
+        console.log(`   ⚠️  Could not remove ${paths.appName} directory:`, error.message);
+      }
+      
       console.log(`   ✅ ${paths.appName} data cleared successfully!`);
     });
     
@@ -236,6 +277,38 @@ function clearAuthDataOnly() {
       
       // Clear network state
       if (paths.networkPersistentStatePath) deleteFile(paths.networkPersistentStatePath);
+      
+      // Clear additional authentication-related directories
+      const authRelatedPaths = [
+        path.join(paths.userDataPath, 'Network'),
+        path.join(paths.userDataPath, 'blob_storage')
+      ];
+      
+      authRelatedPaths.forEach(authPath => {
+        if (fs.existsSync(authPath)) {
+          const stats = fs.statSync(authPath);
+          if (stats.isDirectory()) {
+            deleteDirectory(authPath);
+          } else {
+            deleteFile(authPath);
+          }
+        }
+      });
+      
+      // Remove the entire app directory if it's empty after clearing auth data
+      try {
+        if (fs.existsSync(paths.userDataPath)) {
+          const files = fs.readdirSync(paths.userDataPath);
+          if (files.length === 0) {
+            fs.rmdirSync(paths.userDataPath);
+            console.log(`   ✅ Empty ${paths.appName} directory removed`);
+          } else {
+            console.log(`   ℹ️  ${paths.appName} directory contains ${files.length} remaining files/folders`);
+          }
+        }
+      } catch (error) {
+        console.log(`   ⚠️  Could not remove ${paths.appName} directory:`, error.message);
+      }
       
       console.log(`   ✅ ${paths.appName} authentication data cleared!`);
     });
