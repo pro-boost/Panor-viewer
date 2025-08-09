@@ -17,6 +17,8 @@
     "generate-config": "node scripts/node/generate-config.js",
     "clean": "rimraf dist dist-new .next out",
     "cleanup-temp": "node scripts/node/cleanup-temp.js",
+    "clear-electron-data": "node scripts/clear-electron-data.js",
+    "clear-electron-auth": "node scripts/clear-electron-data.js --auth-only",
     "download-node": "node scripts/download-node.js",
     "desktop:build:win": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js",
     "build:electron": "node scripts/build-electron-packager.js",
