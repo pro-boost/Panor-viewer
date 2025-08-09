@@ -60,7 +60,7 @@ async function createWindow() {
         enableRemoteModule: false,
         allowRunningInsecureContent: false,
       },
-      icon: path.join(__dirname, "../public/panorama-viewer-icon.ico"),
+      icon: path.join(__dirname, "../public/panorama-viewer-icon-multi.ico"),
       show: false, // Start hidden for smooth loading
       backgroundColor: "#ffffff",
       titleBarStyle: "default",

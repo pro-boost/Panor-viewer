@@ -85,8 +85,10 @@ async function fetchCredentials(retryCount = 0) {
       return;
     }
 
-    console.log(`Attempting to fetch credentials (attempt ${retryCount + 1}/${maxRetries + 1})`);
-    
+    console.log(
+      `Attempting to fetch credentials (attempt ${retryCount + 1}/${maxRetries + 1})`
+    );
+
     const url = new URL(CREDENTIAL_SERVER_URL);
     const options = {
       hostname: url.hostname,
@@ -115,12 +117,17 @@ async function fetchCredentials(retryCount = 0) {
           } else {
             const error = new Error(`HTTP ${res.statusCode}: ${data}`);
             console.error("Server returned error:", error.message);
-            
+
             // Retry on server errors (5xx) or rate limiting (429)
-            if ((res.statusCode >= 500 || res.statusCode === 429) && retryCount < maxRetries) {
+            if (
+              (res.statusCode >= 500 || res.statusCode === 429) &&
+              retryCount < maxRetries
+            ) {
               console.log(`Retrying in ${retryDelay}ms...`);
               setTimeout(() => {
-                fetchCredentials(retryCount + 1).then(resolve).catch(reject);
+                fetchCredentials(retryCount + 1)
+                  .then(resolve)
+                  .catch(reject);
               }, retryDelay);
             } else {
               reject(error);
@@ -135,12 +142,14 @@ async function fetchCredentials(retryCount = 0) {
 
     req.on("error", (error) => {
       console.error("Network error:", error.message);
-      
+
       // Retry on network errors
       if (retryCount < maxRetries) {
         console.log(`Retrying in ${retryDelay}ms due to network error...`);
         setTimeout(() => {
-          fetchCredentials(retryCount + 1).then(resolve).catch(reject);
+          fetchCredentials(retryCount + 1)
+            .then(resolve)
+            .catch(reject);
         }, retryDelay);
       } else {
         reject(error);
@@ -151,12 +160,14 @@ async function fetchCredentials(retryCount = 0) {
       req.destroy();
       const timeoutError = new Error("Request timeout");
       console.error("Request timed out");
-      
+
       // Retry on timeout
       if (retryCount < maxRetries) {
         console.log(`Retrying in ${retryDelay}ms due to timeout...`);
         setTimeout(() => {
-          fetchCredentials(retryCount + 1).then(resolve).catch(reject);
+          fetchCredentials(retryCount + 1)
+            .then(resolve)
+            .catch(reject);
         }, retryDelay);
       } else {
         reject(timeoutError);
@@ -226,7 +237,10 @@ function loadExpiredCachedCredentials() {
       if (cacheData.credentials && cacheData.credentials.supabase) {
         const isExpired = Date.now() >= cacheData.expiresAt;
         if (isExpired) {
-          console.log("Found expired cached credentials from", new Date(cacheData.cachedAt).toISOString());
+          console.log(
+            "Found expired cached credentials from",
+            new Date(cacheData.cachedAt).toISOString()
+          );
         }
         return cacheData.credentials;
       }
@@ -244,7 +258,7 @@ function getOfflineCredentials() {
   try {
     // Try to load offline credentials from config first
     let configPath;
-    
+
     if (process.resourcesPath) {
       // Packaged app - look in resources/app.asar.unpacked/data
       configPath = path.join(
@@ -274,7 +288,7 @@ function getOfflineCredentials() {
       // Development mode
       configPath = path.join(__dirname, "../data/credential-config.json");
     }
-    
+
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
       if (
@@ -284,18 +298,23 @@ function getOfflineCredentials() {
         config.offlineMode.fallbackCredentials.supabase
       ) {
         const supabaseConfig = config.offlineMode.fallbackCredentials.supabase;
-        const isPlaceholder = (
+        const isPlaceholder =
           supabaseConfig.url === "https://placeholder.supabase.co" ||
           supabaseConfig.anonKey === "placeholder-anon-key" ||
-          supabaseConfig.serviceRoleKey === "placeholder-service-role-key"
-        );
-        
+          supabaseConfig.serviceRoleKey === "placeholder-service-role-key";
+
         // Use credentials if they're real OR if placeholders are explicitly allowed
         if (!isPlaceholder || config.offlineMode.allowPlaceholders) {
-          console.log(isPlaceholder ? "Using placeholder offline credentials (allowed by config)" : "Using valid offline credentials from config");
+          console.log(
+            isPlaceholder
+              ? "Using placeholder offline credentials (allowed by config)"
+              : "Using valid offline credentials from config"
+          );
           return config.offlineMode.fallbackCredentials;
         } else {
-          console.log("Offline credentials in config are placeholder values, skipping");
+          console.log(
+            "Offline credentials in config are placeholder values, skipping"
+          );
         }
       }
     }
@@ -342,12 +361,12 @@ function getDefaultCredentials() {
  */
 async function getCredentials() {
   console.log("=== Starting credential resolution ===");
-  
+
   try {
     // Try cached credentials first (even if expired, we'll use them as backup)
     const cached = loadCachedCredentials();
     const expiredCached = loadExpiredCachedCredentials();
-    
+
     if (cached) {
       console.log("Using valid cached credentials");
       return cached;
@@ -359,13 +378,16 @@ async function getCredentials() {
       try {
         console.log("Fetching fresh credentials from Vercel server...");
         const credentials = await fetchCredentials();
-        
+
         // Cache for future use
         cacheCredentials(credentials);
         console.log("Successfully refreshed credentials");
         return credentials;
       } catch (fetchError) {
-        console.warn("Failed to refresh credentials, using expired cache:", fetchError.message);
+        console.warn(
+          "Failed to refresh credentials, using expired cache:",
+          fetchError.message
+        );
         // Use expired credentials as they're better than placeholder ones
         return expiredCached;
       }
@@ -379,7 +401,6 @@ async function getCredentials() {
     cacheCredentials(credentials);
     console.log("Successfully fetched and cached new credentials");
     return credentials;
-    
   } catch (error) {
     console.error("Failed to fetch credentials from server:", error.message);
 
@@ -399,7 +420,9 @@ async function getCredentials() {
 
     // Last resort: throw error instead of using placeholder credentials
     console.error("No valid credentials available - cannot start server");
-    throw new Error("No valid Supabase credentials available. Please check your internet connection and credential server configuration.");
+    throw new Error(
+      "No valid Supabase credentials available. Please check your internet connection and credential server configuration."
+    );
   }
 }
 
@@ -419,7 +442,7 @@ class ServerManager {
     console.log("User data path:", this.userDataPath);
     console.log("Process resourcesPath:", process.resourcesPath);
     console.log("__dirname:", __dirname);
-    
+
     // Ensure projects directory exists
     try {
       if (!fs.existsSync(this.projectsPath)) {
@@ -490,7 +513,9 @@ class ServerManager {
 
             console.log("Checking possible server paths:", possiblePaths);
             for (const possiblePath of possiblePaths) {
-              console.log(`  Checking: ${possiblePath} - exists: ${fs.existsSync(possiblePath)}`);
+              console.log(
+                `  Checking: ${possiblePath} - exists: ${fs.existsSync(possiblePath)}`
+              );
             }
 
             serverPath = possiblePaths.find((p) => fs.existsSync(p));
@@ -508,12 +533,17 @@ class ServerManager {
               path.join(process.resourcesPath, "app", ".next", "standalone"),
               path.join(process.resourcesPath, ".next", "standalone"),
             ];
-            
-            console.log("Checking possible standalone paths:", possibleStandalonePaths);
+
+            console.log(
+              "Checking possible standalone paths:",
+              possibleStandalonePaths
+            );
             for (const possiblePath of possibleStandalonePaths) {
-              console.log(`  Checking: ${possiblePath} - exists: ${fs.existsSync(possiblePath)}`);
+              console.log(
+                `  Checking: ${possiblePath} - exists: ${fs.existsSync(possiblePath)}`
+              );
             }
-            
+
             const standalonePath = possibleStandalonePaths.find((p) =>
               fs.existsSync(p)
             );
@@ -521,7 +551,10 @@ class ServerManager {
               const error = new Error(
                 `Standalone directory not found in any of: ${possibleStandalonePaths.join(", ")}`
               );
-              console.error("Standalone path resolution failed:", error.message);
+              console.error(
+                "Standalone path resolution failed:",
+                error.message
+              );
               throw error;
             }
             cwd = standalonePath;
@@ -532,7 +565,7 @@ class ServerManager {
           serverPath = path.join(__dirname, "../scripts/server-production.js");
           cwd = path.join(__dirname, "..");
         }
-        
+
         console.log("Resolved server path:", serverPath);
         console.log("Server path exists:", fs.existsSync(serverPath));
         console.log("Resolved working directory:", cwd);
@@ -545,30 +578,37 @@ class ServerManager {
         if (process.resourcesPath) {
           // In packaged app, try to use bundled Node.js
           // Determine the correct executable name based on platform
-          const nodeExecutableName = process.platform === 'win32' ? 'node.exe' : 'node';
-          console.log("Looking for bundled Node.js executable:", nodeExecutableName);
-          
+          const nodeExecutableName =
+            process.platform === "win32" ? "node.exe" : "node";
+          console.log(
+            "Looking for bundled Node.js executable:",
+            nodeExecutableName
+          );
+
           const bundledNodePath = path.join(
             process.resourcesPath,
             "node",
             nodeExecutableName
           );
-          
+
           console.log("Checking bundled Node.js path:", bundledNodePath);
-          console.log("Bundled Node.js exists:", fs.existsSync(bundledNodePath));
-          
+          console.log(
+            "Bundled Node.js exists:",
+            fs.existsSync(bundledNodePath)
+          );
+
           if (fs.existsSync(bundledNodePath)) {
             nodeExecutable = bundledNodePath;
             console.log("Using bundled Node.js runtime:", bundledNodePath);
-            
+
             // On Windows, verify the executable is accessible
-            if (process.platform === 'win32') {
+            if (process.platform === "win32") {
               try {
                 const stats = fs.statSync(bundledNodePath);
                 console.log("Bundled Node.js file stats:", {
                   size: stats.size,
                   isFile: stats.isFile(),
-                  mode: stats.mode.toString(8)
+                  mode: stats.mode.toString(8),
                 });
               } catch (statError) {
                 console.error("Failed to stat bundled Node.js:", statError);
@@ -579,15 +619,15 @@ class ServerManager {
               "Bundled Node.js not found, using system Node.js:",
               nodeExecutable
             );
-            
+
             // On Windows, also check if system Node.js is accessible
-            if (process.platform === 'win32') {
+            if (process.platform === "win32") {
               try {
                 const stats = fs.statSync(nodeExecutable);
                 console.log("System Node.js file stats:", {
                   size: stats.size,
                   isFile: stats.isFile(),
-                  mode: stats.mode.toString(8)
+                  mode: stats.mode.toString(8),
                 });
               } catch (statError) {
                 console.error("Failed to stat system Node.js:", statError);
@@ -617,18 +657,27 @@ class ServerManager {
           NEXT_PUBLIC_SUPABASE_ANON_KEY: credentials.supabase.anonKey,
           SUPABASE_SERVICE_ROLE_KEY: credentials.supabase.serviceRoleKey,
         };
-        
+
         console.log("Environment variables set:");
-        console.log("  NEXT_PUBLIC_SUPABASE_URL:", credentials.supabase.url ? "[SET]" : "[NOT SET]");
-        console.log("  NEXT_PUBLIC_SUPABASE_ANON_KEY:", credentials.supabase.anonKey ? "[SET]" : "[NOT SET]");
-        console.log("  SUPABASE_SERVICE_ROLE_KEY:", credentials.supabase.serviceRoleKey ? "[SET]" : "[NOT SET]");
+        console.log(
+          "  NEXT_PUBLIC_SUPABASE_URL:",
+          credentials.supabase.url ? "[SET]" : "[NOT SET]"
+        );
+        console.log(
+          "  NEXT_PUBLIC_SUPABASE_ANON_KEY:",
+          credentials.supabase.anonKey ? "[SET]" : "[NOT SET]"
+        );
+        console.log(
+          "  SUPABASE_SERVICE_ROLE_KEY:",
+          credentials.supabase.serviceRoleKey ? "[SET]" : "[NOT SET]"
+        );
         console.log("  PORT:", this.port.toString());
 
         console.log("Attempting to spawn server process...");
         console.log("  Command:", nodeExecutable);
         console.log("  Args:", [serverPath]);
         console.log("  Working directory:", cwd);
-        
+
         try {
           // Spawn the server process
           this.serverProcess = spawn(nodeExecutable, [serverPath], {
@@ -637,8 +686,11 @@ class ServerManager {
             stdio: ["pipe", "pipe", "pipe"],
             windowsHide: true,
           });
-          
-          console.log("Server process spawned successfully with PID:", this.serverProcess.pid);
+
+          console.log(
+            "Server process spawned successfully with PID:",
+            this.serverProcess.pid
+          );
         } catch (spawnError) {
           console.error("Failed to spawn server process:", spawnError);
           throw spawnError;
@@ -653,9 +705,13 @@ class ServerManager {
         });
 
         this.serverProcess.on("close", (code, signal) => {
-          console.log(`Server process exited with code ${code} and signal ${signal}`);
+          console.log(
+            `Server process exited with code ${code} and signal ${signal}`
+          );
           if (code !== 0) {
-            console.error("Server process exited with non-zero code, indicating an error");
+            console.error(
+              "Server process exited with non-zero code, indicating an error"
+            );
           }
           this.serverProcess = null;
         });
@@ -667,13 +723,15 @@ class ServerManager {
             errno: error.errno,
             syscall: error.syscall,
             path: error.path,
-            spawnargs: error.spawnargs
+            spawnargs: error.spawnargs,
           });
           reject(error);
         });
-        
+
         this.serverProcess.on("spawn", () => {
-          console.log("Server process spawn event fired - process started successfully");
+          console.log(
+            "Server process spawn event fired - process started successfully"
+          );
         });
 
         // Wait for server to be ready

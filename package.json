@@ -19,7 +19,7 @@
     "cleanup-temp": "node scripts/node/cleanup-temp.js",
     "download-node": "node scripts/download-node.js",
     "desktop:build": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json",
-    "desktop:build:win": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js",
+    "desktop:build:win": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js && node scripts/fix-icon-post-build.js",
     "build:electron": "node scripts/build-electron-packager.js",
     "desktop:build:linux:local": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --linux --dir",
     "desktop:build:mac": "npm run download-node && npm run build:standalone && mkdir -p node_modules/@next/swc-darwin-x64 && touch node_modules/@next/swc-darwin-x64/next-swc.darwin-x64.node && echo '{\"name\":\"@next/swc-darwin-x64\",\"version\":\"14.2.30\",\"main\":\"next-swc.darwin-x64.node\",\"license\":\"MIT\"}' > node_modules/@next/swc-darwin-x64/package.json && electron-builder --config=config/electron-builder.json --mac --dir && node scripts/install-packaged-deps.js",

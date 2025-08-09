@@ -15,10 +15,7 @@ Finding available port...
 Selected port: 3456
 Fetching credentials...
 === Starting credential resolution ===
-No cached credentials found, fetching from Vercel server...
-Attempting to fetch credentials (attempt 1/4)
-Successfully fetched credentials from server
-Successfully fetched and cached new credentials
+Using valid cached credentials
 Credentials obtained successfully
 Starting server with fetched credentials...
 ASAR packaging detected: false
@@ -69,7 +66,7 @@ Attempting to spawn server process...
   'C:\\Users\\ASUS\\Desktop\\Nouveau dossier (2)\\Panor-viewer\\dist\\win-unpacked\\resources\\app\\scripts\\server-production.js'
 ]
   Working directory: C:\Users\ASUS\Desktop\Nouveau dossier (2)\Panor-viewer\dist\win-unpacked\resources\app\.next\standalone
-Server process spawned successfully with PID: 20892
+Server process spawned successfully with PID: 8552
 Server process spawn event fired - process started successfully
 Server stdout: > Starting production server on port 3456
 
@@ -79,35 +76,21 @@ Server stdout: > Projects path: C:\Users\ASUS\AppData\Roaming\pano-app\projects
 
 Checking server readiness (attempt 1)...
 Server check failed: connect ECONNREFUSED 127.0.0.1:3456
-Checking server readiness (attempt 2)...
-Server check failed: connect ECONNREFUSED 127.0.0.1:3456
 Server stdout:   ▲ Next.js 14.2.30
   - Local:        http://localhost:3456
   - Network:      http://0.0.0.0:3456
 
+Server stdout: 
  ✓ Starting...
 
-Checking server readiness (attempt 3)...
-Server stdout:  ✓ Ready in 1951ms
+Checking server readiness (attempt 2)...
+Server stdout:  ✓ Ready in 1258ms
 
 Server is responding to /api/hello
 Server is ready
 Server running at: http://127.0.0.1:3456
 Using server URL: http://127.0.0.1:3456
 Loading URL: http://127.0.0.1:3456
-Server stdout: getUserProfile result: {
-  userId: 'fda277b7-0a44-495b-90a1-722adb14eb6b',
-  data: {
-    id: 'fda277b7-0a44-495b-90a1-722adb14eb6b',
-    email: 'simo0brk@gmail.com',
-    role: 'admin',
-    approved: true,
-    created_at: '2025-08-07T11:22:59.614449+00:00',
-    updated_at: '2025-08-07T11:22:59.614449+00:00'
-  },
-  error: null
-}
-
 Server stdout: Bypassing authentication for test route: /api/projects
 
 Server stdout: getUserProfile result: {
@@ -122,129 +105,4 @@ Server stdout: getUserProfile result: {
   },
   error: null
 }
-
-Server stdout: Fetching users with type: all
-
-Server stdout: Fetching users with type: pending
-
-Server stdout: getUserProfile result: {
-  userId: 'fda277b7-0a44-495b-90a1-722adb14eb6b',
-  data: {
-    id: 'fda277b7-0a44-495b-90a1-722adb14eb6b',
-    email: 'simo0brk@gmail.com',
-    role: 'admin',
-    approved: true,
-    created_at: '2025-08-07T11:22:59.614449+00:00',
-    updated_at: '2025-08-07T11:22:59.614449+00:00'
-  },
-  error: null
-}
-
-Server stdout: Pending users fetched: 0 users
-Returning users data: { users: [] }
-
-Server stdout: Fetching users with type: pending
-
-Server stdout: All users fetched: 7 users
-
-Server stdout: Returning users data: {
-  users: [
-    {
-      id: 'a37fb96d-516c-46fb-91c4-2c4382a8559b',
-      email: 'sales-manager@primezone.co',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: '00624481-255c-4d88-9c12-95fb1d09e503',
-      email: 'a@gmail.com',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: 'fda277b7-0a44-495b-90a1-722adb14eb6b',
-      email: 'simo0brk@gmail.com',
-      role: 'admin',
-      approved: true
-    },
-    {
-      id: 'ce67004c-0316-4664-8292-d13647d1e0e0',
-      email: 'admin@test.com',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: '550dac95-3ad3-4f41-8c14-7dd4704d5c6d',
-      email: 'zraib.med@gmail.com',
-      role: 'admin',
-      approved: true
-    },
-    {
-      id: 'bb50eb06-8f4c-4136-a4e1-d12d1eb44281',
-      email: 'lafrik.brahim@gmail.com',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: '46b6d663-478e-4844-b455-a75f9e120741',
-      email: 'brahim.lafrik@gmail.com',
-      role: 'admin',
-      approved: true
-    }
-  ]
-}
-
-Server stdout: Fetching users with type: all
-
-Server stdout: All users fetched: 7 users
-
-Server stdout: Returning users data: {
-  users: [
-    {
-      id: 'a37fb96d-516c-46fb-91c4-2c4382a8559b',
-      email: 'sales-manager@primezone.co',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: '00624481-255c-4d88-9c12-95fb1d09e503',
-      email: 'a@gmail.com',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: 'fda277b7-0a44-495b-90a1-722adb14eb6b',
-      email: 'simo0brk@gmail.com',
-      role: 'admin',
-      approved: true
-    },
-    {
-      id: 'ce67004c-0316-4664-8292-d13647d1e0e0',
-      email: 'admin@test.com',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: '550dac95-3ad3-4f41-8c14-7dd4704d5c6d',
-      email: 'zraib.med@gmail.com',
-      role: 'admin',
-      approved: true
-    },
-    {
-      id: 'bb50eb06-8f4c-4136-a4e1-d12d1eb44281',
-      email: 'lafrik.brahim@gmail.com',
-      role: 'user',
-      approved: true
-    },
-    {
-      id: '46b6d663-478e-4844-b455-a75f9e120741',
-      email: 'brahim.lafrik@gmail.com',
-      role: 'admin',
-      approved: true
-    }
-  ]
-}
-
-Server stdout: Pending users fetched: 0 users
-Returning users data: { users: [] }
 
