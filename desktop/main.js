@@ -12,6 +12,17 @@ const { setupFileProtocol } = require("./file-server");
 let mainWindow;
 let serverManager;
 
+// Enable GPU acceleration with modern settings for Electron 32
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-webgl');
+app.commandLine.appendSwitch('enable-accelerated-2d-canvas');
+app.commandLine.appendSwitch('enable-accelerated-video-decode');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecoder,VaapiVideoEncoder');
+app.commandLine.appendSwitch('max_old_space_size', '4096');
+
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
 
@@ -54,9 +65,9 @@ async function createWindow() {
         contextIsolation: true,
         preload: path.join(__dirname, "preload.js"),
         webSecurity: false, // Required for local file access
-        experimentalFeatures: true,
+        experimentalFeatures: false, // Keep disabled to prevent glitches
         webgl: true,
-        hardwareAcceleration: true,
+        hardwareAcceleration: true, // Re-enable with modern Electron
         enableRemoteModule: false,
         allowRunningInsecureContent: false,
       },
@@ -114,14 +125,24 @@ async function createWindow() {
   }
 }
 
-// Enable hardware acceleration with ANGLE renderer
+// Optimized GPU settings for Electron 27 - performance focused
 app.commandLine.appendSwitch("enable-webgl");
-app.commandLine.appendSwitch("enable-gpu-rasterization");
-app.commandLine.appendSwitch("enable-zero-copy");
-app.commandLine.appendSwitch("use-angle", "gl");
-app.commandLine.appendSwitch("enable-features", "VaapiVideoDecoder");
-app.commandLine.appendSwitch("ignore-gpu-blacklist");
+app.commandLine.appendSwitch("enable-accelerated-2d-canvas");
 app.commandLine.appendSwitch("disable-gpu-sandbox");
+app.commandLine.appendSwitch("disable-software-rasterizer");
+app.commandLine.appendSwitch("disable-background-timer-throttling");
+app.commandLine.appendSwitch("disable-renderer-backgrounding");
+app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
+app.commandLine.appendSwitch("disable-dev-shm-usage");
+app.commandLine.appendSwitch("max_old_space_size=4096"); // Increase memory limit
+// Keep GPU acceleration enabled but avoid problematic switches
+// app.commandLine.appendSwitch("disable-gpu"); // Removed - was causing slowness
+// app.commandLine.appendSwitch("disable-software-rasterizer"); // Removed
+// app.commandLine.appendSwitch("enable-gpu-rasterization"); // Avoid - can cause glitches
+// app.commandLine.appendSwitch("enable-zero-copy"); // Avoid - can cause glitches
+// app.commandLine.appendSwitch("use-angle", "gl"); // Avoid - can cause glitches
+// app.commandLine.appendSwitch("enable-features", "VaapiVideoDecoder"); // Avoid
+// app.commandLine.appendSwitch("ignore-gpu-blacklist"); // Avoid
 
 // IPC handlers for file operations
 ipcMain.handle("app:getPath", (event, name) => {
