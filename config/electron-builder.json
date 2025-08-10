@@ -10,6 +10,7 @@
     "desktop/**/*",
     ".next/standalone/**/*",
     ".next/static/**/*",
+    "src/**/*",
     "public/assets/**/*",
     "public/panorama-viewer-icon.ico",
     "public/panorama-viewer-icon-multi.ico",
@@ -73,10 +74,6 @@
   ],
   "extraResources": [
     {
-      "from": "public/assets",
-      "to": "assets"
-    },
-    {
       "from": "resources/node",
       "to": "node",
       "filter": ["**/*"]
@@ -84,20 +81,12 @@
     {
       "from": ".next/standalone",
       "to": "standalone",
-      "filter": ["**/*"]
+      "filter": ["**/*", "!src/**/*"]
     }
   ],
   "asar": {
     "smartUnpack": false
   },
-  "asarUnpack": [
-    ".next",
-    "scripts",
-    "data",
-    "projects",
-    "public/assets",
-    "config"
-  ],
   "compression": "normal",
   "win": {
     "target": "nsis",

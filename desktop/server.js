@@ -14,28 +14,43 @@ function loadCredentialConfig() {
   let configPath;
 
   if (process.resourcesPath) {
-    // Packaged app - look in resources/app.asar.unpacked/data
-    configPath = path.join(
-      process.resourcesPath,
-      "app.asar.unpacked",
-      "data",
-      "credential-config.json"
-    );
-    if (!fs.existsSync(configPath)) {
-      // Fallback to resources/app/data for non-ASAR builds
-      configPath = path.join(
-        process.resourcesPath,
-        "app",
-        "data",
-        "credential-config.json"
-      );
-      if (!fs.existsSync(configPath)) {
-        // Additional fallback to resources/data
-        configPath = path.join(
-          process.resourcesPath,
-          "data",
-          "credential-config.json"
-        );
+    // Packaged app - data is now inside ASAR archive
+    // Check if we're in ASAR mode
+    const isAsar = __dirname.includes('.asar');
+    
+    if (isAsar) {
+      // ASAR mode - data is inside the archive
+      // In Electron, ASAR files are automatically handled by Node.js fs module
+      try {
+        // __dirname in ASAR points to app.asar/desktop, so go up one level to access data
+        const configPath = path.join(__dirname, '../data/credential-config.json');
+        console.log('Loading credential config from ASAR at:', configPath);
+        const configData = fs.readFileSync(configPath, 'utf8');
+        const config = JSON.parse(configData);
+        console.log('Successfully loaded credential config from ASAR');
+        if (config.credentialServer) {
+          return {
+            url: config.credentialServer.url,
+            apiSecret: config.credentialServer.apiSecret,
+          };
+        }
+      } catch (error) {
+        console.warn('Failed to load credential config from ASAR:', error);
+        console.warn('__dirname:', __dirname);
+        console.warn('process.resourcesPath:', process.resourcesPath);
+      }
+    } else {
+      // Non-ASAR packaged app - check multiple possible locations
+      const possiblePaths = [
+        path.join(process.resourcesPath, "app", "data", "credential-config.json"),
+        path.join(process.resourcesPath, "data", "credential-config.json")
+      ];
+      
+      for (const possiblePath of possiblePaths) {
+        if (fs.existsSync(possiblePath)) {
+          configPath = possiblePath;
+          break;
+        }
       }
     }
   } else {
@@ -258,40 +273,62 @@ function getOfflineCredentials() {
   try {
     // Try to load offline credentials from config first
     let configPath;
+    let config = null;
 
     if (process.resourcesPath) {
-      // Packaged app - look in resources/app.asar.unpacked/data
-      configPath = path.join(
-        process.resourcesPath,
-        "app.asar.unpacked",
-        "data",
-        "credential-config.json"
-      );
-      if (!fs.existsSync(configPath)) {
-        // Fallback to resources/app/data for non-ASAR builds
-        configPath = path.join(
-          process.resourcesPath,
-          "app",
-          "data",
-          "credential-config.json"
-        );
-        if (!fs.existsSync(configPath)) {
-          // Additional fallback to resources/data
-          configPath = path.join(
-            process.resourcesPath,
-            "data",
-            "credential-config.json"
-          );
+      // Packaged app - data is now inside ASAR archive
+      // Check if we're in ASAR mode
+      const isAsar = __dirname.includes('.asar');
+      
+      if (isAsar) {
+         // ASAR mode - data is inside the archive
+          // In Electron, ASAR files are automatically handled by Node.js fs module
+          try {
+            const configPath = path.join(__dirname, '../data/credential-config.json');
+            console.log("Loading offline credential config from ASAR at:", configPath);
+            const configData = fs.readFileSync(configPath, 'utf8');
+            config = JSON.parse(configData);
+            console.log("Successfully loaded offline credential config from ASAR archive");
+          } catch (error) {
+            console.warn('Failed to load offline credential config from ASAR:', error);
+            console.warn('__dirname:', __dirname);
+            console.warn('process.resourcesPath:', process.resourcesPath);
+          }
+      } else {
+        // Non-ASAR packaged app - check multiple possible locations
+        const possiblePaths = [
+          path.join(process.resourcesPath, "app", "data", "credential-config.json"),
+          path.join(process.resourcesPath, "data", "credential-config.json")
+        ];
+        
+        for (const possiblePath of possiblePaths) {
+          if (fs.existsSync(possiblePath)) {
+            configPath = possiblePath;
+            console.log("Looking for offline credential config at:", configPath);
+            try {
+              config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+              break;
+            } catch (error) {
+              console.warn("Failed to load offline credential config:", error);
+            }
+          }
         }
       }
     } else {
       // Development mode
       configPath = path.join(__dirname, "../data/credential-config.json");
+      console.log("Looking for offline credential config at:", configPath);
+      
+      if (fs.existsSync(configPath)) {
+        try {
+          config = JSON.parse(fs.readFileSync(configPath, "utf8"));
+        } catch (error) {
+          console.warn("Failed to load offline credential config:", error);
+        }
+      }
     }
 
-    if (fs.existsSync(configPath)) {
-      const config = JSON.parse(fs.readFileSync(configPath, "utf8"));
-      if (
+    if (config &&
         config.offlineMode &&
         config.offlineMode.enabled &&
         config.offlineMode.fallbackCredentials &&
@@ -317,7 +354,6 @@ function getOfflineCredentials() {
           );
         }
       }
-    }
   } catch (error) {
     console.warn("Failed to load offline config:", error);
   }
@@ -476,25 +512,48 @@ class ServerManager {
 
         if (process.resourcesPath) {
           console.log("Running in packaged mode");
-          // Packaged app - use process.resourcesPath for reliable path resolution
-          // Always use the standalone directory which contains the Next.js server
-          const standalonePath = path.join(process.resourcesPath, "standalone");
-          console.log("Checking standalone path:", standalonePath);
-          console.log("Standalone path exists:", fs.existsSync(standalonePath));
           
-          if (!fs.existsSync(standalonePath)) {
-            const error = new Error(
-              `Standalone directory not found at: ${standalonePath}`
-            );
-            console.error("Standalone path resolution failed:", error.message);
-            throw error;
+          if (isAsar) {
+            console.log("ASAR mode detected - using extraResources standalone");
+            // In ASAR mode, standalone directory is in extraResources
+            const standalonePath = path.join(process.resourcesPath, "standalone");
+            console.log("Checking standalone path:", standalonePath);
+            console.log("Standalone path exists:", fs.existsSync(standalonePath));
+            
+            if (!fs.existsSync(standalonePath)) {
+              const error = new Error(
+                `Standalone directory not found at: ${standalonePath}`
+              );
+              console.error("Standalone path resolution failed:", error.message);
+              throw error;
+            }
+            
+            serverPath = path.join(standalonePath, "server.js");
+            cwd = standalonePath;
+            
+            console.log("Using standalone server path:", serverPath);
+            console.log("Server.js exists:", fs.existsSync(serverPath));
+          } else {
+            // Non-ASAR packaged app - use process.resourcesPath for reliable path resolution
+            // Always use the standalone directory which contains the Next.js server
+            const standalonePath = path.join(process.resourcesPath, "standalone");
+            console.log("Checking standalone path:", standalonePath);
+            console.log("Standalone path exists:", fs.existsSync(standalonePath));
+            
+            if (!fs.existsSync(standalonePath)) {
+              const error = new Error(
+                `Standalone directory not found at: ${standalonePath}`
+              );
+              console.error("Standalone path resolution failed:", error.message);
+              throw error;
+            }
+            
+            serverPath = path.join(standalonePath, "server.js");
+            cwd = standalonePath;
+            
+            console.log("Using standalone server path:", serverPath);
+            console.log("Server.js exists:", fs.existsSync(serverPath));
           }
-          
-          serverPath = path.join(standalonePath, "server.js");
-          cwd = standalonePath;
-          
-          console.log("Using standalone server path:", serverPath);
-          console.log("Server.js exists:", fs.existsSync(serverPath));
         } else {
           console.log("Running in development mode");
           // Development mode
