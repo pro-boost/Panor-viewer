@@ -38,22 +38,47 @@ if (!gotTheLock) {
 }
 
 async function createWindow() {
+  let serverUrl = "http://localhost:3456"; // Default fallback URL
+  let serverStartupError = null;
+
   try {
     console.log("Creating window...");
+    console.log("Development mode:", isDev);
+    console.log("App packaged:", app.isPackaged);
+    console.log("Force production:", forceProduction);
 
     // For development, use the Next.js dev server directly
-    const serverUrl = isDev
-      ? "http://localhost:3000"
-      : await (async () => {
-          // Initialize server manager for production
-          serverManager = new ServerManager(app.getPath("userData"));
-          console.log("Starting server...");
-          const url = await serverManager.start();
-          console.log(`Server running at: ${url}`);
-          return url;
-        })();
+    if (isDev) {
+      serverUrl = "http://localhost:3000";
+      console.log("Using development server:", serverUrl);
+    } else {
+      try {
+        console.log("Initializing production server...");
+        console.log("User data path:", app.getPath("userData"));
+        console.log("App path:", app.getAppPath());
+        console.log("Resource path:", process.resourcesPath || "Not available");
+        
+        // Initialize server manager for production
+        serverManager = new ServerManager(app.getPath("userData"));
+        console.log("ServerManager created, starting server...");
+        
+        // Add timeout for server startup
+        const serverStartPromise = serverManager.start();
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Server startup timeout after 30 seconds")), 30000);
+        });
+        
+        serverUrl = await Promise.race([serverStartPromise, timeoutPromise]);
+        console.log(`Production server running at: ${serverUrl}`);
+      } catch (serverError) {
+        console.error("Failed to start production server:", serverError);
+        serverStartupError = serverError;
+        // Use fallback URL - the window will still be created
+        console.log("Using fallback server URL:", serverUrl);
+      }
+    }
 
-    console.log(`Using server URL: ${serverUrl}`);
+    console.log(`Final server URL: ${serverUrl}`);
 
     mainWindow = new BrowserWindow({
       width: 1600,
@@ -80,9 +105,38 @@ async function createWindow() {
     // Setup file protocol for direct file access
     setupFileProtocol(app.getPath("userData"));
 
-    // Load the app
-    console.log("Loading URL:", serverUrl);
-    await mainWindow.loadURL(serverUrl);
+    // Show window immediately if there was a server startup error
+    if (serverStartupError) {
+      console.log("Showing window immediately due to server startup error");
+      mainWindow.show();
+      mainWindow.focus();
+      
+      // Load the error page from file instead of data URL
+      const errorPagePath = path.join(__dirname, "error.html");
+      console.log("Loading error page from:", errorPagePath);
+      await mainWindow.loadFile(errorPagePath);
+      
+      // Send error details to the renderer if needed
+      mainWindow.webContents.once('did-finish-load', () => {
+        mainWindow.webContents.executeJavaScript(`
+          const errorElement = document.getElementById('error-details');
+          if (errorElement) {
+            errorElement.textContent = '${serverStartupError.message.replace(/'/g, "\\'")}';
+          }
+        `);
+      });
+    } else {
+      // Load the app normally
+      console.log("Loading URL:", serverUrl);
+      try {
+        await mainWindow.loadURL(serverUrl);
+      } catch (loadError) {
+        console.error("Failed to load URL:", loadError);
+        // Show window anyway with error message
+        mainWindow.show();
+        mainWindow.focus();
+      }
+    }
 
     if (isDev) {
       mainWindow.webContents.openDevTools();
@@ -93,22 +147,32 @@ async function createWindow() {
       "did-fail-load",
       (event, errorCode, errorDescription) => {
         console.error("Failed to load page:", errorCode, errorDescription);
+        // Show window even if page failed to load
+        if (!mainWindow.isVisible()) {
+          console.log("Showing window due to failed page load");
+          mainWindow.show();
+          mainWindow.focus();
+        }
       }
     );
 
     mainWindow.webContents.on("did-finish-load", () => {
       console.log("Page loaded successfully");
       // Show window after loading for smooth startup
-      mainWindow.show();
-      mainWindow.focus();
+      if (!mainWindow.isVisible()) {
+        mainWindow.show();
+        mainWindow.focus();
+      }
     });
 
-    // Fallback to show window after timeout
+    // Reduced timeout - force show window after 1 second if not visible
     setTimeout(() => {
       if (mainWindow && !mainWindow.isVisible()) {
+        console.log("Force showing window after timeout");
         mainWindow.show();
+        mainWindow.focus();
       }
-    }, 3000);
+    }, 1000);
 
     mainWindow.on("closed", () => {
       mainWindow = null;

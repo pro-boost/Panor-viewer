@@ -469,7 +469,7 @@ class ServerManager {
 
         console.log("Starting server with fetched credentials...");
 
-        // Handle ASAR packaging - get the correct path to server-production.js
+        // Handle ASAR packaging - get the correct path to server.js in standalone directory
         const isAsar = __dirname.includes(".asar");
         console.log("ASAR packaging detected:", isAsar);
         let serverPath, cwd;
@@ -477,88 +477,24 @@ class ServerManager {
         if (process.resourcesPath) {
           console.log("Running in packaged mode");
           // Packaged app - use process.resourcesPath for reliable path resolution
-          if (isAsar) {
-            console.log("Using ASAR packaged paths");
-            // ASAR packaged app - server-production.js should be unpacked
-            serverPath = path.join(
-              process.resourcesPath,
-              "app.asar.unpacked",
-              "scripts",
-              "server-production.js"
+          // Always use the standalone directory which contains the Next.js server
+          const standalonePath = path.join(process.resourcesPath, "standalone");
+          console.log("Checking standalone path:", standalonePath);
+          console.log("Standalone path exists:", fs.existsSync(standalonePath));
+          
+          if (!fs.existsSync(standalonePath)) {
+            const error = new Error(
+              `Standalone directory not found at: ${standalonePath}`
             );
-            cwd = path.join(process.resourcesPath, "app.asar.unpacked");
-          } else {
-            console.log("Using non-ASAR packaged paths");
-            // Non-ASAR packaged app - check multiple possible locations
-            const possiblePaths = [
-              path.join(process.resourcesPath, "server-production.js"),
-              path.join(
-                process.resourcesPath,
-                "scripts",
-                "server-production.js"
-              ),
-              path.join(
-                process.resourcesPath,
-                "app",
-                "scripts",
-                "server-production.js"
-              ),
-              path.join(
-                process.resourcesPath,
-                "standalone",
-                "scripts",
-                "server-production.js"
-              ),
-            ];
-
-            console.log("Checking possible server paths:", possiblePaths);
-            for (const possiblePath of possiblePaths) {
-              console.log(
-                `  Checking: ${possiblePath} - exists: ${fs.existsSync(possiblePath)}`
-              );
-            }
-
-            serverPath = possiblePaths.find((p) => fs.existsSync(p));
-            if (!serverPath) {
-              const error = new Error(
-                `server-production.js not found in any of: ${possiblePaths.join(", ")}`
-              );
-              console.error("Server path resolution failed:", error.message);
-              throw error;
-            }
-
-            // Set working directory to standalone if it exists, otherwise use resources
-            const possibleStandalonePaths = [
-              path.join(process.resourcesPath, "standalone"),
-              path.join(process.resourcesPath, "app", ".next", "standalone"),
-              path.join(process.resourcesPath, ".next", "standalone"),
-            ];
-
-            console.log(
-              "Checking possible standalone paths:",
-              possibleStandalonePaths
-            );
-            for (const possiblePath of possibleStandalonePaths) {
-              console.log(
-                `  Checking: ${possiblePath} - exists: ${fs.existsSync(possiblePath)}`
-              );
-            }
-
-            const standalonePath = possibleStandalonePaths.find((p) =>
-              fs.existsSync(p)
-            );
-            if (!standalonePath) {
-              const error = new Error(
-                `Standalone directory not found in any of: ${possibleStandalonePaths.join(", ")}`
-              );
-              console.error(
-                "Standalone path resolution failed:",
-                error.message
-              );
-              throw error;
-            }
-            cwd = standalonePath;
+            console.error("Standalone path resolution failed:", error.message);
+            throw error;
           }
+          
+          serverPath = path.join(standalonePath, "server.js");
+          cwd = standalonePath;
+          
+          console.log("Using standalone server path:", serverPath);
+          console.log("Server.js exists:", fs.existsSync(serverPath));
         } else {
           console.log("Running in development mode");
           // Development mode
@@ -648,6 +584,7 @@ class ServerManager {
           ...process.env,
           NODE_ENV: "production",
           PORT: this.port.toString(),
+          HOSTNAME: "127.0.0.1",
           USER_DATA_PATH: this.userDataPath,
           PROJECTS_PATH: this.projectsPath,
           ELECTRON_PROJECTS_PATH: path.join(this.userDataPath, "projects"),

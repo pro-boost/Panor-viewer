@@ -80,9 +80,24 @@
       "from": "resources/node",
       "to": "node",
       "filter": ["**/*"]
+    },
+    {
+      "from": ".next/standalone",
+      "to": "standalone",
+      "filter": ["**/*"]
     }
   ],
-  "asar": false,
+  "asar": {
+    "smartUnpack": false
+  },
+  "asarUnpack": [
+    ".next",
+    "scripts",
+    "data",
+    "projects",
+    "public/assets",
+    "config"
+  ],
   "compression": "normal",
   "win": {
     "target": "nsis",

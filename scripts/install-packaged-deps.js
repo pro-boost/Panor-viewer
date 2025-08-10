@@ -7,11 +7,12 @@ function getPlatformDirectories() {
   const platform = process.platform;
   const distDir = path.join(__dirname, "..", "dist");
 
-  let unpackedDir, appPath;
+  let unpackedDir, appPath, resourcesPath;
 
   if (platform === "win32") {
     unpackedDir = "win-unpacked";
     appPath = path.join(distDir, unpackedDir, "resources", "app");
+    resourcesPath = path.join(distDir, unpackedDir, "resources");
   } else if (platform === "darwin") {
     // macOS app structure: check for architecture-specific directories first
     const macArm64DirPath = path.join(distDir, "mac-arm64");
@@ -43,19 +44,28 @@ function getPlatformDirectories() {
           "Resources",
           "app"
         );
+        resourcesPath = path.join(
+          distDir,
+          unpackedDir,
+          "Contents",
+          "Resources"
+        );
       } else {
         // Fallback for different macOS build structures
         unpackedDir = "mac-unpacked";
         appPath = path.join(distDir, unpackedDir, "resources", "app");
+        resourcesPath = path.join(distDir, unpackedDir, "resources");
       }
     } else {
       // Default macOS structure if no mac directory exists yet
       unpackedDir = "mac-unpacked";
       appPath = path.join(distDir, unpackedDir, "resources", "app");
+      resourcesPath = path.join(distDir, unpackedDir, "resources");
     }
   } else if (platform === "linux") {
     unpackedDir = "linux-unpacked";
     appPath = path.join(distDir, unpackedDir, "resources", "app");
+    resourcesPath = path.join(distDir, unpackedDir, "resources");
   } else {
     throw new Error(`Unsupported platform: ${platform}`);
   }
@@ -63,10 +73,11 @@ function getPlatformDirectories() {
   return {
     standalonePath: path.join(appPath, ".next", "standalone"),
     appPath: appPath,
+    resourcesPath: resourcesPath
   };
 }
 
-const { standalonePath: packagedStandalonePath, appPath: packagedAppPath } =
+const { standalonePath: packagedStandalonePath, appPath: packagedAppPath, resourcesPath: packagedResourcesPath } =
   getPlatformDirectories();
 
 console.log("Installing dependencies for packaged application...");
@@ -90,7 +101,7 @@ if (fs.existsSync(packagedStandalonePath)) {
     );
     process.exit(1);
   }
-} else if (fs.existsSync(path.join(packagedAppPath, "app.asar"))) {
+} else if (fs.existsSync(path.join(packagedResourcesPath || packagedAppPath, "app.asar"))) {
   // For ASAR-packed builds, dependencies are already included
   console.log(
     "✓ Application is ASAR-packed, dependencies are already included"

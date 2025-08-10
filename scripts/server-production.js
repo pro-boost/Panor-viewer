@@ -12,8 +12,16 @@ let standalonePath;
 if (process.resourcesPath) {
   // Packaged app - use process.resourcesPath for reliable path resolution
   if (isAsar) {
-    // ASAR packaged app
-    standalonePath = path.join(process.resourcesPath, 'app.asar.unpacked', '.next', 'standalone');
+    // ASAR packaged app - check extraResources first, then unpacked
+    const possiblePaths = [
+      path.join(process.resourcesPath, 'standalone'),
+      path.join(process.resourcesPath, 'app.asar.unpacked', '.next', 'standalone')
+    ];
+    
+    standalonePath = possiblePaths.find(p => fs.existsSync(p));
+    if (!standalonePath) {
+      throw new Error(`Standalone directory not found in any of: ${possiblePaths.join(', ')}`);
+    }
   } else {
     // Non-ASAR packaged app - check multiple possible locations
     const possiblePaths = [
