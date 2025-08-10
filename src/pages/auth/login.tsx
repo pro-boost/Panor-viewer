@@ -145,7 +145,7 @@ export default function Login() {
   if (!authStatus?.configured) {
     return (
       <div className={styles.container}>
-        <div className={styles.card}>
+        <div className={`${styles.card} ${styles.notConfiguredCard}`}>
           <h1>Authentication Not Configured</h1>
           <p>Please set up authentication first.</p>
           <Link href="/auth/setup" className={styles.button}>

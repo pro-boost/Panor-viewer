@@ -458,3 +458,26 @@
     font-size: 14px;
   }
 }
+
+/* Specific styles for authentication not configured section */
+.notConfiguredCard {
+  text-align: center;
+}
+
+.notConfiguredCard h1 {
+  color: var(--text-primary);
+  font-size: var(--font-3xl);
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.notConfiguredCard p {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: var(--font-base);
+}
+
+.notConfiguredCard .button {
+  display: inline-block;
+  text-align: center;
+}
