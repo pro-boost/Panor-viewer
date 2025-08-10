@@ -20,7 +20,7 @@
     "clear-electron-data": "node scripts/clear-electron-data.js",
     "clear-electron-auth": "node scripts/clear-electron-data.js --auth-only",
     "download-node": "node scripts/download-node.js",
-    "desktop:build:win": "npm run download-node && node scripts/fix-swc-platforms.js && npm run build:standalone && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js",
+    "desktop:build:win": "npm run download-node && node scripts/fix-swc-platforms.js && npm run build:standalone && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js && node scripts/fix-icon-post-build.js",
     "build:electron": "node scripts/build-electron-packager.js",
     "desktop:build": "npm run download-node && node scripts/fix-swc-platforms.js && npm run build:standalone && electron-builder --config=config/electron-builder.json && node scripts/fix-icon-post-build.js",
     "desktop:build:linux:local": "npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --linux --dir",
