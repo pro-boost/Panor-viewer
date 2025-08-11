@@ -2,7 +2,7 @@
   "appId": "com.fribouz.panoramaviewer",
   "productName": "Advanced Panorama Viewer",
   "copyright": "Copyright © 2025 fribouz",
-  "icon": "public/panorama-viewer-icon-multi.ico",
+  "icon": "public/icons/panorama-viewer-icon-multi.ico",
   "directories": {
     "output": "dist"
   },
@@ -14,15 +14,15 @@
     "public/assets/**/*",
     "!public/assets/images/*-unsplash*.jpg",
     "!public/**/*",
-    "public/panorama-viewer-icon.ico",
-    "public/panorama-viewer-icon-multi.ico",
-    "public/panorama-viewer-icon.png",
-    "public/panorama-viewer-icon 16x16.ico",
-    "public/panorama-viewer-icon 24x24.ico",
-    "public/panorama-viewer-icon 32x32.ico",
-    "public/panorama-viewer-icon 64x64.ico",
-    "public/panorama-viewer-icon 128x128.ico",
-    "public/panorama-viewer-icon 256x256.ico",
+    "public/icons/panorama-viewer-icon.ico",
+    "public/icons/panorama-viewer-icon-multi.ico",
+    "public/icons/panorama-viewer-icon.png",
+    "public/icons/panorama-viewer-icon 16x16.ico",
+    "public/icons/panorama-viewer-icon 24x24.ico",
+    "public/icons/panorama-viewer-icon 32x32.ico",
+    "public/icons/panorama-viewer-icon 64x64.ico",
+    "public/icons/panorama-viewer-icon 128x128.ico",
+    "public/icons/panorama-viewer-icon 256x256.ico",
     "projects/**/*",
     "data/credential-config.json",
     "scripts/server-production.js",
@@ -114,15 +114,15 @@
   "win": {
     "target": "nsis",
     "signAndEditExecutable": false,
-    "icon": "public/panorama-viewer-icon-multi.ico",
+    "icon": "public/icons/panorama-viewer-icon-multi.ico",
     "requestedExecutionLevel": "requireAdministrator"
   },
   "nsis": {
     "oneClick": false,
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false,
-    "installerIcon": "public/panorama-viewer-icon-multi.ico",
-    "uninstallerIcon": "public/panorama-viewer-icon-multi.ico",
+    "installerIcon": "public/icons/panorama-viewer-icon-multi.ico",
+      "uninstallerIcon": "public/icons/panorama-viewer-icon-multi.ico",
     "displayLanguageSelector": false,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true
@@ -138,7 +138,7 @@
         "arch": ["x64", "arm64"]
       }
     ],
-    "icon": "public/panorama-viewer-icon.png",
+    "icon": "public/icons/panorama-viewer-icon.png",
     "category": "public.app-category.graphics-design",
     "hardenedRuntime": true,
     "gatekeeperAssess": false,

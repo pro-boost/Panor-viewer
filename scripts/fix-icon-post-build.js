@@ -8,7 +8,7 @@ const path = require('path');
  */
 
 const EXECUTABLE_PATH = path.join(__dirname, '..', 'dist', 'win-unpacked', 'Advanced Panorama Viewer.exe');
-const ICON_PATH = path.join(__dirname, '..', 'public', 'panorama-viewer-icon-multi.ico');
+const ICON_PATH = path.join(__dirname, '..', 'public', 'icons', 'panorama-viewer-icon-multi.ico');
 
 console.log('🔧 Starting automatic icon fix...');
 

@@ -394,7 +394,7 @@ export default function POIManagement() {
   if (authLoading) {
     return (
       <div className={styles.container}>
-        <div className={styles.content}>
+        <div className={styles.authLoadingContent}>
           <div className={styles.loadingSpinner}></div>
           <p>Checking authentication...</p>
         </div>
@@ -406,7 +406,7 @@ export default function POIManagement() {
   if (!isAuthenticated) {
     return (
       <div className={styles.container}>
-        <div className={styles.content}>
+        <div className={styles.accessDeniedContent}>
           <h1>Access Denied</h1>
           <p>You must be logged in to access this page.</p>
         </div>

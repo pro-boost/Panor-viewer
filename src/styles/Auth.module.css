@@ -12,8 +12,17 @@
   flex-direction: column;
 }
 
-/* Ensure loading states are properly centered */
-.container .content {
+/* Specific styles for authentication loading and access denied states */
+.authLoadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 200px;
+}
+
+.accessDeniedContent {
   display: flex;
   flex-direction: column;
   align-items: center;

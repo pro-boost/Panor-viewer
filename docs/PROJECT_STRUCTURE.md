@@ -65,7 +65,8 @@ pano-app/
 │   │       ├── boomerang.svg
 │   │       └── primezone-logo.svg
 │   ├── icon.svg                   # Application icon
-│   └── panorama-viewer-icon.png   # Panorama viewer icon
+│   ├── icons/                     # Application icons
+│   │   └── panorama-viewer-icon.png   # Panorama viewer icon
 │
 ├── scripts/                        # 🛠️ Build and Utility Scripts
 │   ├── build-electron-packager.js # Electron application packaging script

@@ -16,7 +16,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <link
           rel="icon"
           type="image/svg+xml"
-          href="/panorama-viewer-icon.png"
+          href="/icons/panorama-viewer-icon.png"
         />
       </Head>
       <Component {...pageProps} />

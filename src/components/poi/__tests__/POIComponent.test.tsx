@@ -1,11 +1,11 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import POIComponent from '../POIComponent';
-import { POIData } from '@/types/poi';
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import POIComponent from "../POIComponent";
+import { POIData } from "@/types/poi";
 
 // Mock the react-toastify
-jest.mock('react-toastify', () => ({
+jest.mock("react-toastify", () => ({
   toast: {
     error: jest.fn(),
     success: jest.fn(),
@@ -26,19 +26,19 @@ const mockViewerRef = {
 } as React.RefObject<any>;
 
 const mockPanoRef = {
-  current: document.createElement('div'),
+  current: document.createElement("div"),
 } as React.RefObject<HTMLDivElement>;
 
 const defaultProps = {
-  projectId: 'test-project',
-  currentPanoramaId: 'test-panorama',
+  projectId: "test-project",
+  currentPanoramaId: "test-panorama",
   viewerSize: { width: 800, height: 600 },
   viewerRef: mockViewerRef,
   panoRef: mockPanoRef,
   onPOICreated: jest.fn(),
 };
 
-describe('POIComponent', () => {
+describe("POIComponent", () => {
   beforeEach(() => {
     (fetch as jest.Mock).mockClear();
     // Mock successful POI data fetch
@@ -48,23 +48,23 @@ describe('POIComponent', () => {
     });
   });
 
-  it('renders without crashing', () => {
+  it("renders without crashing", () => {
     render(<POIComponent {...defaultProps} />);
-    expect(screen.getByRole('generic')).toBeInTheDocument();
+    expect(screen.getByRole("generic")).toBeInTheDocument();
   });
 
-  it('loads POIs on mount', async () => {
+  it("loads POIs on mount", async () => {
     const mockPOIs: POIData[] = [
       {
-        id: '1',
-        panoramaId: 'test-panorama',
-        name: 'Test POI',
-        description: 'Test description',
+        id: "1",
+        panoramaId: "test-panorama",
+        name: "Test POI",
+        description: "Test description",
         position: { yaw: 0, pitch: 0 },
-        type: 'file',
-        content: 'test.jpg',
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T00:00:00.000Z',
+        type: "file",
+        content: "test.jpg",
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
       },
     ];
 
@@ -75,10 +75,12 @@ describe('POIComponent', () => {
 
     render(<POIComponent {...defaultProps} />);
 
-    expect(fetch).toHaveBeenCalledWith('/pano-app/data/poi/poi-data.json');
+    expect(fetch).toHaveBeenCalledWith(
+      "/advanced-panorama-viewer/data/poi/poi-data.json"
+    );
   });
 
-  it('handles right-click events', () => {
+  it("handles right-click events", () => {
     const { container } = render(<POIComponent {...defaultProps} />);
     const poiContainer = container.firstChild as HTMLElement;
 
@@ -92,13 +94,13 @@ describe('POIComponent', () => {
     expect(poiContainer).toBeInTheDocument();
   });
 
-  it('handles missing viewer gracefully', () => {
+  it("handles missing viewer gracefully", () => {
     const propsWithoutViewer = {
       ...defaultProps,
       viewerRef: { current: null },
     };
 
     render(<POIComponent {...propsWithoutViewer} />);
-    expect(screen.getByRole('generic')).toBeInTheDocument();
+    expect(screen.getByRole("generic")).toBeInTheDocument();
   });
 });
