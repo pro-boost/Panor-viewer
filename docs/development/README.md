@@ -38,10 +38,10 @@ This folder contains documentation specifically for developers working on the pa
 - Build and deployment instructions
 - Current configuration and server details
 
-### SECURE_DISTRIBUTION.md
+### SECURE_DISTRIBUTION.md *(Moved to ../build/)*
 
 **Purpose**: Secure Electron app distribution
-**Contents**:
+**Contents**: Now located in `../build/SECURE_DISTRIBUTION.md`
 
 - Electron build optimization
 - File inclusion/exclusion rules

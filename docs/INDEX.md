@@ -1,40 +1,24 @@
 # Documentation Index
 
-This directory contains all the documentation for the Panorama Viewer Application. Use this index to find the information you need.
+Welcome to the Advanced Panorama Viewer documentation. This index provides quick access to all available documentation.
 
 ## 📚 Main Documentation
 
-### [README.md](./README.md)
+- **[README.md](README.md)** - Setup and installation instructions
+- **[SCRIPTS_DOCUMENTATION.md](SCRIPTS_DOCUMENTATION.md)** - Detailed scripts documentation
 
-**Quick Start Guide**
+## 📁 Documentation Categories
 
-- Installation instructions
-- Prerequisites and setup
-- Available scripts
-- Project structure overview
-- Platform-specific setup guides
+### 🔧 Configuration & Troubleshooting
+- **[Configuration Guide](configuration/CONFIGURATION.md)** - Environment setup and options
+- **[Troubleshooting Guide](configuration/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Configuration Overview](configuration/README.md)** - Configuration documentation index
 
-### [CONFIGURATION.md](./CONFIGURATION.md)
-
-**Configuration Guide**
-
-- Environment variables
-- Coordinate system modes
-- Rotation offsets and camera settings
-- Data format specifications
-- Performance optimization
-- Advanced configuration options
-
-### [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
-
-**Comprehensive Troubleshooting**
-
-- Quick diagnostics
-- Installation issues (Python, Node.js, dependencies)
-- Upload problems and solutions
-- Configuration issues
-- Runtime errors (WebGL, performance)
-- Error code reference
+### 🏗️ Build & Distribution
+- **[Electron Build Guide](build/ELECTRON_BUILD_GUIDE.md)** - Comprehensive build instructions
+- **[Cross-Platform Build](build/CROSS_PLATFORM_BUILD.md)** - Multi-platform build setup
+- **[Secure Distribution](build/SECURE_DISTRIBUTION.md)** - Security and distribution best practices
+- **[Build Overview](build/README.md)** - Build documentation index
 
 ## 🔐 Authentication & Security
 

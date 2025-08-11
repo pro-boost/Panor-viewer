@@ -39,19 +39,27 @@ pano-app/
 │   └── server.js                  # Desktop application server
 │
 ├── docs/                           # 📚 Documentation
-│   ├── CONFIGURATION.md           # Configuration guide and options
 │   ├── INDEX.md                   # Documentation index
 │   ├── README.md                  # Setup and installation instructions
 │   ├── SCRIPTS_DOCUMENTATION.md   # Detailed scripts documentation
-│   ├── TROUBLESHOOTING.md         # Common issues and solutions
 │   ├── authentication/            # Authentication documentation
 │   │   ├── AUTHENTICATION.md      # General authentication guide
+│   │   ├── README.md              # Authentication documentation index
 │   │   └── SUPABASE_AUTH.md       # Supabase authentication setup
+│   ├── build/                     # Build and distribution guides
+│   │   ├── CROSS_PLATFORM_BUILD.md # Cross-platform build setup
+│   │   ├── ELECTRON_BUILD_GUIDE.md # Electron build instructions
+│   │   ├── README.md              # Build documentation index
+│   │   └── SECURE_DISTRIBUTION.md # Secure distribution guide
+│   ├── configuration/             # Configuration and troubleshooting
+│   │   ├── CONFIGURATION.md       # Configuration guide and options
+│   │   ├── README.md              # Configuration documentation index
+│   │   └── TROUBLESHOOTING.md     # Common issues and solutions
 │   └── development/               # Development guides
-│       ├── BUILD_GUIDE.md         # Build process documentation
 │       ├── CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md  # Credentials system
-│       ├── ELECTRON_BUILD_GUIDE.md # Electron build instructions
-│       └── POI_IMPLEMENTATION_GUIDE.md  # Point of Interest system guide
+│       ├── FIXES_AND_IMPROVEMENTS.md # Development history and changelog
+│       ├── POI_IMPLEMENTATION_GUIDE.md  # Point of Interest system guide
+│       └── README.md              # Development documentation index
 │
 ├── public/                         # Static assets
 │   ├── assets/                    # Media assets

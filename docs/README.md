@@ -68,11 +68,15 @@ pano-app/
 
 ## Configuration
 
-See [Configuration Guide](./CONFIGURATION.md) for detailed configuration options.
+See [Configuration Guide](./configuration/CONFIGURATION.md) for detailed configuration options.
 
 ## Troubleshooting
 
-See [Troubleshooting Guide](./TROUBLESHOOTING.md) for common issues and solutions.
+See [Troubleshooting Guide](./configuration/TROUBLESHOOTING.md) for common issues and solutions.
+
+## Build & Distribution
+
+See [Build Documentation](./build/README.md) for comprehensive build and distribution guides.
 
 ## Platform-Specific Setup
 
