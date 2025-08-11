@@ -6,7 +6,7 @@
   "private": true,
   "main": "desktop/main.js",
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env PROJECTS_PATH=\"$(node scripts/utils/get-user-data-path.js)\" next dev",
     "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron desktop/main.js\"",
     "prebuild": "node scripts/build/download-node-binary.js && node scripts/build/fix-swc-platform-binaries.js",
     "build": "node -e \"const fs = require('fs'); fs.copyFileSync('config/next.config.production.js', 'next.config.js.bak'); fs.copyFileSync('config/next.config.production.js', 'next.config.js');\" && cross-env NODE_OPTIONS='--max-old-space-size=4096' next build && node -e \"const fs = require('fs'); fs.renameSync('next.config.js.bak', 'next.config.js');\"",
