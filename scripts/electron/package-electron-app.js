@@ -8,7 +8,7 @@ async function buildElectronApp() {
   );
 
   // Clean dist directory
-  const distPath = path.join(__dirname, "..", "dist");
+  const distPath = path.join(__dirname, "..", "..", "dist");
   if (fs.existsSync(distPath)) {
     fs.rmSync(distPath, { recursive: true, force: true });
   }
@@ -24,8 +24,8 @@ async function buildElectronApp() {
     }
 
     const appPaths = await packager({
-      dir: path.join(__dirname, ".."),
-      out: path.join(__dirname, "..", "dist"),
+      dir: path.join(__dirname, "..", ".."),
+      out: path.join(__dirname, "..", "..", "dist"),
       name: "Panorama Viewer",
       platform: "win32",
       arch: "x64",

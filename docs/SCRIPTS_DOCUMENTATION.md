@@ -79,7 +79,7 @@ This document provides detailed information about all npm scripts and utilities 
 ### `clean`
 
 **Command:** `rimraf dist .next out`
-**Purpose:** Removes all build artifacts and temporary directories
+**Purpose:** Removes all build artifacts and temporary directories (including old temp, scripts/temp, and standardized tmp)
 **Importance:** Essential for clean rebuilds and troubleshooting build issues
 
 ### `download-node`
@@ -88,10 +88,10 @@ This document provides detailed information about all npm scripts and utilities 
 **Purpose:** Downloads the appropriate Node.js runtime for Electron builds
 **Importance:** Ensures consistent Node.js version across different build environments
 
-### `cleanup-temp`
+### `cleanup-temp-files`
 
-**Command:** `node scripts/node/cleanup-temp.js`
-**Purpose:** Removes temporary files and cleans up build artifacts
+**Command:** `node scripts/node/cleanup-temp-files.js`
+**Purpose:** Removes temporary files from the standardized tmp directory (including node-download, uploads, and other temp files)
 **Importance:** Maintains clean workspace and prevents disk space issues
 
 ### `generate-config`

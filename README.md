@@ -88,8 +88,7 @@ python3 -m pip install numpy
 
 ### Utilities
 
-- `npm run clean` - Clean build artifacts and generated files
-- `npm run cleanup-temp` - Remove accumulated temporary files from uploads
+- `npm run clean` - Remove all build artifacts and temporary files (including standardized tmp directory)
 
 ### Desktop Application
 

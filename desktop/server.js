@@ -603,7 +603,10 @@ class ServerManager {
         } else {
           console.log("Running in development mode");
           // Development mode
-          serverPath = path.join(__dirname, "../scripts/server-production.js");
+          serverPath = path.join(
+            __dirname,
+            "../scripts/utils/production-server.js",
+          );
           cwd = path.join(__dirname, "..");
         }
 

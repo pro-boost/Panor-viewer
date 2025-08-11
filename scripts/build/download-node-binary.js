@@ -45,9 +45,9 @@ const {
 const NODE_FILENAME = `node-${NODE_VERSION}-${NODE_PLATFORM}.${FILE_EXTENSION}`;
 const NODE_URL = `https://nodejs.org/dist/${NODE_VERSION}/${NODE_FILENAME}`;
 
-// Paths
-const TEMP_DIR = path.join(__dirname, "..", "temp");
-const RESOURCES_DIR = path.join(__dirname, "..", "resources");
+// Paths - using standardized tmp directory in project root
+const TEMP_DIR = path.join(process.cwd(), "tmp", "node-download");
+const RESOURCES_DIR = path.join(__dirname, "..", "..", "resources");
 const NODE_DIR = path.join(RESOURCES_DIR, "node");
 const DOWNLOAD_PATH = path.join(TEMP_DIR, NODE_FILENAME);
 const NODE_EXECUTABLE_PATH = path.join(NODE_DIR, NODE_EXECUTABLE);

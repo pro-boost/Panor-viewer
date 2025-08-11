@@ -3,6 +3,7 @@ const path = require("path");
 
 /**
  * Script to clean up accumulated temporary files in the tmp directory
+ * Handles all subdirectories including node-download, uploads, and other temp files
  */
 async function cleanupTempDirectory() {
   const tmpDir = path.join(process.cwd(), "tmp");
@@ -14,27 +15,30 @@ async function cleanupTempDirectory() {
 
   try {
     const files = await fs.promises.readdir(tmpDir);
-    let cleanedCount = 0;
-    let totalSize = 0;
+
+    if (files.length === 0) {
+      console.log("tmp directory is already empty.");
+      return;
+    }
 
     for (const file of files) {
       const filePath = path.join(tmpDir, file);
       const stats = await fs.promises.stat(filePath);
 
-      if (stats.isFile()) {
-        totalSize += stats.size;
+      if (stats.isDirectory()) {
+        await fs.promises.rmdir(filePath, { recursive: true });
+        console.log(`Removed directory: ${file}`);
+      } else {
         await fs.promises.unlink(filePath);
-        cleanedCount++;
-        console.log(`Removed: ${file}`);
+        console.log(`Removed file: ${file}`);
       }
     }
 
-    const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
-    console.log(`\nCleanup completed:`);
-    console.log(`- Files removed: ${cleanedCount}`);
-    console.log(`- Space freed: ${sizeMB} MB`);
+    console.log(
+      `✓ Cleaned up ${files.length} items from tmp directory (including node-download, uploads, etc.)`,
+    );
   } catch (error) {
-    console.error("Error during cleanup:", error);
+    console.error("Error cleaning up tmp directory:", error.message);
     process.exit(1);
   }
 }

@@ -2,7 +2,7 @@
 
 /**
  * Test script to verify credential server connectivity
- * Run with: node scripts/test-credentials.js
+ * Run with: node scripts/utils/validate-credentials.js
  */
 
 const https = require("https");

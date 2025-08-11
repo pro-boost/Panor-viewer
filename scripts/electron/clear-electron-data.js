@@ -3,7 +3,7 @@
 /**
  * Script to clear Electron app data including cookies, sessions, and cache
  * This helps resolve authentication issues and provides a fresh start
- * Run with: node scripts/clear-electron-data.js
+ * Run with: node scripts/electron/clear-electron-data.js
  */
 
 const fs = require("fs");
@@ -150,7 +150,7 @@ function clearElectronData() {
           if (fs.existsSync(paths.userDataPath)) {
             const files = fs.readdirSync(paths.userDataPath);
             if (files.length === 0) {
-              fs.rmdirSync(paths.userDataPath);
+              fs.rmSync(paths.userDataPath);
               console.log("   ✅ Empty credential cache directory removed");
             }
           }
@@ -220,7 +220,7 @@ function clearElectronData() {
         if (fs.existsSync(paths.userDataPath)) {
           const files = fs.readdirSync(paths.userDataPath);
           if (files.length === 0) {
-            fs.rmdirSync(paths.userDataPath);
+            fs.rmSync(paths.userDataPath);
             console.log(`   ✅ Empty ${paths.appName} directory removed`);
           } else {
             console.log(
@@ -330,7 +330,7 @@ function clearAuthDataOnly() {
         if (fs.existsSync(paths.userDataPath)) {
           const files = fs.readdirSync(paths.userDataPath);
           if (files.length === 0) {
-            fs.rmdirSync(paths.userDataPath);
+            fs.rmSync(paths.userDataPath);
             console.log(`   ✅ Empty ${paths.appName} directory removed`);
           } else {
             console.log(
@@ -369,13 +369,13 @@ function main() {
     console.log("Electron App Data Cleaner");
     console.log("\nUsage:");
     console.log(
-      "  node scripts/clear-electron-data.js           # Clear all app data",
+      "  node scripts/electron/clear-electron-data.js           # Clear all app data",
     );
     console.log(
-      "  node scripts/clear-electron-data.js --auth    # Clear authentication data only",
+      "  node scripts/electron/clear-electron-data.js --auth    # Clear authentication data only",
     );
     console.log(
-      "  node scripts/clear-electron-data.js --help    # Show this help",
+      "  node scripts/electron/clear-electron-data.js --help    # Show this help",
     );
     console.log("\nOptions:");
     console.log(

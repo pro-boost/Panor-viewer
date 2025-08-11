@@ -10,12 +10,14 @@ const path = require("path");
 const EXECUTABLE_PATH = path.join(
   __dirname,
   "..",
+  "..",
   "dist",
   "win-unpacked",
   "Advanced Panorama Viewer.exe",
 );
 const ICON_PATH = path.join(
   __dirname,
+  "..",
   "..",
   "public",
   "icons",
@@ -82,6 +84,7 @@ if (!rceditPath) {
     path.join(
       __dirname,
       "..",
+      "..",
       "node_modules",
       "app-builder-bin",
       "win",
@@ -90,6 +93,7 @@ if (!rceditPath) {
     ),
     path.join(
       __dirname,
+      "..",
       "..",
       "node_modules",
       "electron-builder",

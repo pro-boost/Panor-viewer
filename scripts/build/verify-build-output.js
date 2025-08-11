@@ -38,7 +38,7 @@ function listDirectoryContents(
 }
 
 function checkBuildContents() {
-  const distPath = path.join(__dirname, "..", "dist");
+  const distPath = path.join(__dirname, "..", "..", "dist");
 
   if (!fs.existsSync(distPath)) {
     console.log('❌ No dist folder found. Run "npm run desktop:build" first.');
