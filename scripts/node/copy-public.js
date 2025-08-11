@@ -10,7 +10,7 @@ async function copyPublicAssets() {
     // Ensure the standalone directory exists
     if (!fs.existsSync(standaloneDir)) {
       console.error(
-        "Standalone build directory not found. Please run build:standalone first."
+        "Standalone build directory not found. Please run build:standalone first.",
       );
       process.exit(1);
     }

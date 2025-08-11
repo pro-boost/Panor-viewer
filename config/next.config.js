@@ -3,11 +3,11 @@ const path = require('path');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
-  
+
   poweredByHeader: false,
-  
+
   compress: false, // Handled by Express
-  
+
   // Force cache invalidation for JavaScript files
   headers: async () => {
     return [
@@ -22,23 +22,23 @@ const nextConfig = {
       },
     ];
   },
-  
+
   images: {
     unoptimized: true,
   },
-  
+
   experimental: {
     outputFileTracingRoot: __dirname,
     outputFileTracingIncludes: {
       '/api/**/*': ['./scripts/node/**/*'],
     },
   },
-  
+
   env: {
     PROJECTS_PATH: process.env.PROJECTS_PATH,
     USER_DATA_PATH: process.env.USER_DATA_PATH,
   },
-  
+
   webpack: (config, { isServer }) => {
     // Handle PDF.js worker files
     if (!isServer) {
@@ -46,7 +46,7 @@ const nextConfig = {
         ...config.resolve.alias,
         canvas: false,
       };
-      
+
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
@@ -54,7 +54,7 @@ const nextConfig = {
         crypto: false,
       };
     }
-    
+
     // Copy PDF.js worker files
     config.module.rules.push({
       test: /pdf\.worker\.(min\.)?js/,
@@ -63,7 +63,7 @@ const nextConfig = {
         filename: 'static/worker/[hash][ext][query]',
       },
     });
-    
+
     return config;
   },
 };

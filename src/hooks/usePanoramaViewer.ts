@@ -1,6 +1,6 @@
-import { useState, useRef, useReducer, useCallback, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { ConfigData, SceneInfo as SceneInfoType } from '@/types/scenes';
+import { useState, useRef, useReducer, useCallback, useEffect } from "react";
+import { useRouter } from "next/router";
+import { ConfigData, SceneInfo as SceneInfoType } from "@/types/scenes";
 
 export interface ViewParams {
   yaw: number;
@@ -16,48 +16,51 @@ export interface PerformanceStats {
 
 // Action types for state reducer
 export type PanoramaAction =
-  | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_ERROR'; payload: string | null }
-  | { type: 'SET_CONFIG'; payload: ConfigData | null }
-  | { type: 'SET_CURRENT_SCENE'; payload: string | null }
-  | { type: 'SET_HOTSPOTS_VISIBLE'; payload: boolean }
-  | { type: 'SET_SHOW_TAP_HINT'; payload: boolean }
-  | { type: 'SET_VIEWER_SIZE'; payload: { width: number; height: number } }
-  | { type: 'SET_ARROW_STYLE'; payload: { transform?: string } }
-  | { type: 'SET_CURRENT_YAW'; payload: number }
-  | { type: 'SET_ROTATION_ANGLE'; payload: number }
-  | { type: 'SET_CURRENT_VIEW_PARAMS'; payload: ViewParams | null }
-  | { type: 'SET_PERFORMANCE_STATS'; payload: PerformanceStats }
-  | { type: 'RESET_STATE' };
+  | { type: "SET_LOADING"; payload: boolean }
+  | { type: "SET_ERROR"; payload: string | null }
+  | { type: "SET_CONFIG"; payload: ConfigData | null }
+  | { type: "SET_CURRENT_SCENE"; payload: string | null }
+  | { type: "SET_HOTSPOTS_VISIBLE"; payload: boolean }
+  | { type: "SET_SHOW_TAP_HINT"; payload: boolean }
+  | { type: "SET_VIEWER_SIZE"; payload: { width: number; height: number } }
+  | { type: "SET_ARROW_STYLE"; payload: { transform?: string } }
+  | { type: "SET_CURRENT_YAW"; payload: number }
+  | { type: "SET_ROTATION_ANGLE"; payload: number }
+  | { type: "SET_CURRENT_VIEW_PARAMS"; payload: ViewParams | null }
+  | { type: "SET_PERFORMANCE_STATS"; payload: PerformanceStats }
+  | { type: "RESET_STATE" };
 
 // State reducer function
-function panoramaReducer(state: PanoramaViewerState, action: PanoramaAction): PanoramaViewerState {
+function panoramaReducer(
+  state: PanoramaViewerState,
+  action: PanoramaAction,
+): PanoramaViewerState {
   switch (action.type) {
-    case 'SET_LOADING':
+    case "SET_LOADING":
       return { ...state, isLoading: action.payload };
-    case 'SET_ERROR':
+    case "SET_ERROR":
       return { ...state, error: action.payload };
-    case 'SET_CONFIG':
+    case "SET_CONFIG":
       return { ...state, config: action.payload };
-    case 'SET_CURRENT_SCENE':
+    case "SET_CURRENT_SCENE":
       return { ...state, currentScene: action.payload };
-    case 'SET_HOTSPOTS_VISIBLE':
+    case "SET_HOTSPOTS_VISIBLE":
       return { ...state, hotspotsVisible: action.payload };
-    case 'SET_SHOW_TAP_HINT':
+    case "SET_SHOW_TAP_HINT":
       return { ...state, showTapHint: action.payload };
-    case 'SET_VIEWER_SIZE':
+    case "SET_VIEWER_SIZE":
       return { ...state, viewerSize: action.payload };
-    case 'SET_ARROW_STYLE':
+    case "SET_ARROW_STYLE":
       return { ...state, arrowStyle: action.payload };
-    case 'SET_CURRENT_YAW':
+    case "SET_CURRENT_YAW":
       return { ...state, currentYaw: action.payload };
-    case 'SET_ROTATION_ANGLE':
+    case "SET_ROTATION_ANGLE":
       return { ...state, rotationAngle: action.payload };
-    case 'SET_CURRENT_VIEW_PARAMS':
+    case "SET_CURRENT_VIEW_PARAMS":
       return { ...state, currentViewParams: action.payload };
-    case 'SET_PERFORMANCE_STATS':
+    case "SET_PERFORMANCE_STATS":
       return { ...state, performanceStats: action.payload };
-    case 'RESET_STATE':
+    case "RESET_STATE":
       return {
         isLoading: true,
         error: null,
@@ -72,7 +75,7 @@ function panoramaReducer(state: PanoramaViewerState, action: PanoramaAction): Pa
         currentViewParams: null,
         performanceStats: {
           loadedScenes: 0,
-          memoryUsage: '0 MB',
+          memoryUsage: "0 MB",
           avgLoadTime: 0,
         },
       };
@@ -130,7 +133,7 @@ export interface UsePanoramaViewerReturn {
 
 export function usePanoramaViewer(): UsePanoramaViewerReturn {
   const router = useRouter();
-  
+
   // Initial state
   const initialState: PanoramaViewerState = {
     isLoading: true,
@@ -146,7 +149,7 @@ export function usePanoramaViewer(): UsePanoramaViewerReturn {
     currentViewParams: null,
     performanceStats: {
       loadedScenes: 0,
-      memoryUsage: '0 MB',
+      memoryUsage: "0 MB",
       avgLoadTime: 0,
     },
   };
@@ -165,43 +168,43 @@ export function usePanoramaViewer(): UsePanoramaViewerReturn {
   // Memoized action creators
   const actions = {
     setIsLoading: useCallback((loading: boolean) => {
-      dispatch({ type: 'SET_LOADING', payload: loading });
+      dispatch({ type: "SET_LOADING", payload: loading });
     }, []),
     setError: useCallback((error: string | null) => {
-      dispatch({ type: 'SET_ERROR', payload: error });
+      dispatch({ type: "SET_ERROR", payload: error });
     }, []),
     setConfig: useCallback((config: ConfigData | null) => {
-      dispatch({ type: 'SET_CONFIG', payload: config });
+      dispatch({ type: "SET_CONFIG", payload: config });
     }, []),
     setCurrentScene: useCallback((scene: string | null) => {
-      dispatch({ type: 'SET_CURRENT_SCENE', payload: scene });
+      dispatch({ type: "SET_CURRENT_SCENE", payload: scene });
     }, []),
     setHotspotsVisible: useCallback((visible: boolean) => {
-      dispatch({ type: 'SET_HOTSPOTS_VISIBLE', payload: visible });
+      dispatch({ type: "SET_HOTSPOTS_VISIBLE", payload: visible });
     }, []),
     setShowTapHint: useCallback((show: boolean) => {
-      dispatch({ type: 'SET_SHOW_TAP_HINT', payload: show });
+      dispatch({ type: "SET_SHOW_TAP_HINT", payload: show });
     }, []),
     setViewerSize: useCallback((size: { width: number; height: number }) => {
-      dispatch({ type: 'SET_VIEWER_SIZE', payload: size });
+      dispatch({ type: "SET_VIEWER_SIZE", payload: size });
     }, []),
     setArrowStyle: useCallback((style: { transform?: string }) => {
-      dispatch({ type: 'SET_ARROW_STYLE', payload: style });
+      dispatch({ type: "SET_ARROW_STYLE", payload: style });
     }, []),
     setCurrentYaw: useCallback((yaw: number) => {
-      dispatch({ type: 'SET_CURRENT_YAW', payload: yaw });
+      dispatch({ type: "SET_CURRENT_YAW", payload: yaw });
     }, []),
     setRotationAngle: useCallback((angle: number) => {
-      dispatch({ type: 'SET_ROTATION_ANGLE', payload: angle });
+      dispatch({ type: "SET_ROTATION_ANGLE", payload: angle });
     }, []),
     setCurrentViewParams: useCallback((params: ViewParams | null) => {
-      dispatch({ type: 'SET_CURRENT_VIEW_PARAMS', payload: params });
+      dispatch({ type: "SET_CURRENT_VIEW_PARAMS", payload: params });
     }, []),
     setPerformanceStats: useCallback((stats: PerformanceStats) => {
-      dispatch({ type: 'SET_PERFORMANCE_STATS', payload: stats });
+      dispatch({ type: "SET_PERFORMANCE_STATS", payload: stats });
     }, []),
     resetState: useCallback(() => {
-      dispatch({ type: 'RESET_STATE' });
+      dispatch({ type: "RESET_STATE" });
     }, []),
   };
 
@@ -218,19 +221,19 @@ export function usePanoramaViewer(): UsePanoramaViewerReturn {
   useEffect(() => {
     return () => {
       // Reset state when component unmounts
-      dispatch({ type: 'RESET_STATE' });
-      
+      dispatch({ type: "RESET_STATE" });
+
       // Clear refs (but keep marzipanoRef as it tracks library availability)
       viewerRef.current = null;
       scenesRef.current = {};
       loadTimesRef.current = [];
-      
+
       if (hotspotTimeoutRef.current) {
         clearTimeout(hotspotTimeoutRef.current);
         hotspotTimeoutRef.current = null;
       }
-      
-      console.log('usePanoramaViewer cleanup completed');
+
+      console.log("usePanoramaViewer cleanup completed");
     };
   }, []);
 

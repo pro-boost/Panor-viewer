@@ -57,7 +57,7 @@ export const SCENE_CONFIG: SceneConfig = {
 
 // Memory management utilities
 export function getMemoryUsage(): MemoryUsage | null {
-  if (typeof performance !== 'undefined' && (performance as any).memory) {
+  if (typeof performance !== "undefined" && (performance as any).memory) {
     return {
       used: Math.round((performance as any).memory.usedJSHeapSize / 1048576),
       total: Math.round((performance as any).memory.totalJSHeapSize / 1048576),

@@ -19,7 +19,7 @@ export default function Upload() {
   const validation = useValidation();
   const fileManager = useFileManager(
     projectManager.isEditMode,
-    projectManager.existingFiles
+    projectManager.existingFiles,
   );
 
   // Destructure commonly used values for cleaner code
@@ -91,7 +91,7 @@ export default function Upload() {
     // Force UI update when existingFiles changes
     console.log(
       "ExistingFiles changed in state:",
-      projectManager.existingFiles
+      projectManager.existingFiles,
     );
     // This will update the project status message in the UI
   }, [projectManager.existingFiles]);
@@ -136,7 +136,7 @@ export default function Upload() {
     event: FormEvent<HTMLFormElement> & {
       _overwriteMode?: boolean;
       _deleteAllMode?: boolean;
-    }
+    },
   ) => {
     event.preventDefault();
 
@@ -150,7 +150,7 @@ export default function Upload() {
       fileManager.hasRequiredFiles(),
       fileManager.getFileValidationErrors(),
       projectManager.validateProjectName,
-      fileManager.selectedFiles.csv
+      fileManager.selectedFiles.csv,
     );
     if (!isValid) {
       return;
@@ -228,7 +228,7 @@ export default function Upload() {
         {
           method: "POST",
           body: formData,
-        }
+        },
       );
 
       clearInterval(progressInterval);
@@ -252,12 +252,12 @@ export default function Upload() {
       if (projectManager.isEditMode && projectManager.editingProjectId) {
         console.log(
           "Refreshing project data after successful upload for project:",
-          projectManager.editingProjectId
+          projectManager.editingProjectId,
         );
         await projectManager.loadProjectData(projectManager.editingProjectId);
         console.log(
           "Project data refreshed, current files:",
-          projectManager.existingFiles
+          projectManager.existingFiles,
         );
 
         // Force UI update by setting a message that includes the updated file information
@@ -424,7 +424,7 @@ export default function Upload() {
                       type="button"
                       onClick={() =>
                         projectManager.setShowExistingFiles(
-                          !projectManager.showExistingFiles
+                          !projectManager.showExistingFiles,
                         )
                       }
                       className={styles.toggleButton}
@@ -443,7 +443,7 @@ export default function Upload() {
                       {projectManager.existingFiles.images.map(
                         (imageName, index) => (
                           <li key={index}>Image: {imageName}</li>
-                        )
+                        ),
                       )}
                     </ul>
                   )}
@@ -478,10 +478,10 @@ export default function Upload() {
                       {Math.round(
                         fileManager.selectedFiles.images.reduce(
                           (sum, file) => sum + file.size,
-                          0
+                          0,
                         ) /
                           1024 /
-                          1024
+                          1024,
                       )}{" "}
                       MB total)
                     </span>
@@ -522,7 +522,7 @@ export default function Upload() {
             )}
             {validation.getSubmitButtonText(
               uploadState.isLoading,
-              projectManager.isEditMode
+              projectManager.isEditMode,
             )}
           </button>
 
@@ -638,7 +638,7 @@ export default function Upload() {
                     validation.clearDuplicateWarning();
                     fileManager.clearDuplicateImages();
                     const form = document.querySelector(
-                      "form"
+                      "form",
                     ) as HTMLFormElement;
                     if (form) {
                       const syntheticEvent = {

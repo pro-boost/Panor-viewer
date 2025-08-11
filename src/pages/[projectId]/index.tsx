@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/router';
-import { ReactElement, useState, useEffect } from 'react';
-import Link from 'next/link';
-import styles from '@/styles/Welcome.module.css';
-import Logo from '@/components/ui/Logo';
-import { FileURLManager } from '@/utils/fileHelpers';
+import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+import { ReactElement, useState, useEffect } from "react";
+import Link from "next/link";
+import styles from "@/styles/Welcome.module.css";
+import Logo from "@/components/ui/Logo";
+import { FileURLManager } from "@/utils/fileHelpers";
 // ProjectManager moved to PanoramaViewer component
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
 const PanoramaViewer = dynamic(
-  () => import('@/components/viewer/PanoramaViewer'),
+  () => import("@/components/viewer/PanoramaViewer"),
   {
     ssr: false,
     loading: (): ReactElement => (
-      <div id='loading'>
-        <div className='loader'></div>
+      <div id="loading">
+        <div className="loader"></div>
         <div>Loading panoramas...</div>
       </div>
     ),
-  }
+  },
 );
 
 interface ConfigData {
@@ -40,7 +40,7 @@ export default function ProjectViewer(): ReactElement {
   // Project management handlers removed - now handled in PanoramaViewer
 
   useEffect(() => {
-    if (!projectId || typeof projectId !== 'string') {
+    if (!projectId || typeof projectId !== "string") {
       return;
     }
 
@@ -53,15 +53,15 @@ export default function ProjectViewer(): ReactElement {
         const configResponse = await fetch(
           `/api/projects/${encodeURIComponent(projectId)}/config`,
           {
-            cache: 'no-store',
-          }
+            cache: "no-store",
+          },
         );
 
         if (!configResponse.ok) {
           if (configResponse.status === 404) {
-            setError('Project not found or no configuration available');
+            setError("Project not found or no configuration available");
           } else {
-            setError('Failed to load project configuration');
+            setError("Failed to load project configuration");
           }
           setHasPanoramas(false);
           return;
@@ -71,7 +71,7 @@ export default function ProjectViewer(): ReactElement {
         setConfig(configData);
 
         if (!configData.scenes || configData.scenes.length === 0) {
-          setError('No panoramas found in this project');
+          setError("No panoramas found in this project");
           setHasPanoramas(false);
           return;
         }
@@ -79,18 +79,21 @@ export default function ProjectViewer(): ReactElement {
         // Check if actual image files exist by testing the first few scenes
         const testScenes = configData.scenes.slice(
           0,
-          Math.min(3, configData.scenes.length)
+          Math.min(3, configData.scenes.length),
         );
         let imageExists = false;
 
         for (const scene of testScenes) {
           try {
             const imageResponse = await fetch(
-              FileURLManager.getPanoramaImageURL(projectId, `${scene.id}-pano.jpg`),
+              FileURLManager.getPanoramaImageURL(
+                projectId,
+                `${scene.id}-pano.jpg`,
+              ),
               {
-                method: 'HEAD',
-                cache: 'no-store',
-              }
+                method: "HEAD",
+                cache: "no-store",
+              },
             );
             if (imageResponse.ok) {
               imageExists = true;
@@ -102,13 +105,13 @@ export default function ProjectViewer(): ReactElement {
         }
 
         if (!imageExists) {
-          setError('Panorama images not found for this project');
+          setError("Panorama images not found for this project");
         }
 
         setHasPanoramas(imageExists);
       } catch (error) {
-        console.error('Error checking for panoramas:', error);
-        setError('Failed to load project data');
+        console.error("Error checking for panoramas:", error);
+        setError("Failed to load project data");
         setHasPanoramas(false);
       } finally {
         setLoading(false);
@@ -134,7 +137,7 @@ export default function ProjectViewer(): ReactElement {
   if (error) {
     return (
       <div className={styles.container}>
-        <Logo variant='default' position='absolute' />
+        <Logo variant="default" position="absolute" />
 
         <div className={styles.content}>
           <div className={styles.icon}></div>
@@ -143,16 +146,16 @@ export default function ProjectViewer(): ReactElement {
 
           <div
             style={{
-              display: 'flex',
-              gap: '16px',
-              justifyContent: 'center',
-              marginTop: '64px',
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              marginTop: "64px",
             }}
           >
-            <Link href='/' className={styles.uploadButton}>
+            <Link href="/" className={styles.uploadButton}>
               Back to Home
             </Link>
-            <Link href='/upload' className={styles.uploadButton}>
+            <Link href="/upload" className={styles.uploadButton}>
               Upload New Project
             </Link>
           </div>
@@ -173,7 +176,7 @@ export default function ProjectViewer(): ReactElement {
         <h1 className={styles.title}>Something went wrong</h1>
         <p className={styles.description}>Unable to load project data.</p>
 
-        <Link href='/' className={styles.uploadButton}>
+        <Link href="/" className={styles.uploadButton}>
           <span className={styles.uploadIcon}>🏠</span>
           Back to Home
         </Link>

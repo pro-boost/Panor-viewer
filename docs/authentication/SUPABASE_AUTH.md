@@ -81,9 +81,9 @@ LANGUAGE SQL
 SECURITY DEFINER
 AS $$
   SELECT EXISTS (
-    SELECT 1 FROM user_profiles 
-    WHERE id = user_id 
-    AND role = 'admin' 
+    SELECT 1 FROM user_profiles
+    WHERE id = user_id
+    AND role = 'admin'
     AND approved = true
   );
 $$;
@@ -135,11 +135,13 @@ CREATE TRIGGER on_auth_user_created
 ## Authentication Flow
 
 ### Initial Setup
+
 1. When no admin users exist, the application redirects to `/auth/setup`
 2. Create the first admin user with email and password
 3. This user is automatically created in Supabase with admin role and approved status
 
 ### Regular Authentication
+
 1. Users sign in at `/auth/login` with email and password
 2. All authentication is handled by Supabase
 3. User sessions are managed with secure HTTP-only cookies

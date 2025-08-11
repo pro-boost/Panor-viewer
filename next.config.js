@@ -1,8 +1,8 @@
-const path = require('path');
+const path = require("path");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
 
   poweredByHeader: false,
 
@@ -12,11 +12,11 @@ const nextConfig = {
   headers: async () => {
     return [
       {
-        source: '/_next/static/:path*',
+        source: "/_next/static/:path*",
         headers: [
           {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate',
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
           },
         ],
       },
@@ -30,13 +30,13 @@ const nextConfig = {
   experimental: {
     outputFileTracingRoot: __dirname,
     outputFileTracingIncludes: {
-      '/api/**/*': ['./scripts/node/**/*'],
-      '/**/*': [
-        './src/components/**/*',
-        './src/hooks/**/*',
-        './src/types/**/*',
-        './src/utils/**/*',
-        './src/lib/**/*',
+      "/api/**/*": ["./scripts/node/**/*"],
+      "/**/*": [
+        "./src/components/**/*",
+        "./src/hooks/**/*",
+        "./src/types/**/*",
+        "./src/utils/**/*",
+        "./src/lib/**/*",
       ],
     },
   },
@@ -65,9 +65,9 @@ const nextConfig = {
     // Copy PDF.js worker files
     config.module.rules.push({
       test: /pdf\.worker\.(min\.)?js/,
-      type: 'asset/resource',
+      type: "asset/resource",
       generator: {
-        filename: 'static/worker/[hash][ext][query]',
+        filename: "static/worker/[hash][ext][query]",
       },
     });
 

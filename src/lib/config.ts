@@ -3,7 +3,9 @@
 /**
  * Load panorama configuration from a URL
  */
-export async function loadPanoramaConfig(url: string = '/config.json'): Promise<any> {
+export async function loadPanoramaConfig(
+  url: string = "/config.json",
+): Promise<any> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to load config: ${response.status}`);
@@ -14,9 +16,11 @@ export async function loadPanoramaConfig(url: string = '/config.json'): Promise<
 /**
  * Check if the configuration file exists
  */
-export async function checkConfigExists(url: string = '/config.json'): Promise<boolean> {
+export async function checkConfigExists(
+  url: string = "/config.json",
+): Promise<boolean> {
   try {
-    const response = await fetch(url, { method: 'HEAD' });
+    const response = await fetch(url, { method: "HEAD" });
     return response.ok;
   } catch (error) {
     return false;
@@ -26,61 +30,69 @@ export async function checkConfigExists(url: string = '/config.json'): Promise<b
 /**
  * Get the status of the configuration
  */
-export async function getConfigStatus(url: string = '/config.json'): Promise<string> {
+export async function getConfigStatus(
+  url: string = "/config.json",
+): Promise<string> {
   try {
-    const response = await fetch(url, { method: 'HEAD' });
+    const response = await fetch(url, { method: "HEAD" });
     if (response.ok) {
-      return 'available';
+      return "available";
     }
     return `error: ${response.status}`;
   } catch (error) {
-    return 'error: network';
+    return "error: network";
   }
 }
 
-import type { EnvironmentConfig } from '../types/config';
+import type { EnvironmentConfig } from "../types/config";
 
 /**
  * Get environment configuration with defaults
  */
 export function getEnvironmentConfig(): Partial<EnvironmentConfig> {
   return {
-    PANORAMA_CONFIG_MODE: (process.env.PANORAMA_CONFIG_MODE as any) || 'standard',
-    PANORAMA_YAW_OFFSET: parseFloat(process.env.PANORAMA_YAW_OFFSET || '0'),
-    PANORAMA_PITCH_OFFSET: parseFloat(process.env.PANORAMA_PITCH_OFFSET || '0'),
-    PANORAMA_CAMERA_OFFSET: parseFloat(process.env.PANORAMA_CAMERA_OFFSET || '1.2'),
-    PANORAMA_MAX_DISTANCE: parseFloat(process.env.PANORAMA_MAX_DISTANCE || '10.0'),
-    PANORAMA_MAX_CONNECTIONS: parseInt(process.env.PANORAMA_MAX_CONNECTIONS || '6'),
-    NEXT_PUBLIC_DEV_MODE: process.env.NEXT_PUBLIC_DEV_MODE === 'true',
-    NEXT_PUBLIC_SHOW_DEBUG_INFO: process.env.NEXT_PUBLIC_SHOW_DEBUG_INFO === 'true',
+    PANORAMA_CONFIG_MODE:
+      (process.env.PANORAMA_CONFIG_MODE as any) || "standard",
+    PANORAMA_YAW_OFFSET: parseFloat(process.env.PANORAMA_YAW_OFFSET || "0"),
+    PANORAMA_PITCH_OFFSET: parseFloat(process.env.PANORAMA_PITCH_OFFSET || "0"),
+    PANORAMA_CAMERA_OFFSET: parseFloat(
+      process.env.PANORAMA_CAMERA_OFFSET || "1.2",
+    ),
+    PANORAMA_MAX_DISTANCE: parseFloat(
+      process.env.PANORAMA_MAX_DISTANCE || "10.0",
+    ),
+    PANORAMA_MAX_CONNECTIONS: parseInt(
+      process.env.PANORAMA_MAX_CONNECTIONS || "6",
+    ),
+    NEXT_PUBLIC_DEV_MODE: process.env.NEXT_PUBLIC_DEV_MODE === "true",
+    NEXT_PUBLIC_SHOW_DEBUG_INFO:
+      process.env.NEXT_PUBLIC_SHOW_DEBUG_INFO === "true",
   };
 }
-
-
 
 /**
  * Validate panorama configuration
  */
 export function validateConfig(config: any): boolean {
-  if (!config || typeof config !== 'object') {
-    console.error('Invalid config: not an object');
+  if (!config || typeof config !== "object") {
+    console.error("Invalid config: not an object");
     return false;
   }
 
   if (!Array.isArray(config.scenes)) {
-    console.error('Invalid config: scenes is not an array');
+    console.error("Invalid config: scenes is not an array");
     return false;
   }
 
   if (config.scenes.length === 0) {
-    console.error('Invalid config: no scenes found');
+    console.error("Invalid config: no scenes found");
     return false;
   }
 
   // Validate each scene
   for (const scene of config.scenes) {
     if (!scene.id || !scene.position || !scene.orientation) {
-      console.error('Invalid scene: missing required fields', scene);
+      console.error("Invalid scene: missing required fields", scene);
       return false;
     }
   }
@@ -93,18 +105,22 @@ export function validateConfig(config: any): boolean {
  */
 export function getDebugInfo() {
   const config = getEnvironmentConfig();
-  
+
   return {
     timestamp: new Date().toISOString(),
-    userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+    userAgent:
+      typeof navigator !== "undefined" ? navigator.userAgent : "Unknown",
     environment: {
       NODE_ENV: process.env.NODE_ENV,
       ...config,
     },
-    performance: typeof performance !== 'undefined' ? {
-      memory: (performance as any).memory,
-      timing: performance.timing,
-    } : null,
+    performance:
+      typeof performance !== "undefined"
+        ? {
+            memory: (performance as any).memory,
+            timing: performance.timing,
+          }
+        : null,
   };
 }
 
@@ -113,11 +129,11 @@ export function getDebugInfo() {
  */
 export function logDebugInfo() {
   const config = getEnvironmentConfig();
-  
+
   if (config.NEXT_PUBLIC_SHOW_DEBUG_INFO) {
-    console.group('🔍 Panorama Viewer Debug Info');
-    console.log('Environment Config:', config);
-    console.log('Debug Info:', getDebugInfo());
+    console.group("🔍 Panorama Viewer Debug Info");
+    console.log("Environment Config:", config);
+    console.log("Debug Info:", getDebugInfo());
     console.groupEnd();
   }
 }
@@ -127,12 +143,12 @@ export function logDebugInfo() {
  */
 export function formatErrorMessage(error: Error | string): string {
   const config = getEnvironmentConfig();
-  
+
   if (config.NEXT_PUBLIC_DEV_MODE) {
     // Show detailed error in development
     return error instanceof Error ? error.message : error;
   } else {
     // Show user-friendly error in production
-    return 'An error occurred while loading the panorama viewer. Please try refreshing the page.';
+    return "An error occurred while loading the panorama viewer. Please try refreshing the page.";
   }
 }

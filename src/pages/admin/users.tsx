@@ -22,7 +22,7 @@ export default function AdminUsers() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "pending">("pending");
   const [supabaseConfigured, setSupabaseConfigured] = useState<boolean | null>(
-    null
+    null,
   );
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function AdminUsers() {
 
       if (!data.configured) {
         setError(
-          "External authentication is not configured. Please check your environment variables."
+          "External authentication is not configured. Please check your environment variables.",
         );
         setLoading(false);
         return;
@@ -89,7 +89,7 @@ export default function AdminUsers() {
     try {
       // Set loading state for this user
       setPendingUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
       );
 
       const response = await fetch("/api/admin/users", {
@@ -116,11 +116,11 @@ export default function AdminUsers() {
 
   const handleUpdateRole = async (
     userId: string,
-    newRole: "admin" | "user"
+    newRole: "admin" | "user",
   ) => {
     try {
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
       );
 
       const response = await fetch("/api/admin/users", {
@@ -147,7 +147,7 @@ export default function AdminUsers() {
   const handleUpdateStatus = async (userId: string, approved: boolean) => {
     try {
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
       );
 
       const response = await fetch("/api/admin/users", {
@@ -174,7 +174,7 @@ export default function AdminUsers() {
   const handleDeleteUser = async (userId: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone."
+        "Are you sure you want to delete this user? This action cannot be undone.",
       )
     ) {
       return;
@@ -182,7 +182,7 @@ export default function AdminUsers() {
 
     try {
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
       );
 
       const response = await fetch("/api/admin/users", {
@@ -348,7 +348,7 @@ export default function AdminUsers() {
                       onChange={(e) =>
                         handleUpdateRole(
                           userItem.id,
-                          e.target.value as "admin" | "user"
+                          e.target.value as "admin" | "user",
                         )
                       }
                       disabled={userItem.loading || userItem.id === user?.id} // Prevent self-role change
@@ -367,7 +367,7 @@ export default function AdminUsers() {
                         onChange={(e) =>
                           handleUpdateStatus(
                             userItem.id,
-                            e.target.value === "approved"
+                            e.target.value === "approved",
                           )
                         }
                         disabled={userItem.loading || userItem.id === user?.id} // Prevent self-status change

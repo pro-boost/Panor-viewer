@@ -122,7 +122,7 @@
     "allowToChangeInstallationDirectory": true,
     "deleteAppDataOnUninstall": false,
     "installerIcon": "public/icons/panorama-viewer-icon-multi.ico",
-      "uninstallerIcon": "public/icons/panorama-viewer-icon-multi.ico",
+    "uninstallerIcon": "public/icons/panorama-viewer-icon-multi.ico",
     "displayLanguageSelector": false,
     "createDesktopShortcut": true,
     "createStartMenuShortcut": true

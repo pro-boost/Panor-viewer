@@ -1,4 +1,4 @@
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent } from "react";
 
 interface SelectedFiles {
   csv: File | null;
@@ -17,10 +17,13 @@ interface ExistingFiles {
   poi: string | null;
 }
 
-export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles) => {
+export const useFileManager = (
+  isEditMode: boolean,
+  existingFiles: ExistingFiles,
+) => {
   const [selectedFiles, setSelectedFiles] = useState<SelectedFiles>({
     csv: null,
-    images: []
+    images: [],
   });
   const [poiFile, setPOIFile] = useState<File | null>(null);
   const [duplicateImages, setDuplicateImages] = useState<DuplicateImage[]>([]);
@@ -28,21 +31,21 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
   // Validation functions
   const validateCSVFile = (file: File): string[] => {
     const errors: string[] = [];
-    if (file.name !== 'pano-poses.csv') {
+    if (file.name !== "pano-poses.csv") {
       errors.push('CSV file must be named exactly "pano-poses.csv"');
     }
-    if (!file.type.includes('csv') && !file.name.endsWith('.csv')) {
-      errors.push('File must be a valid CSV file');
+    if (!file.type.includes("csv") && !file.name.endsWith(".csv")) {
+      errors.push("File must be a valid CSV file");
     }
     return errors;
   };
 
   const validateImageFiles = (files: File[]): string[] => {
     const errors: string[] = [];
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png"];
 
     if (files.length === 0) {
-      errors.push('At least one image file is required');
+      errors.push("At least one image file is required");
       return errors;
     }
 
@@ -52,7 +55,7 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
       // Check file type
       if (!allowedTypes.includes(file.type)) {
         errors.push(
-          `Image ${index + 1} (${file.name}): Only JPEG and PNG files are allowed`
+          `Image ${index + 1} (${file.name}): Only JPEG and PNG files are allowed`,
         );
       }
 
@@ -70,7 +73,7 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
     if (!isEditMode || existingFiles.images.length === 0) return [];
 
     const duplicates: DuplicateImage[] = [];
-    newFiles.forEach(file => {
+    newFiles.forEach((file) => {
       if (existingFiles.images.includes(file.name)) {
         duplicates.push({
           name: file.name,
@@ -84,19 +87,19 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
   };
 
   const removeDuplicateImages = () => {
-    const duplicateNames = new Set(duplicateImages.map(img => img.name));
+    const duplicateNames = new Set(duplicateImages.map((img) => img.name));
     const filteredImages = selectedFiles.images.filter(
-      file => !duplicateNames.has(file.name)
+      (file) => !duplicateNames.has(file.name),
     );
 
-    setSelectedFiles(prev => ({ ...prev, images: filteredImages }));
+    setSelectedFiles((prev) => ({ ...prev, images: filteredImages }));
     setDuplicateImages([]);
 
     // Update the file input
-    const imagesInput = document.getElementById('images') as HTMLInputElement;
+    const imagesInput = document.getElementById("images") as HTMLInputElement;
     if (imagesInput) {
       const dt = new DataTransfer();
-      filteredImages.forEach(file => dt.items.add(file));
+      filteredImages.forEach((file) => dt.items.add(file));
       imagesInput.files = dt.files;
     }
   };
@@ -105,9 +108,9 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
     const { name, files } = event.target;
     setDuplicateImages([]);
 
-    if (name === 'csv' && files && files[0]) {
-      setSelectedFiles(prev => ({ ...prev, csv: files[0] }));
-    } else if (name === 'images' && files) {
+    if (name === "csv" && files && files[0]) {
+      setSelectedFiles((prev) => ({ ...prev, csv: files[0] }));
+    } else if (name === "images" && files) {
       const fileArray = Array.from(files);
       const duplicates = detectDuplicateImages(fileArray);
 
@@ -115,7 +118,7 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
         setDuplicateImages(duplicates);
       }
 
-      setSelectedFiles(prev => ({ ...prev, images: fileArray }));
+      setSelectedFiles((prev) => ({ ...prev, images: fileArray }));
     }
   };
 
@@ -173,6 +176,6 @@ export const useFileManager = (isEditMode: boolean, existingFiles: ExistingFiles
     validateImageFiles,
     detectDuplicateImages,
     getFileValidationErrors,
-    hasRequiredFiles
+    hasRequiredFiles,
   };
 };

@@ -21,12 +21,14 @@ The centralized credentials system has been successfully implemented and is read
 ## 🔧 Current Configuration
 
 ### Credential Server
+
 - **URL**: `https://panorama-credential-server-ind8d68x4-primezones-projects.vercel.app`
 - **Platform**: Vercel
 - **API Secret**: `nuqf5CT6dXSLLcVD3NpVGZV3c6TvCg9jN7VwmflxJMJQTIPSAXvblENy2An3FXMZ`
 - **Supabase Project**: `cbiuoycuwnxjjkqqydut.supabase.co`
 
 ### Security Features
+
 - ✅ HTTPS-only communication
 - ✅ Bearer token authentication
 - ✅ Rate limiting (10 requests/minute per IP)
@@ -35,6 +37,7 @@ The centralized credentials system has been successfully implemented and is read
 - ✅ Request timeout (10 seconds)
 
 ### Caching & Offline Support
+
 - ✅ 24-hour credential caching
 - ✅ Automatic cache invalidation
 - ✅ Offline fallback to cached credentials
@@ -43,11 +46,13 @@ The centralized credentials system has been successfully implemented and is read
 ## 📁 Modified Files
 
 ### Core Implementation
+
 1. **`desktop/server.js`** - Added credential fetching, caching, and server startup logic
 2. **`electron-builder.json`** - Added credential server URL to build metadata
 3. **`package.json`** - Added new build and test scripts
 
 ### New Files
+
 1. **`scripts/test-credentials.js`** - Test script for credential server connectivity
 2. **`scripts/build-with-credentials.js`** - Build script with credential server configuration
 3. **`docs/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md`** - This documentation
@@ -55,12 +60,14 @@ The centralized credentials system has been successfully implemented and is read
 ## 🚀 Usage Instructions
 
 ### Testing Credential Server
+
 ```bash
 # Test credential server connectivity
 npm run test:credentials
 ```
 
 ### Building Desktop App
+
 ```bash
 # Build with centralized credentials (recommended)
 npm run desktop:build:credentials
@@ -70,6 +77,7 @@ npm run desktop:build
 ```
 
 ### Environment Variables (Optional)
+
 You can override the default configuration by setting these environment variables:
 
 ```bash
@@ -80,6 +88,7 @@ export CREDENTIAL_API_SECRET="your-custom-secret"
 ## 🔍 How It Works
 
 ### 1. Desktop App Startup
+
 1. App starts and needs to launch the Next.js server
 2. `getCredentials()` function is called
 3. Checks for valid cached credentials first
@@ -88,24 +97,26 @@ export CREDENTIAL_API_SECRET="your-custom-secret"
 6. Server starts with fetched Supabase credentials
 
 ### 2. Credential Fetching Process
+
 ```javascript
 // Simplified flow
 async function getCredentials() {
   // 1. Try cache first
   const cached = loadCachedCredentials();
   if (cached && !expired) return cached;
-  
+
   // 2. Fetch from server
   const fresh = await fetchCredentials();
-  
+
   // 3. Cache for future use
   cacheCredentials(fresh);
-  
+
   return fresh;
 }
 ```
 
 ### 3. Fallback Strategy
+
 - **Primary**: Fetch from credential server
 - **Secondary**: Use cached credentials (even if expired)
 - **Tertiary**: Fail gracefully with error message
@@ -113,6 +124,7 @@ async function getCredentials() {
 ## 🛡️ Security Considerations
 
 ### ✅ Implemented Security Measures
+
 1. **HTTPS Only**: All communication encrypted
 2. **API Authentication**: Bearer token required
 3. **Rate Limiting**: Prevents abuse (10 req/min per IP)
@@ -122,6 +134,7 @@ async function getCredentials() {
 7. **Credential Rotation Ready**: Server can update credentials anytime
 
 ### 🔒 Additional Security Options (Available)
+
 The implementation supports these advanced security features:
 
 1. **Device Registration**: Track and control device access
@@ -132,12 +145,16 @@ The implementation supports these advanced security features:
 ## 📊 Monitoring & Maintenance
 
 ### Health Checks
+
 The credential server provides health endpoints:
+
 - `GET /health` - Server health status
 - `GET /api/stats` - Usage statistics (if implemented)
 
 ### Logs & Debugging
+
 The desktop app logs credential operations:
+
 ```
 ✅ Using cached credentials
 ✅ Fetching credentials from server...
@@ -147,6 +164,7 @@ The desktop app logs credential operations:
 ```
 
 ### Cache Management
+
 Credential cache location: `~/.panorama-viewer/credentials-cache.json`
 
 ```json
@@ -168,12 +186,14 @@ Credential cache location: `~/.panorama-viewer/credentials-cache.json`
 ## 🎯 Benefits Achieved
 
 ### For Users
+
 - ✅ **Zero Configuration**: Install and run, no setup required
 - ✅ **Offline Support**: Works without internet (cached credentials)
 - ✅ **Automatic Updates**: Credentials update automatically
 - ✅ **Seamless Experience**: No manual credential entry
 
 ### For Developers/Admins
+
 - ✅ **Centralized Control**: Update credentials server-side
 - ✅ **Secure Distribution**: No secrets in app binaries
 - ✅ **Scalable**: Handle unlimited app installations
@@ -200,6 +220,7 @@ Credential cache location: `~/.panorama-viewer/credentials-cache.json`
    - Ensure Bearer token format is correct
 
 ### Debug Commands
+
 ```bash
 # Test credential server
 npm run test:credentials

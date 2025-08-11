@@ -1,42 +1,55 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, ReactNode } from 'react';
-import { usePanoramaViewer, UsePanoramaViewerReturn } from '@/hooks/usePanoramaViewer';
-import { useSceneManager } from '@/hooks/useSceneManager';
-import { useHotspotManager } from '@/hooks/useHotspotManager';
-import { usePerformanceManager } from '@/hooks/usePerformanceManager';
-import { useViewerEvents } from '@/hooks/useViewerEvents';
-import { useNavigation, UseNavigationReturn } from '@/hooks/useNavigation';
-import { ConfigData } from '@/types/scenes';
+import React, { createContext, useContext, ReactNode } from "react";
+import {
+  usePanoramaViewer,
+  UsePanoramaViewerReturn,
+} from "@/hooks/usePanoramaViewer";
+import { useSceneManager } from "@/hooks/useSceneManager";
+import { useHotspotManager } from "@/hooks/useHotspotManager";
+import { usePerformanceManager } from "@/hooks/usePerformanceManager";
+import { useViewerEvents } from "@/hooks/useViewerEvents";
+import { useNavigation, UseNavigationReturn } from "@/hooks/useNavigation";
+import { ConfigData } from "@/types/scenes";
 
 // Context interface
 export interface PanoramaContextValue {
   // Core panorama viewer
   panoramaViewer: UsePanoramaViewerReturn;
-  
+
   // Scene management
   sceneManager: {
     calculateSceneDistance: (scene1: string, scene2: string) => number;
     updatePerformanceStats: () => void;
-    loadScene: (sceneId: string, priority?: 'high' | 'normal' | 'low') => Promise<void>;
-    loadSceneWithProgressiveQuality: (sceneId: string, targetQuality?: number) => Promise<void>;
+    loadScene: (
+      sceneId: string,
+      priority?: "high" | "normal" | "low",
+    ) => Promise<void>;
+    loadSceneWithProgressiveQuality: (
+      sceneId: string,
+      targetQuality?: number,
+    ) => Promise<void>;
     switchScene: (
       sceneId: string,
       isInitial: boolean,
       preserveViewDirection: boolean,
-      clearHotspotsForScene: (sceneInfo: import("@/types/scenes").SceneInfo) => void,
-      createHotspotsForScene: (sceneInfo: import("@/types/scenes").SceneInfo) => void,
-      preloadAdjacentScenes: (sceneId: string) => Promise<void>
+      clearHotspotsForScene: (
+        sceneInfo: import("@/types/scenes").SceneInfo,
+      ) => void,
+      createHotspotsForScene: (
+        sceneInfo: import("@/types/scenes").SceneInfo,
+      ) => void,
+      preloadAdjacentScenes: (sceneId: string) => Promise<void>,
     ) => Promise<void>;
   };
-  
+
   // Hotspot management
   hotspotManager: {
     clearHotspotsForScene: (sceneInfo: any) => void;
     createHotspotsForScene: (sceneInfo: any) => void;
     toggleHotspots: () => void;
   };
-  
+
   // Performance management
   performanceManager: {
     preloadAdjacentScenes: (sceneId: string) => Promise<void>;
@@ -44,10 +57,10 @@ export interface PanoramaContextValue {
     unloadDistantScenes: (currentSceneId: string) => Promise<void>;
     getEstimatedMemoryUsage: () => Promise<number>;
   };
-  
+
   // Navigation
   navigation: UseNavigationReturn;
-  
+
   // Initialization
   initializeViewer: () => Promise<void>;
 }
@@ -66,7 +79,7 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
   // Initialize all hooks
   const panoramaViewer = usePanoramaViewer();
   const navigation = useNavigation();
-  
+
   // Initialize scene manager
   const sceneManager = useSceneManager({
     refs: panoramaViewer.refs,
@@ -75,14 +88,14 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
     currentViewParams: panoramaViewer.state.currentViewParams,
     projectId: navigation.getCurrentProject() || undefined,
   });
-  
+
   // Initialize hotspot manager
   const hotspotManager = useHotspotManager({
     refs: panoramaViewer.refs,
     actions: panoramaViewer.actions,
     hotspotsVisible: panoramaViewer.state.hotspotsVisible,
   });
-  
+
   // Initialize performance manager
   const performanceManager = usePerformanceManager({
     refs: panoramaViewer.refs,
@@ -94,26 +107,26 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
     clearHotspotsForScene: hotspotManager.clearHotspotsForScene,
     projectId: navigation.getCurrentProject() || undefined,
   });
-  
+
   // Initialize viewer events
   const initializeViewer = async () => {
     try {
-      console.log('Initializing panorama viewer...');
-      
+      console.log("Initializing panorama viewer...");
+
       // Set config if provided
       if (config) {
         panoramaViewer.actions.setConfig(config);
       }
-      
+
       // Additional initialization logic can be added here
-      console.log('Panorama viewer initialized successfully');
+      console.log("Panorama viewer initialized successfully");
     } catch (error) {
-      console.error('Failed to initialize panorama viewer:', error);
-      panoramaViewer.actions.setError('Failed to initialize viewer');
+      console.error("Failed to initialize panorama viewer:", error);
+      panoramaViewer.actions.setError("Failed to initialize viewer");
       throw error;
     }
   };
-  
+
   useViewerEvents({
     refs: panoramaViewer.refs,
     actions: panoramaViewer.actions,
@@ -122,7 +135,7 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
     toggleHotspots: hotspotManager.toggleHotspots,
     initializeViewer,
   });
-  
+
   // Context value
   const contextValue: PanoramaContextValue = {
     panoramaViewer,
@@ -132,7 +145,7 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
     navigation,
     initializeViewer,
   };
-  
+
   return (
     <PanoramaContext.Provider value={contextValue}>
       {children}
@@ -143,11 +156,13 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
 // Hook to use the context
 export function usePanoramaContext(): PanoramaContextValue {
   const context = useContext(PanoramaContext);
-  
+
   if (!context) {
-    throw new Error('usePanoramaContext must be used within a PanoramaProvider');
+    throw new Error(
+      "usePanoramaContext must be used within a PanoramaProvider",
+    );
   }
-  
+
   return context;
 }
 

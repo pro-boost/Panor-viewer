@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export const useValidation = () => {
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -19,11 +19,11 @@ export const useValidation = () => {
   };
 
   const addValidationError = (error: string) => {
-    setValidationErrors(prev => [...prev, error]);
+    setValidationErrors((prev) => [...prev, error]);
   };
 
   const addValidationErrors = (errors: string[]) => {
-    setValidationErrors(prev => [...prev, ...errors]);
+    setValidationErrors((prev) => [...prev, ...errors]);
   };
 
   const setValidationErrorsFromArray = (errors: string[]) => {
@@ -43,7 +43,7 @@ export const useValidation = () => {
     hasRequiredFiles: boolean,
     fileValidationErrors: string[],
     projectNameValidator: (name: string) => string[],
-    csvFile?: File
+    csvFile?: File,
   ): Promise<boolean> => {
     return new Promise((resolve) => {
       const allErrors: string[] = [];
@@ -54,7 +54,9 @@ export const useValidation = () => {
 
       // Validate required files
       if (!hasRequiredFiles) {
-        allErrors.push('Please select required files (CSV and at least one image).');
+        allErrors.push(
+          "Please select required files (CSV and at least one image).",
+        );
       }
 
       // Add file validation errors
@@ -73,24 +75,36 @@ export const useValidation = () => {
     });
   };
 
-  const validateCSVContent = (csvFile: File, errors: string[]): Promise<void> => {
+  const validateCSVContent = (
+    csvFile: File,
+    errors: string[],
+  ): Promise<void> => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target?.result as string;
         if (content) {
-          const lines = content.split('\n');
+          const lines = content.split("\n");
           if (lines.length > 0) {
             const header = lines[0].toLowerCase();
             const requiredColumns = [
-              'filename',
-              'pano_pos_x', 'pano_pos_y', 'pano_pos_z',
-              'pano_ori_w', 'pano_ori_x', 'pano_ori_y', 'pano_ori_z'
+              "filename",
+              "pano_pos_x",
+              "pano_pos_y",
+              "pano_pos_z",
+              "pano_ori_w",
+              "pano_ori_x",
+              "pano_ori_y",
+              "pano_ori_z",
             ];
-            
-            const missingColumns = requiredColumns.filter(col => !header.includes(col));
+
+            const missingColumns = requiredColumns.filter(
+              (col) => !header.includes(col),
+            );
             if (missingColumns.length > 0) {
-              errors.push(`CSV file is missing required columns: ${missingColumns.join(', ')}. Please ensure your CSV includes position (pano_pos_x, pano_pos_y, pano_pos_z) and orientation (pano_ori_w, pano_ori_x, pano_ori_y, pano_ori_z) columns.`);
+              errors.push(
+                `CSV file is missing required columns: ${missingColumns.join(", ")}. Please ensure your CSV includes position (pano_pos_x, pano_pos_y, pano_pos_z) and orientation (pano_ori_w, pano_ori_x, pano_ori_y, pano_ori_z) columns.`,
+              );
             }
           }
         }
@@ -111,48 +125,54 @@ export const useValidation = () => {
       return errorData.message;
     } else if (status === 409) {
       setValidationErrors([
-        `Error: Project name "${errorData.projectName || 'unknown'}" already exists`,
-        'Please choose a different name or edit the existing project',
+        `Error: Project name "${errorData.projectName || "unknown"}" already exists`,
+        "Please choose a different name or edit the existing project",
       ]);
       return null;
     } else if (status === 400) {
       setValidationErrors([
-        'Error: Invalid project name',
-        'Project names can only contain letters, numbers, spaces, hyphens, and underscores',
+        "Error: Invalid project name",
+        "Project names can only contain letters, numbers, spaces, hyphens, and underscores",
       ]);
       return null;
     }
-    
-    return `Upload failed: ${errorData.error || errorData.message || 'Unknown error'}`;
+
+    return `Upload failed: ${errorData.error || errorData.message || "Unknown error"}`;
   };
 
   const getErrorSummary = (): string => {
-    if (validationErrors.length === 0) return '';
-    
-    return `Please fix ${validationErrors.length} validation error${validationErrors.length > 1 ? 's' : ''}`;
+    if (validationErrors.length === 0) return "";
+
+    return `Please fix ${validationErrors.length} validation error${validationErrors.length > 1 ? "s" : ""}`;
   };
 
   const getDuplicateSummary = (duplicateImagesCount: number): string => {
-    const totalDuplicates = Math.max(duplicateImagesCount, duplicateWarning.length);
-    if (totalDuplicates === 0) return '';
-    
-    return `${totalDuplicates} duplicate file${totalDuplicates > 1 ? 's' : ''} detected`;
+    const totalDuplicates = Math.max(
+      duplicateImagesCount,
+      duplicateWarning.length,
+    );
+    if (totalDuplicates === 0) return "";
+
+    return `${totalDuplicates} duplicate file${totalDuplicates > 1 ? "s" : ""} detected`;
   };
 
   const isSubmitDisabled = (): boolean => {
     return hasValidationErrors();
   };
 
-  const getSubmitButtonText = (isLoading: boolean, isEditMode: boolean): string => {
+  const getSubmitButtonText = (
+    isLoading: boolean,
+    isEditMode: boolean,
+  ): string => {
     if (hasValidationErrors() && !isLoading) {
-      return 'Fix errors to continue';
+      return "Fix errors to continue";
     }
-    
+
     if (isLoading) {
-      return isEditMode ? 'Updating Project...' : 'Uploading and Generating...';
+      return isEditMode ? "Updating Project..." : "Uploading and Generating...";
     }
-    
-    return isEditMode ? 'Update Project' : 'Upload and Generate';
+
+    return isEditMode ? "Update Project" : "Upload and Generate";
   };
 
   return {
@@ -176,6 +196,6 @@ export const useValidation = () => {
     getErrorSummary,
     getDuplicateSummary,
     isSubmitDisabled,
-    getSubmitButtonText
+    getSubmitButtonText,
   };
 };

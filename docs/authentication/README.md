@@ -5,8 +5,10 @@ This folder contains all documentation related to authentication, security, and 
 ## Files in this folder:
 
 ### AUTHENTICATION.md
+
 **Purpose**: Comprehensive guide to the authentication system
 **Contents**:
+
 - Password-based authentication with bcrypt hashing
 - Session-based authentication with configurable timeout
 - IP-based login attempt tracking and lockout protection
@@ -14,8 +16,10 @@ This folder contains all documentation related to authentication, security, and 
 - Initial setup instructions
 
 ### SUPABASE_AUTH.md
+
 **Purpose**: Supabase integration guide for authentication
 **Contents**:
+
 - Supabase project setup instructions
 - Environment variable configuration
 - User management and role-based access

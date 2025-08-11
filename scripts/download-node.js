@@ -15,29 +15,33 @@ const NODE_VERSION = "v18.19.0";
 function getPlatformInfo() {
   const platform = process.platform;
   const arch = process.arch;
-  
+
   let nodePlatform, fileExtension, executable;
-  
-  if (platform === 'win32') {
-    nodePlatform = arch === 'x64' ? 'win-x64' : 'win-x86';
-    fileExtension = 'zip';
-    executable = 'node.exe';
-  } else if (platform === 'darwin') {
-    nodePlatform = arch === 'arm64' ? 'darwin-arm64' : 'darwin-x64';
-    fileExtension = 'tar.gz';
-    executable = 'node';
-  } else if (platform === 'linux') {
-    nodePlatform = arch === 'x64' ? 'linux-x64' : 'linux-arm64';
-    fileExtension = 'tar.xz';
-    executable = 'node';
+
+  if (platform === "win32") {
+    nodePlatform = arch === "x64" ? "win-x64" : "win-x86";
+    fileExtension = "zip";
+    executable = "node.exe";
+  } else if (platform === "darwin") {
+    nodePlatform = arch === "arm64" ? "darwin-arm64" : "darwin-x64";
+    fileExtension = "tar.gz";
+    executable = "node";
+  } else if (platform === "linux") {
+    nodePlatform = arch === "x64" ? "linux-x64" : "linux-arm64";
+    fileExtension = "tar.xz";
+    executable = "node";
   } else {
     throw new Error(`Unsupported platform: ${platform}`);
   }
-  
+
   return { nodePlatform, fileExtension, executable };
 }
 
-const { nodePlatform: NODE_PLATFORM, fileExtension: FILE_EXTENSION, executable: NODE_EXECUTABLE } = getPlatformInfo();
+const {
+  nodePlatform: NODE_PLATFORM,
+  fileExtension: FILE_EXTENSION,
+  executable: NODE_EXECUTABLE,
+} = getPlatformInfo();
 const NODE_FILENAME = `node-${NODE_VERSION}-${NODE_PLATFORM}.${FILE_EXTENSION}`;
 const NODE_URL = `https://nodejs.org/dist/${NODE_VERSION}/${NODE_FILENAME}`;
 
@@ -70,7 +74,7 @@ function downloadFile(url, destination) {
         file.close();
         fs.unlinkSync(destination);
         return reject(
-          new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`)
+          new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`),
         );
       }
 
@@ -111,57 +115,59 @@ function extractNodeExecutable(archivePath, outputPath) {
   console.log(`Extracting ${NODE_EXECUTABLE}...`);
 
   try {
-    if (FILE_EXTENSION === 'zip') {
+    if (FILE_EXTENSION === "zip") {
       // Handle ZIP files (Windows)
       const zip = new AdmZip(archivePath);
       const entries = zip.getEntries();
 
       // Find node.exe in the zip
       const nodeEntry = entries.find((entry) =>
-        entry.entryName.endsWith(NODE_EXECUTABLE)
+        entry.entryName.endsWith(NODE_EXECUTABLE),
       );
 
       if (!nodeEntry) {
-        throw new Error(`${NODE_EXECUTABLE} not found in the downloaded archive`);
+        throw new Error(
+          `${NODE_EXECUTABLE} not found in the downloaded archive`,
+        );
       }
 
       // Extract node executable
       const nodeBuffer = nodeEntry.getData();
       fs.writeFileSync(outputPath, nodeBuffer);
-      
+
       // Make executable on Unix-like systems
-      if (process.platform !== 'win32') {
+      if (process.platform !== "win32") {
         fs.chmodSync(outputPath, 0o755);
       }
     } else {
       // Handle TAR.GZ and TAR.XZ files (macOS/Linux)
-      const { execSync } = require('child_process');
-      const extractDir = path.join(TEMP_DIR, 'extract');
-      
+      const { execSync } = require("child_process");
+      const extractDir = path.join(TEMP_DIR, "extract");
+
       // Create extraction directory
       if (!fs.existsSync(extractDir)) {
         fs.mkdirSync(extractDir, { recursive: true });
       }
-      
+
       // Extract archive
-      if (FILE_EXTENSION === 'tar.gz') {
+      if (FILE_EXTENSION === "tar.gz") {
         execSync(`tar -xzf "${archivePath}" -C "${extractDir}"`);
-      } else if (FILE_EXTENSION === 'tar.xz') {
+      } else if (FILE_EXTENSION === "tar.xz") {
         execSync(`tar -xJf "${archivePath}" -C "${extractDir}"`);
       }
-      
+
       // Find the node executable in the extracted files
       const extractedNodePath = findNodeExecutable(extractDir);
       if (!extractedNodePath) {
         throw new Error(`${NODE_EXECUTABLE} not found in extracted archive`);
       }
-      
+
       // Copy to final location
       fs.copyFileSync(extractedNodePath, outputPath);
-      
+
       // Make executable
       fs.chmodSync(outputPath, 0o755);
-      
+
       // Cleanup extraction directory
       fs.rmSync(extractDir, { recursive: true, force: true });
     }
@@ -177,16 +183,18 @@ function extractNodeExecutable(archivePath, outputPath) {
  */
 function findNodeExecutable(dir) {
   const files = fs.readdirSync(dir, { recursive: true });
-  
+
   for (const file of files) {
     const fullPath = path.join(dir, file);
-    if (fs.statSync(fullPath).isFile() && 
-        (path.basename(fullPath) === NODE_EXECUTABLE) &&
-        fullPath.includes('/bin/')) {
+    if (
+      fs.statSync(fullPath).isFile() &&
+      path.basename(fullPath) === NODE_EXECUTABLE &&
+      fullPath.includes("/bin/")
+    ) {
       return fullPath;
     }
   }
-  
+
   return null;
 }
 
@@ -226,7 +234,7 @@ async function downloadAndSetupNode() {
     if (fs.existsSync(NODE_EXECUTABLE_PATH)) {
       const stats = fs.statSync(NODE_EXECUTABLE_PATH);
       console.log(
-        `✓ Node.js runtime ready (${(stats.size / 1024 / 1024).toFixed(1)} MB)`
+        `✓ Node.js runtime ready (${(stats.size / 1024 / 1024).toFixed(1)} MB)`,
       );
       console.log(`✓ Location: ${NODE_EXECUTABLE_PATH}`);
     } else {

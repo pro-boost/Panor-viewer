@@ -133,7 +133,6 @@
 .actionIcon {
   width: var(--spacing-lg);
   height: var(--spacing-lg);
-
 }
 
 .actionButton.deleteButton {

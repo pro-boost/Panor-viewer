@@ -22,7 +22,7 @@ const PanoramaViewer = dynamic(
         <div>Loading panoramas...</div>
       </div>
     ),
-  }
+  },
 );
 
 interface ConfigData {
@@ -80,7 +80,7 @@ export default function Home(): ReactElement {
           `/api/projects/${encodeURIComponent(projectId)}/config`,
           {
             cache: "no-store",
-          }
+          },
         );
         imagePathPrefix = `/${projectId}`;
       } else {
@@ -107,7 +107,7 @@ export default function Home(): ReactElement {
       // Check if actual image files exist by testing the first few scenes
       const testScenes = configData.scenes.slice(
         0,
-        Math.min(3, configData.scenes.length)
+        Math.min(3, configData.scenes.length),
       );
       let imageExists = false;
 
@@ -329,7 +329,7 @@ export default function Home(): ReactElement {
                           <img
                             src={FileURLManager.getPanoramaImageURL(
                               project.id,
-                              `${project.firstSceneId}-pano.jpg`
+                              `${project.firstSceneId}-pano.jpg`,
                             )}
                             alt={`${project.name} thumbnail`}
                             className={styles.projectThumbnailImage}

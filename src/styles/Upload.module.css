@@ -1,4 +1,3 @@
-
 /* ===================================
    MAIN CONTAINER
    =================================== */
@@ -10,7 +9,7 @@
   padding: var(--spacing-2xl);
   position: relative;
   color: var(--text-primary);
-  background-image: url('/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg');
+  background-image: url("/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -19,14 +18,23 @@
 
 /* Animated background effect */
 .container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(66, 153, 225, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(66, 153, 225, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(16, 185, 129, 0.1) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   opacity: 0.5;
 }
@@ -129,9 +137,9 @@
   font-size: var(--font-sm);
   padding: var(--spacing-md) var(--spacing-lg);
   margin-bottom: 1.5rem;
-    margin-left: 1rem;
+  margin-left: 1rem;
   background: var(--glass-bg);
-  border: 1px solid rgba(255, 255, 255, 0.284); ;
+  border: 1px solid rgba(255, 255, 255, 0.284);
   border-radius: var(--radius-full);
   transition: var(--transition-base);
   backdrop-filter: blur(10px);
@@ -142,7 +150,7 @@
   border-color: var(--glass-border-hover);
   transform: translateX(-4px);
   box-shadow: var(--shadow-md);
-      cursor: pointer;
+  cursor: pointer;
 }
 
 .backLink:focus-visible {
@@ -157,7 +165,11 @@
   font-size: var(--font-3xl);
   font-weight: 700;
   margin: var(--spacing-2xl) 0;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--text-primary) 0%,
+    var(--text-secondary) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -183,13 +195,17 @@
 
 /* Glass shine effect */
 .form::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 70%
+  );
   transform: rotate(45deg);
   pointer-events: none;
 }
@@ -399,11 +415,11 @@
   padding: var(--spacing-xs) 0;
   color: var(--text-tertiary);
   font-size: var(--font-sm);
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
 }
 
 .fileListItems li::before {
-  content: '📄';
+  content: "📄";
   position: absolute;
   left: calc(var(--spacing-xl) * -1);
 }
@@ -414,7 +430,11 @@
 .submitButton {
   width: 100%;
   padding: var(--spacing-lg) var(--spacing-xl);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   border: none;
   border-radius: var(--radius-lg);
   color: white;
@@ -434,13 +454,18 @@
 }
 
 .submitButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -518,7 +543,11 @@
 }
 
 .overwriteButton {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--warning) 0%,
+    var(--warning-dark) 100%
+  );
   color: white;
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
   position: relative;
@@ -526,13 +555,18 @@
 }
 
 .overwriteButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -549,7 +583,11 @@
 .clearButton,
 .deleteAllButton,
 .removeDuplicatesButton {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--danger) 0%,
+    var(--danger-dark) 100%
+  );
   color: white;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
   position: relative;
@@ -559,13 +597,18 @@
 .clearButton::before,
 .deleteAllButton::before,
 .removeDuplicatesButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -591,12 +634,10 @@
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-border-top-color: white;
-border-radius: 50%;
-animation: spin 1s linear infinite;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
-
-
 
 @keyframes spin {
   to {
@@ -633,7 +674,7 @@ animation: spin 1s linear infinite;
   color: var(--success);
   font-size: var(--font-lg);
   font-weight: 700;
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
 }
 
 .progressBar {
@@ -647,7 +688,11 @@ animation: spin 1s linear infinite;
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   border-radius: var(--radius-full);
   transition: width 0.3s ease;
   position: relative;
@@ -655,19 +700,28 @@ animation: spin 1s linear infinite;
 }
 
 .progressFill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
   animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .progressDetails {
@@ -860,7 +914,7 @@ animation: spin 1s linear infinite;
 }
 
 .duplicateList li {
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
   background: rgba(245, 158, 11, 0.1);
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-md);
@@ -933,8 +987,6 @@ animation: spin 1s linear infinite;
   border-radius: 50%;
 }
 
-
-
 /* ===================================
    SUCCESS ACTIONS
    =================================== */
@@ -948,7 +1000,11 @@ animation: spin 1s linear infinite;
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg) var(--spacing-2xl);
-  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success) 0%,
+    var(--success-dark) 100%
+  );
   color: white;
   text-decoration: none;
   border-radius: var(--radius-lg);
@@ -962,13 +1018,18 @@ animation: spin 1s linear infinite;
 }
 
 .viewPanoramasButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -1112,7 +1173,11 @@ animation: spin 1s linear infinite;
 .overwriteOptions {
   margin-top: var(--spacing-xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.05) 0%,
+    rgba(245, 158, 11, 0.1) 100%
+  );
   border-radius: var(--radius-lg);
   border: 2px solid rgba(245, 158, 11, 0.3);
   backdrop-filter: blur(10px);
@@ -1236,8 +1301,6 @@ animation: spin 1s linear infinite;
   border-bottom: none;
 }
 
-
-
 /* ===================================
    ANIMATIONS
    =================================== */
@@ -1275,8 +1338,6 @@ animation: spin 1s linear infinite;
   z-index: 10;
 }
 
-
-
 /* ===================================
    RESPONSIVE DESIGN
    =================================== */
@@ -1284,29 +1345,27 @@ animation: spin 1s linear infinite;
   .container {
     padding: var(--spacing-xl);
   }
-  
+
   .content {
     padding: var(--spacing-2xl) var(--spacing-xl);
   }
-  
+
   .form {
     padding: var(--spacing-2xl);
   }
 }
 
 @media (max-width: 768px) {
- 
-  
   .container {
     padding: var(--spacing-lg);
     background: var(--bg-primary);
   }
-  
+
   /* Hide animated background on mobile for performance */
   .container::before {
     display: none;
   }
-  
+
   .logoContainer {
     position: static;
     margin-bottom: var(--spacing-xl);
@@ -1314,115 +1373,115 @@ animation: spin 1s linear infinite;
     margin-left: auto;
     margin-right: auto;
   }
-  
+
   .logo {
     height: 48px;
   }
-  
+
   .content {
     padding: var(--spacing-xl) var(--spacing-md);
   }
-  
+
   .header {
     margin-bottom: var(--spacing-2xl);
   }
-  
+
   .backLink {
     font-size: var(--font-sm);
     padding: var(--spacing-sm) var(--spacing-md);
   }
-  
+
   .title {
     font-size: var(--font-2xl);
     margin: var(--spacing-xl) 0;
   }
-  
+
   .form {
     padding: var(--spacing-xl);
     border-radius: var(--radius-xl);
   }
-  
+
   .formGroup {
     margin-bottom: var(--spacing-xl);
   }
-  
+
   .textInput,
   .fileInput {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-base);
   }
-  
+
   .submitButton {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-base);
   }
-  
+
   .fileListHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm);
   }
-  
+
   .toggleButton {
     align-self: flex-start;
   }
-  
+
   /* Stack duplicate action buttons on mobile */
   .duplicateActions {
     gap: var(--spacing-md);
   }
-  
+
   .overwriteButton,
   .clearButton,
   .deleteAllButton {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-base);
   }
-  
+
   /* Simplify progress display on mobile */
   .progressHeader {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-sm);
   }
-  
+
   .progressTitle {
     font-size: var(--font-sm);
     text-align: center;
   }
-  
+
   /* Adjust sections for mobile */
   .fileSummary,
   .instructions {
     padding: var(--spacing-lg);
   }
-  
+
   .sectionTitle {
     font-size: var(--font-lg);
   }
-  
+
   /* Adjust messages for mobile */
   .message {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-sm);
   }
-  
+
   /* Adjust instruction list */
   .instructionsList {
     padding-left: var(--spacing-lg);
   }
-  
+
   .instructionsList li {
     padding-left: var(--spacing-xl);
     font-size: var(--font-sm);
   }
-  
+
   /* Section header responsive */
   .sectionHeader {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .fileSystemInfo {
     flex-direction: column;
     align-items: flex-start;
@@ -1431,36 +1490,34 @@ animation: spin 1s linear infinite;
 }
 
 @media (max-width: 480px) {
-  
-  
   .container {
     padding: var(--spacing-md);
   }
-  
+
   .content {
     padding: var(--spacing-lg) var(--spacing-sm);
   }
-  
+
   .form {
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
   }
-  
+
   .label {
     font-size: var(--font-sm);
   }
-  
+
   .textInput,
   .fileInput {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-sm);
   }
-  
+
   .fileInput::file-selector-button {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 12px;
   }
-  
+
   /* Full width buttons on small screens */
   .submitButton,
   .overwriteButton,
@@ -1471,21 +1528,19 @@ animation: spin 1s linear infinite;
     width: 100%;
     justify-content: center;
   }
-  
+
   /* Reduce section padding on small screens */
   .fileSummary,
   .instructions,
   .overwriteOptions {
     padding: var(--spacing-md);
   }
-  
+
   /* Adjust summary items */
   .summaryItem {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-sm);
   }
-  
-
 }
 
 /* ===================================
@@ -1502,18 +1557,18 @@ animation: spin 1s linear infinite;
   .container {
     background: black;
   }
-  
+
   .form,
   .fileSummary,
   .instructions {
     border-width: 2px;
   }
-  
+
   .textInput,
   .fileInput {
     border-width: 2px;
   }
-  
+
   .message {
     border-left-width: 6px;
   }
@@ -1527,7 +1582,7 @@ animation: spin 1s linear infinite;
     background: white;
     color: black;
   }
-  
+
   .backLink,
   .toggleButton,
   .submitButton,
@@ -1538,7 +1593,7 @@ animation: spin 1s linear infinite;
   .viewPanoramasButton {
     display: none;
   }
-  
+
   .form,
   .message,
   .fileSummary,
@@ -1548,13 +1603,13 @@ animation: spin 1s linear infinite;
     color: black;
     box-shadow: none;
   }
-  
+
   .title {
     background: none;
     -webkit-text-fill-color: black;
     color: black;
   }
-  
+
   .logoContainer {
     position: static;
     border: none;
@@ -1573,7 +1628,7 @@ animation: spin 1s linear infinite;
 /* @media (prefers-color-scheme: light) {
   :root {
     /* Override colors for light mode if needed */
-    /* Currently the design is dark-first 
+/* Currently the design is dark-first 
   }
 } */
 

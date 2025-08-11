@@ -21,7 +21,10 @@ declare namespace Marzipano {
     createScene(options: SceneOptions): Scene;
     destroy(): void;
     view(): RectilinearView;
-    lookTo(params: { yaw: number; pitch: number; fov: number }, options?: { transitionDuration: number }): void;
+    lookTo(
+      params: { yaw: number; pitch: number; fov: number },
+      options?: { transitionDuration: number },
+    ): void;
     addEventListener?(event: string, callback: () => void): void;
     removeEventListener?(event: string, callback: () => void): void;
     stage?: Stage;
@@ -40,7 +43,10 @@ declare namespace Marzipano {
   }
 
   interface HotspotContainer {
-    createHotspot(element: HTMLElement, coords: { yaw: number; pitch: number }): Hotspot;
+    createHotspot(
+      element: HTMLElement,
+      coords: { yaw: number; pitch: number },
+    ): Hotspot;
     destroyHotspot(hotspot: Hotspot): void;
   }
 
@@ -62,7 +68,10 @@ declare namespace Marzipano {
   }
 
   class RectilinearView {
-    constructor(_params: { yaw: number; pitch: number; fov: number }, _limiter?: any);
+    constructor(
+      _params: { yaw: number; pitch: number; fov: number },
+      _limiter?: any,
+    );
     setYaw(_yaw: number): void;
     setPitch(_pitch: number): void;
     setFov(_fov: number): void;

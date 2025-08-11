@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { ReactElement } from 'react';
-import styles from './LoadingScreen.module.css';
+import { ReactElement } from "react";
+import styles from "./LoadingScreen.module.css";
 
 interface LoadingScreenProps {
   error?: string | null;
@@ -21,7 +21,7 @@ export default function LoadingScreen({
           </div>
           <div className={styles.errorMessage}>{error}</div>
 
-          {error.includes('WebGL') && (
+          {error.includes("WebGL") && (
             <div className={styles.helpSection}>
               <div className={styles.helpTitle}>To fix this issue:</div>
               <ul className={styles.helpList}>
@@ -33,24 +33,24 @@ export default function LoadingScreen({
                 <li>Try a different browser (Chrome, Firefox, Edge)</li>
                 <li>Check for laptop overheating or power issues</li>
                 <li>
-                  Test WebGL at{' '}
-                  <a href='https://get.webgl.org/' rel='noopener noreferrer'>
+                  Test WebGL at{" "}
+                  <a href="https://get.webgl.org/" rel="noopener noreferrer">
                     get.webgl.org
                   </a>
                 </li>
               </ul>
               <div className={styles.browserInfo}>
-                Browser:{' '}
-                {typeof navigator !== 'undefined'
+                Browser:{" "}
+                {typeof navigator !== "undefined"
                   ? navigator.userAgent
-                  : 'Unknown'}
+                  : "Unknown"}
               </div>
-              {error.includes('Diagnostics:') && (
+              {error.includes("Diagnostics:") && (
                 <details className={styles.diagnostics}>
                   <summary>Technical Details</summary>
                   <pre className={styles.diagnosticsContent}>
-                    {error.split('Diagnostics: ')[1] ||
-                      'No diagnostics available'}
+                    {error.split("Diagnostics: ")[1] ||
+                      "No diagnostics available"}
                   </pre>
                 </details>
               )}
@@ -58,7 +58,7 @@ export default function LoadingScreen({
                 <button
                   onClick={onRetry}
                   className={styles.retryButton}
-                  type='button'
+                  type="button"
                 >
                   Try Again
                 </button>

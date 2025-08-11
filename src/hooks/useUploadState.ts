@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 export const useUploadState = () => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -9,7 +9,7 @@ export const useUploadState = () => {
   const [deleteAllAndUpload, setDeleteAllAndUpload] = useState(false);
 
   const resetUploadState = () => {
-    setMessage('');
+    setMessage("");
     setUploadSuccess(false);
     setUploadProgress(0);
     setAllowOverwrite(false);
@@ -27,7 +27,7 @@ export const useUploadState = () => {
     setUploadProgress(100);
     setUploadSuccess(success);
     setMessage(finalMessage);
-    
+
     // Reset progress after a delay
     setTimeout(() => setUploadProgress(0), 2000);
   };
@@ -38,7 +38,7 @@ export const useUploadState = () => {
 
   const createProgressInterval = () => {
     return setInterval(() => {
-      setUploadProgress(prev => {
+      setUploadProgress((prev) => {
         if (prev < 90) return prev + Math.random() * 10;
         return prev;
       });
@@ -46,25 +46,25 @@ export const useUploadState = () => {
   };
 
   const getProgressMessage = (progress: number): string => {
-    if (progress < 30) return 'Preparing files...';
-    if (progress < 70) return 'Uploading files...';
-    if (progress < 100) return 'Processing data...';
-    return 'Generating configuration...';
+    if (progress < 30) return "Preparing files...";
+    if (progress < 70) return "Uploading files...";
+    if (progress < 100) return "Processing data...";
+    return "Generating configuration...";
   };
 
   const handleUploadError = (error: any, response?: Response) => {
     setUploadProgress(0);
     setIsLoading(false);
 
-    if (error.name === 'AbortError') {
-      setMessage('Upload was cancelled.');
-    } else if (error.message && error.message.includes('Failed to fetch')) {
-      setMessage('Network error. Please check your connection and try again.');
+    if (error.name === "AbortError") {
+      setMessage("Upload was cancelled.");
+    } else if (error.message && error.message.includes("Failed to fetch")) {
+      setMessage("Network error. Please check your connection and try again.");
     } else {
-      setMessage('An error occurred during upload. Please try again.');
+      setMessage("An error occurred during upload. Please try again.");
     }
 
-    console.error('Upload error:', error);
+    console.error("Upload error:", error);
   };
 
   const handleUploadResponse = async (response: Response) => {
@@ -79,25 +79,25 @@ export const useUploadState = () => {
       throw { status: 409, data: errorData };
     } else if (response.status === 413) {
       setMessage(
-        `Upload failed: ${errorData.error} Try uploading fewer files or reducing file sizes.`
+        `Upload failed: ${errorData.error} Try uploading fewer files or reducing file sizes.`,
       );
     } else if (response.status === 408) {
       setMessage(
-        `Upload timeout: ${errorData.error} Try uploading fewer files at once.`
+        `Upload timeout: ${errorData.error} Try uploading fewer files at once.`,
       );
     } else if (
       response.status === 500 &&
-      errorData.error === 'Configuration generation failed'
+      errorData.error === "Configuration generation failed"
     ) {
       setMessage(
         `Warning: Files uploaded successfully, but configuration generation failed.\n\n` +
           `Error: ${errorData.message}\n\n` +
           `You can try running this command manually:\n` +
-          `${errorData.manualCommand || 'node scripts/node/generate-config.js --project "' + 'PROJECT_ID' + '"'}`
+          `${errorData.manualCommand || 'node scripts/node/generate-config.js --project "' + "PROJECT_ID" + '"'}`,
       );
     } else {
       setMessage(
-        `Upload failed: ${errorData.error || errorData.message || 'Unknown error'}`
+        `Upload failed: ${errorData.error || errorData.message || "Unknown error"}`,
       );
     }
 
@@ -107,13 +107,13 @@ export const useUploadState = () => {
   const showLargeUploadWarning = (totalFiles: number) => {
     if (totalFiles > 10) {
       setMessage(
-        'Large upload detected. This may take several minutes. Please be patient and do not close this page.'
+        "Large upload detected. This may take several minutes. Please be patient and do not close this page.",
       );
     }
   };
 
   const clearState = () => {
-    setMessage('');
+    setMessage("");
     setIsLoading(false);
     setUploadSuccess(false);
     setUploadProgress(0);
@@ -143,6 +143,6 @@ export const useUploadState = () => {
     handleUploadError,
     handleUploadResponse,
     showLargeUploadWarning,
-    clearState
+    clearState,
   };
 };

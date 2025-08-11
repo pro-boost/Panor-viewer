@@ -71,7 +71,7 @@ export default function MiniMap({
         y: deltaX * sin + deltaY * cos,
       };
     },
-    []
+    [],
   );
 
   // Rotation function to correct minimap orientation
@@ -81,7 +81,7 @@ export default function MiniMap({
       y: number,
       centerX: number,
       centerY: number,
-      angleDegrees: number
+      angleDegrees: number,
     ) => {
       const angle = (angleDegrees * Math.PI) / 180;
       const dx = x - centerX;
@@ -95,7 +95,7 @@ export default function MiniMap({
         y: centerY + rotatedY,
       };
     },
-    []
+    [],
   );
 
   // Cache content dimensions
@@ -190,7 +190,7 @@ export default function MiniMap({
       rotateMouseDelta,
       rotationAngle,
       contentDimensions,
-    ]
+    ],
   );
 
   // Handle mouse move for dragging and panning
@@ -226,7 +226,7 @@ export default function MiniMap({
   // Calculate map bounds from actual scene positions for true top-down 2D view
   useEffect(() => {
     const currentFloorScenes = scenes.filter(
-      (scene) => scene.floor === currentScene.floor
+      (scene) => scene.floor === currentScene.floor,
     );
     if (currentFloorScenes.length === 0) return;
 
@@ -302,12 +302,12 @@ export default function MiniMap({
 
       return { x: rotated.x, y: rotated.y };
     },
-    [mapBounds, scenes, rotatePoint, rotationAngle, zoomLevel, panOffset]
+    [mapBounds, scenes, rotatePoint, rotationAngle, zoomLevel, panOffset],
   );
 
   // Get current floor scenes
   const currentFloorScenes = scenes.filter(
-    (scene) => scene.floor === currentScene.floor
+    (scene) => scene.floor === currentScene.floor,
   );
 
   // Calculate distance between two scenes in map coordinates
@@ -317,7 +317,7 @@ export default function MiniMap({
       const dy = scene1.position.y - scene2.position.y;
       return Math.sqrt(dx * dx + dy * dy);
     },
-    []
+    [],
   );
 
   // Filter hotspots based on zoom level and proximity
@@ -381,7 +381,7 @@ export default function MiniMap({
       // Check distance to all already visible scenes
       for (const visibleSceneId of visibleScenes) {
         const visibleScene = currentFloorScenes.find(
-          (s) => s.id === visibleSceneId
+          (s) => s.id === visibleSceneId,
         );
         if (
           visibleScene &&
@@ -441,7 +441,7 @@ export default function MiniMap({
         setDragStartPan({ x: panOffset.x, y: panOffset.y });
       }
     },
-    [position, panOffset]
+    [position, panOffset],
   );
 
   // Handle wheel for zooming with improved pan adjustment
@@ -468,7 +468,7 @@ export default function MiniMap({
         y: Math.max(-maxPanY, Math.min(maxPanY, prev.y)),
       }));
     },
-    [zoomLevel]
+    [zoomLevel],
   );
 
   // Add wheel event listener manually to control passive option
@@ -531,7 +531,7 @@ export default function MiniMap({
         setIsNavigating(false);
       }
     },
-    [onSelectScene, lastClickTime, isNavigating, currentScene.id]
+    [onSelectScene, lastClickTime, isNavigating, currentScene.id],
   );
 
   // Handle minimize toggle
@@ -540,7 +540,7 @@ export default function MiniMap({
       e.stopPropagation();
       setIsMinimized(!isMinimized);
     },
-    [isMinimized]
+    [isMinimized],
   );
 
   // Reset pan and zoom
@@ -556,7 +556,7 @@ export default function MiniMap({
       e.stopPropagation();
       resetView();
     },
-    [resetView]
+    [resetView],
   );
 
   const mapSize = isHovered ? 300 : window.innerWidth <= 768 ? 150 : 200;
@@ -692,14 +692,14 @@ export default function MiniMap({
               <svg className={minimapStyles.connectionLines}>
                 {currentScene.linkHotspots.map((hotspot, index) => {
                   const targetScene = scenes.find(
-                    (s) => s.id === hotspot.target
+                    (s) => s.id === hotspot.target,
                   );
                   if (!targetScene || targetScene.floor !== currentScene.floor)
                     return null;
 
                   // Only show connection if target scene is visible in filtered hotspots
                   const isTargetVisible = visibleHotspots.some(
-                    (scene) => scene.id === hotspot.target
+                    (scene) => scene.id === hotspot.target,
                   );
                   if (!isTargetVisible) return null;
 

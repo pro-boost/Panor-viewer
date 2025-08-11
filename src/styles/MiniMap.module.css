@@ -8,7 +8,10 @@
   border-radius: var(--radius-xl);
   border: 2px solid var(--border-strong);
   z-index: var(--z-minimap);
-  transition: width 0.3s ease, height 0.3s ease, transform 0.2s ease;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease,
+    transform 0.2s ease;
 }
 
 .minimap.dragging {
@@ -17,7 +20,9 @@
 
 .minimap.hovered {
   transform: scale(1.05);
-  transition: width 0.3s ease, height 0.3s ease;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease;
 }
 
 .minimap.minimized {
@@ -48,7 +53,9 @@
 .sceneHotspot {
   position: absolute;
   transform: translate(-50%, -50%);
-  transition: opacity 0.3s ease, transform 0.2s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.2s ease;
   cursor: pointer;
 }
 

@@ -4,7 +4,7 @@ const fs = require("fs");
 
 async function buildElectronApp() {
   console.log(
-    "🚀 Building Electron app with electron-packager (no symbolic link issues)..."
+    "🚀 Building Electron app with electron-packager (no symbolic link issues)...",
   );
 
   // Clean dist directory
@@ -19,7 +19,7 @@ async function buildElectronApp() {
     const standalonePath = path.join(__dirname, "..", ".next", "standalone");
     if (!fs.existsSync(standalonePath)) {
       throw new Error(
-        'Standalone build not found. Run "npm run build:standalone" first.'
+        'Standalone build not found. Run "npm run build:standalone" first.',
       );
     }
 

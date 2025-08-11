@@ -29,7 +29,7 @@ export default function Login() {
     // Check for registration success message
     if (router.query.message === "registration-success") {
       setSuccess(
-        "Registration successful! Your account is pending admin approval."
+        "Registration successful! Your account is pending admin approval.",
       );
     }
   }, [router.query]);

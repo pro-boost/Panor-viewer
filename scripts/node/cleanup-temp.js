@@ -1,14 +1,14 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Script to clean up accumulated temporary files in the tmp directory
  */
 async function cleanupTempDirectory() {
-  const tmpDir = path.join(process.cwd(), 'tmp');
-  
+  const tmpDir = path.join(process.cwd(), "tmp");
+
   if (!fs.existsSync(tmpDir)) {
-    console.log('No tmp directory found. Nothing to clean up.');
+    console.log("No tmp directory found. Nothing to clean up.");
     return;
   }
 
@@ -20,7 +20,7 @@ async function cleanupTempDirectory() {
     for (const file of files) {
       const filePath = path.join(tmpDir, file);
       const stats = await fs.promises.stat(filePath);
-      
+
       if (stats.isFile()) {
         totalSize += stats.size;
         await fs.promises.unlink(filePath);
@@ -33,9 +33,8 @@ async function cleanupTempDirectory() {
     console.log(`\nCleanup completed:`);
     console.log(`- Files removed: ${cleanedCount}`);
     console.log(`- Space freed: ${sizeMB} MB`);
-    
   } catch (error) {
-    console.error('Error during cleanup:', error);
+    console.error("Error during cleanup:", error);
     process.exit(1);
   }
 }

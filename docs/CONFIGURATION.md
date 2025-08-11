@@ -26,13 +26,13 @@ PANORAMA_MAX_CONNECTIONS=6
 
 ### Coordinate System Modes
 
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| `standard` | Default coordinate system | Most panorama datasets |
-| `inverted_x` | X-axis inverted | Some camera systems |
-| `inverted_y` | Y-axis inverted | Alternative orientations |
-| `swapped_xy` | X and Y axes swapped | Rotated coordinate systems |
-| `navvis` | NavVis-style coordinates | NavVis camera systems |
+| Mode         | Description               | Use Case                   |
+| ------------ | ------------------------- | -------------------------- |
+| `standard`   | Default coordinate system | Most panorama datasets     |
+| `inverted_x` | X-axis inverted           | Some camera systems        |
+| `inverted_y` | Y-axis inverted           | Alternative orientations   |
+| `swapped_xy` | X and Y axes swapped      | Rotated coordinate systems |
+| `navvis`     | NavVis-style coordinates  | NavVis camera systems      |
 
 ### Rotation Offsets
 
@@ -106,6 +106,7 @@ Floors are automatically detected by:
 ### Hotspots Point in Wrong Direction
 
 1. Try different coordinate modes:
+
    ```bash
    npm run test:config
    ```
@@ -118,6 +119,7 @@ Floors are automatically detected by:
 ### Hotspots Too High/Low
 
 1. Adjust pitch offset:
+
    ```env
    PANORAMA_PITCH_OFFSET=-10
    ```
@@ -130,6 +132,7 @@ Floors are automatically detected by:
 ### Too Many/Few Connections
 
 1. Adjust maximum distance:
+
    ```env
    PANORAMA_MAX_DISTANCE=15.0
    ```

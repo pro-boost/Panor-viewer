@@ -241,6 +241,7 @@ The application now includes intelligent performance optimizations that automati
 ### Performance Monitor
 
 A real-time performance monitor is available in the top-right corner showing:
+
 - Number of loaded scenes vs total scenes
 - Estimated memory usage
 - Average loading times
@@ -366,11 +367,13 @@ pip install numpy
 **Symptoms**: Laggy navigation, slow loading, or high memory usage
 
 **Automatic Solutions**:
+
 - Smart loading is enabled automatically for large datasets
 - Use the Performance Monitor (top-right corner) to check status
 - Click "Optimize Performance" button for manual cleanup
 
 **Manual Solutions**:
+
 - Reduce image file sizes (compress to 80-90% quality)
 - Navigate gradually between scenes instead of jumping far distances
 - Close other browser tabs to free up memory
@@ -378,6 +381,7 @@ pip install numpy
 - Update graphics drivers for better WebGL performance
 
 **For Large Datasets (100+ scenes)**:
+
 - Performance optimizations are automatically applied
 - Expect 6-16 scenes loaded simultaneously (adaptive)
 - Monitor shows performance status and memory usage
@@ -432,7 +436,7 @@ interface POIData {
   name: string;
   description: string;
   position: { yaw: number; pitch: number };
-  type: 'file' | 'iframe';
+  type: "file" | "iframe";
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -448,6 +452,7 @@ interface POIData {
 ### Project-Specific Storage
 
 POI data is stored per project in the following structure:
+
 ```
 public/
 ├── {projectId}/
@@ -470,12 +475,14 @@ public/
 ### Coordinate System
 
 POIs use spherical coordinates:
+
 - **Yaw**: Horizontal rotation (-180° to 180°)
 - **Pitch**: Vertical rotation (-90° to 90°)
 
 ### Error Handling
 
 The system includes comprehensive error handling for:
+
 - Invalid coordinate ranges
 - File upload failures
 - Network connectivity issues

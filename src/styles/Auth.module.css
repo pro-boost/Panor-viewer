@@ -269,8 +269,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Status card for setup page */
@@ -442,7 +446,7 @@
 }
 
 .requirements li::before {
-  content: '✗';
+  content: "✗";
   position: absolute;
   left: -16px;
   color: var(--red-primary);
@@ -453,26 +457,24 @@
 }
 
 .requirements li.met::before {
-  content: '✓';
+  content: "✓";
   color: var(--green-primary);
 }
-
-
 
 /* Responsive Design */
 @media (max-width: 480px) {
   .container {
     padding: 16px;
   }
-  
+
   .card {
     padding: 24px;
   }
-  
+
   .header h1 {
     font-size: 24px;
   }
-  
+
   .header p {
     font-size: 14px;
   }

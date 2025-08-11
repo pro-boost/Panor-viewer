@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { ReactElement } from 'react';
-import styles from './ControlPanel.module.css';
+import React, { ReactElement } from "react";
+import styles from "./ControlPanel.module.css";
 
 interface ControlButtonProps {
   id: string;

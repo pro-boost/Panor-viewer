@@ -5,8 +5,10 @@ This folder contains documentation specifically for developers working on the pa
 ## Files in this folder:
 
 ### FIXES_AND_IMPROVEMENTS.md
+
 **Purpose**: Complete development history and changelog
 **Contents**:
+
 - Major improvements and enhancements
 - Bug fixes and their solutions
 - Performance optimizations
@@ -15,8 +17,10 @@ This folder contains documentation specifically for developers working on the pa
 - Hook architecture and context providers
 
 ### POI_IMPLEMENTATION_GUIDE.md
+
 **Purpose**: Point of Interest (POI) system implementation
 **Contents**:
+
 - POI system components and architecture
 - Implementation details and code structure
 - Usage instructions and API reference
@@ -24,8 +28,10 @@ This folder contains documentation specifically for developers working on the pa
 - Integration with the panorama viewer
 
 ### CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md
+
 **Purpose**: Centralized credentials system (COMPLETED)
 **Contents**:
+
 - Complete implementation guide
 - Architecture overview and flow diagrams
 - Security features and caching mechanisms
@@ -33,8 +39,10 @@ This folder contains documentation specifically for developers working on the pa
 - Current configuration and server details
 
 ### SECURE_DISTRIBUTION.md
+
 **Purpose**: Secure Electron app distribution
 **Contents**:
+
 - Electron build optimization
 - File inclusion/exclusion rules
 - Security improvements and ASAR packaging

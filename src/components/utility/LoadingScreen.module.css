@@ -1,133 +1,133 @@
 .container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    text-align: center;
-    z-index: 2000;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  text-align: center;
+  z-index: 2000;
 }
 
 .loader {
-    width: 60px;
-    height: 60px;
-    border: 3px solid rgba(255, 255, 255, 0.1);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 20px;
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
 }
 
 .text {
-    font-size: 16px;
+  font-size: 16px;
 }
 
 .error {
-    max-width: 600px;
-    padding: 20px;
+  max-width: 600px;
+  padding: 20px;
 }
 
 .errorTitle {
-    color: #ff6b6b;
-    font-size: 18px;
-    margin-bottom: 20px;
+  color: #ff6b6b;
+  font-size: 18px;
+  margin-bottom: 20px;
 }
 
 .errorMessage {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #fff;
-    opacity: 0.8;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #fff;
+  opacity: 0.8;
 }
 
 .helpSection {
-    margin-top: 20px;
-    text-align: left;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
+  margin-top: 20px;
+  text-align: left;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .helpTitle {
-    font-size: 16px;
-    margin-bottom: 10px;
-    color: white;
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: white;
 }
 
 .helpList {
-    font-size: 14px;
-    line-height: 1.8;
-    padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.8;
+  padding-left: 20px;
 }
 
 .helpList a {
-    color: white;
-    text-decoration: none;
+  color: white;
+  text-decoration: none;
 }
 
 .helpList a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .browserInfo {
-    margin-top: 20px;
-    font-size: 12px;
-    opacity: 0.6;
+  margin-top: 20px;
+  font-size: 12px;
+  opacity: 0.6;
 }
 
 .diagnostics {
-    margin-top: 15px;
-    text-align: left;
+  margin-top: 15px;
+  text-align: left;
 }
 
 .diagnostics summary {
-    cursor: pointer;
-    font-size: 14px;
-    color: #ffd93d;
-    margin-bottom: 10px;
-    user-select: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #ffd93d;
+  margin-bottom: 10px;
+  user-select: none;
 }
 
 .diagnostics summary:hover {
-    color: #ffed4e;
+  color: #ffed4e;
 }
 
 .diagnosticsContent {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 4px;
-    font-size: 11px;
-    color: #ccc;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-    max-height: 200px;
-    overflow-y: auto;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: #ccc;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .retryButton {
-    margin-top: 20px;
-    padding: 12px 24px;
-    background: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .retryButton:hover {
-    background: #45a049;
+  background: #45a049;
 }
 
 .retryButton:active {
-    background: #3d8b40;
+  background: #3d8b40;
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }

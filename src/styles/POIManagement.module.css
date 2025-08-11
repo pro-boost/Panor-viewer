@@ -11,7 +11,7 @@
   padding: var(--spacing-2xl);
   position: relative;
   color: var(--text-primary);
-  background-image: url('/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg');
+  background-image: url("/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -19,14 +19,23 @@
 }
 
 .container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(66, 153, 225, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(66, 153, 225, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(16, 185, 129, 0.1) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   opacity: 0.5;
 }
@@ -93,7 +102,11 @@
   font-size: var(--font-3xl);
   font-weight: 700;
   margin: var(--spacing-2xl) 0;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--text-primary) 0%,
+    var(--text-secondary) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -116,13 +129,17 @@
 }
 
 .form::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 70%
+  );
   transform: rotate(45deg);
   pointer-events: none;
 }
@@ -377,7 +394,11 @@
 .submitButton {
   width: 100%;
   padding: var(--spacing-lg) var(--spacing-xl);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   border: none;
   border-radius: var(--radius-lg);
   color: white;
@@ -397,13 +418,18 @@
 }
 
 .submitButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -551,7 +577,6 @@
   border-bottom: 2px solid var(--glass-border);
   margin-bottom: var(--spacing-lg);
 }
-
 
 .projectTitle {
   margin: 0;
@@ -816,7 +841,11 @@
 }
 
 .exportPOIButton {
-  background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--blue-primary) 0%,
+    var(--blue-secondary) 100%
+  );
   color: var(--white);
   border: none;
   padding: 10px 18px;
@@ -834,7 +863,11 @@
 }
 
 .deleteButton {
-  background: linear-gradient(135deg, var(--red-primary) 0%, var(--red-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--red-primary) 0%,
+    var(--red-secondary) 100%
+  );
   color: var(--white);
   border: none;
   padding: 10px 18px;
@@ -954,8 +987,8 @@
 }
 
 .poiFileManager .checkbox:hover {
-   background: var(--glass-bg-hover);
- }
+  background: var(--glass-bg-hover);
+}
 
 .dropZone {
   border: 2px dashed var(--glass-border);
@@ -1003,7 +1036,7 @@
 }
 
 .uploadIcon::before {
-  content: '';
+  content: "";
   width: 20px;
   height: 20px;
   border: 2px solid currentColor;
@@ -1012,7 +1045,7 @@
 }
 
 .uploadIcon::after {
-  content: '+';
+  content: "+";
   position: absolute;
   font-size: 16px;
   font-weight: bold;
@@ -1066,7 +1099,11 @@
 
 /* Export button styles */
 .exportButton {
-  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success) 0%,
+    var(--success-dark) 100%
+  );
   color: white;
   border: none;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -1256,7 +1293,7 @@
 }
 
 .selectOption.selected::after {
-  content: '✓';
+  content: "✓";
   float: right;
   color: var(--primary);
   font-weight: bold;
@@ -1272,7 +1309,11 @@
 
 /* POI Buttons */
 .poiButton {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   color: white;
   border: none;
   padding: var(--spacing-sm) var(--spacing-lg);
@@ -1292,7 +1333,11 @@
 .poiButton:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(66, 153, 225, 0.3);
-  background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-light) 0%,
+    var(--primary) 100%
+  );
 }
 
 .poiButton:active {
@@ -1300,12 +1345,20 @@
 }
 
 .poiButtonDelete {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--danger) 0%,
+    var(--danger-dark) 100%
+  );
   box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
 }
 
 .poiButtonDelete:hover {
-  background: linear-gradient(135deg, var(--danger-light) 0%, var(--danger) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--danger-light) 0%,
+    var(--danger) 100%
+  );
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
@@ -1334,87 +1387,87 @@
   .poiFileManager {
     padding: var(--spacing-lg);
   }
-  
+
   .dropZone {
     padding: var(--spacing-2xl) var(--spacing-lg);
   }
-  
+
   .uploadIcon {
     font-size: 2rem;
   }
-  
+
   /* Responsive tables */
   .poiTable {
     overflow-x: auto;
   }
-  
+
   /* Section header responsive */
   .sectionHeader {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .fileSystemInfo {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
   }
-  
+
   /* Summary content responsive */
   .fileSummary {
     margin-top: var(--spacing-lg);
     padding: var(--spacing-md);
   }
-  
+
   .summaryTitle {
     font-size: var(--font-md);
     margin-bottom: var(--spacing-sm);
   }
-  
+
   .summaryItem {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm);
   }
-  
+
   .summaryIcon {
     font-size: var(--font-md);
   }
-  
+
   .summaryText {
     font-size: var(--font-xs);
     line-height: 1.4;
   }
-  
+
   .inputHint {
     font-size: var(--font-xs);
     margin-top: var(--spacing-xs);
   }
-  
+
   /* Button group responsive */
   .buttonGroup {
     gap: var(--spacing-xs);
     margin-top: var(--spacing-sm);
   }
-  
+
   .poiButton {
     padding: var(--spacing-xs) var(--spacing-md);
     font-size: var(--font-xs);
     min-width: 60px;
   }
-  
+
   /* Custom select responsive */
   .selectButton {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-sm);
   }
-  
+
   .selectOption {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-sm);
   }
-  
+
   .selectDropdown {
     max-height: 200px;
   }
@@ -1427,24 +1480,24 @@
     padding: var(--spacing-sm);
     border-radius: var(--radius-md);
   }
-  
+
   .summaryTitle {
     font-size: var(--font-sm);
   }
-  
+
   .summaryContent {
     gap: var(--spacing-xs);
   }
-  
+
   .summaryItem {
     padding: var(--spacing-xs) var(--spacing-sm);
     border-radius: var(--radius-sm);
   }
-  
+
   .summaryIcon {
     font-size: var(--font-sm);
   }
-  
+
   .summaryText {
     font-size: var(--font-xs);
     line-height: 1.3;

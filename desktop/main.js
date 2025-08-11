@@ -13,15 +13,18 @@ let mainWindow;
 let serverManager;
 
 // Enable GPU acceleration with modern settings for Electron 32
-app.commandLine.appendSwitch('enable-gpu-rasterization');
-app.commandLine.appendSwitch('enable-webgl');
-app.commandLine.appendSwitch('enable-accelerated-2d-canvas');
-app.commandLine.appendSwitch('enable-accelerated-video-decode');
-app.commandLine.appendSwitch('disable-background-timer-throttling');
-app.commandLine.appendSwitch('disable-renderer-backgrounding');
-app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
-app.commandLine.appendSwitch('enable-features', 'VaapiVideoDecoder,VaapiVideoEncoder');
-app.commandLine.appendSwitch('max_old_space_size', '4096');
+app.commandLine.appendSwitch("enable-gpu-rasterization");
+app.commandLine.appendSwitch("enable-webgl");
+app.commandLine.appendSwitch("enable-accelerated-2d-canvas");
+app.commandLine.appendSwitch("enable-accelerated-video-decode");
+app.commandLine.appendSwitch("disable-background-timer-throttling");
+app.commandLine.appendSwitch("disable-renderer-backgrounding");
+app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
+app.commandLine.appendSwitch(
+  "enable-features",
+  "VaapiVideoDecoder,VaapiVideoEncoder",
+);
+app.commandLine.appendSwitch("max_old_space_size", "4096");
 
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -57,17 +60,20 @@ async function createWindow() {
         console.log("User data path:", app.getPath("userData"));
         console.log("App path:", app.getAppPath());
         console.log("Resource path:", process.resourcesPath || "Not available");
-        
+
         // Initialize server manager for production
         serverManager = new ServerManager(app.getPath("userData"));
         console.log("ServerManager created, starting server...");
-        
+
         // Add timeout for server startup
         const serverStartPromise = serverManager.start();
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error("Server startup timeout after 30 seconds")), 30000);
+          setTimeout(
+            () => reject(new Error("Server startup timeout after 30 seconds")),
+            30000,
+          );
         });
-        
+
         serverUrl = await Promise.race([serverStartPromise, timeoutPromise]);
         console.log(`Production server running at: ${serverUrl}`);
       } catch (serverError) {
@@ -96,7 +102,10 @@ async function createWindow() {
         enableRemoteModule: false,
         allowRunningInsecureContent: false,
       },
-      icon: path.join(__dirname, "../public/icons/panorama-viewer-icon-multi.ico"),
+      icon: path.join(
+        __dirname,
+        "../public/icons/panorama-viewer-icon-multi.ico",
+      ),
       show: false, // Start hidden for smooth loading
       backgroundColor: "#ffffff",
       titleBarStyle: "default",
@@ -110,14 +119,14 @@ async function createWindow() {
       console.log("Showing window immediately due to server startup error");
       mainWindow.show();
       mainWindow.focus();
-      
+
       // Load the error page from file instead of data URL
       const errorPagePath = path.join(__dirname, "error.html");
       console.log("Loading error page from:", errorPagePath);
       await mainWindow.loadFile(errorPagePath);
-      
+
       // Send error details to the renderer if needed
-      mainWindow.webContents.once('did-finish-load', () => {
+      mainWindow.webContents.once("did-finish-load", () => {
         mainWindow.webContents.executeJavaScript(`
           const errorElement = document.getElementById('error-details');
           if (errorElement) {
@@ -153,7 +162,7 @@ async function createWindow() {
           mainWindow.show();
           mainWindow.focus();
         }
-      }
+      },
     );
 
     mainWindow.webContents.on("did-finish-load", () => {

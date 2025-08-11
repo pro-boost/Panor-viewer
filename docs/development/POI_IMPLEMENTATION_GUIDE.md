@@ -108,16 +108,17 @@ public/
 ### For Developers
 
 1. **Integration**:
+
    ```tsx
-   import POIComponent from '@/components/poi/POIComponent';
-   
+   import POIComponent from "@/components/poi/POIComponent";
+
    // Add to your panorama viewer
    <POIComponent
      currentPanoramaId={currentSceneId}
      viewerSize={{ width: viewerWidth, height: viewerHeight }}
      viewerRef={marzipanoViewerRef}
      onPOICreated={(poi) => handlePOICreated(poi)}
-   />
+   />;
    ```
 
 2. **Configuration**:
@@ -128,6 +129,7 @@ public/
 ## 📊 Data Format
 
 ### POI JSON Structure
+
 ```json
 {
   "id": "uuid-string",
@@ -146,6 +148,7 @@ public/
 ```
 
 ### Supported File Types
+
 - **Images**: JPEG, PNG, GIF
 - **Documents**: PDF
 - **Videos**: MP4, WebM
@@ -154,17 +157,20 @@ public/
 ## 🔒 Validation & Security
 
 ### Coordinate Validation
+
 - Yaw: -180° ≤ yaw ≤ 180°
 - Pitch: -90° ≤ pitch ≤ 90°
 - Real-time validation during POI creation
 
 ### File Security
+
 - MIME type validation
 - File size limits
 - Unique filename generation
 - Secure file storage in public directory
 
 ### Input Validation
+
 - Required field validation
 - URL format validation for iframe content
 - XSS protection through proper escaping
@@ -172,12 +178,14 @@ public/
 ## 🎨 Styling & UI
 
 ### Design System
+
 - **Framework**: Tailwind CSS
 - **Icons**: React Icons (Font Awesome)
 - **Notifications**: React Toastify
 - **File Upload**: React Dropzone
 
 ### Visual Elements
+
 - Context menu with hover effects
 - Modal with form validation states
 - POI markers with drop shadows and tooltips
@@ -187,6 +195,7 @@ public/
 ## 🧪 Testing
 
 ### Test Coverage
+
 - Component rendering tests
 - Event handling verification
 - API integration tests
@@ -194,6 +203,7 @@ public/
 - Coordinate conversion accuracy
 
 ### Running Tests
+
 ```bash
 npm test
 # or
@@ -203,12 +213,14 @@ npm run test:coverage
 ## 🚀 Deployment Considerations
 
 ### Environment Setup
+
 1. Ensure `.env.local` contains project configuration
 2. Verify API routes are accessible in production
 3. Configure file upload directory permissions
 4. Set up proper CORS headers if needed
 
 ### Performance Optimization
+
 - Lazy loading of POI components
 - Image optimization for previews
 - Efficient coordinate calculations
@@ -217,6 +229,7 @@ npm run test:coverage
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 - POI editing and deletion capabilities
 - POI categories and filtering system
 - Bulk POI import/export functionality
@@ -227,6 +240,7 @@ npm run test:coverage
 - POI sharing and collaboration
 
 ### Technical Improvements
+
 - WebGL-based marker rendering
 - Real-time collaborative editing
 - Advanced coordinate system support
@@ -253,6 +267,7 @@ npm run test:coverage
    - Ensure proper event handling
 
 ### Debug Mode
+
 Enable debug mode by setting `NEXT_PUBLIC_SHOW_DEBUG_INFO=true` in `.env.local`
 
 ## 📄 License & Credits

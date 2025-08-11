@@ -71,7 +71,7 @@ export default function Setup() {
 
     if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
       setError(
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       );
       return false;
     }
@@ -103,7 +103,7 @@ export default function Setup() {
 
       if (response.ok) {
         setSuccess(
-          "Authentication configured successfully! Redirecting to login..."
+          "Authentication configured successfully! Redirecting to login...",
         );
         setTimeout(() => {
           router.push("/auth/login");

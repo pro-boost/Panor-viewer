@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { createPortal } from 'react-dom';
-import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
-import styles from './ConfirmationModal.module.css';
+import React from "react";
+import { createPortal } from "react-dom";
+import { FaExclamationTriangle, FaTimes } from "react-icons/fa";
+import styles from "./ConfirmationModal.module.css";
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -13,18 +13,18 @@ interface ConfirmationModalProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  variant?: 'danger' | 'warning' | 'info';
+  variant?: "danger" | "warning" | "info";
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   title,
   message,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel',
+  confirmText = "Confirm",
+  cancelText = "Cancel",
   onConfirm,
   onCancel,
-  variant = 'warning'
+  variant = "warning",
 }) => {
   if (!isOpen) return null;
 
@@ -39,9 +39,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       <div className={styles.modalContainer}>
         <div className={styles.modalHeader}>
           <div className={styles.headerContent}>
-            <FaExclamationTriangle 
-              className={`${styles.warningIcon} ${styles[variant]}`} 
-              size={20} 
+            <FaExclamationTriangle
+              className={`${styles.warningIcon} ${styles[variant]}`}
+              size={20}
             />
             <h3 className={styles.modalTitle}>{title}</h3>
           </div>
@@ -53,16 +53,13 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <FaTimes size={16} />
           </button>
         </div>
-        
+
         <div className={styles.modalContent}>
           <p className={styles.modalMessage}>{message}</p>
         </div>
-        
+
         <div className={styles.modalActions}>
-          <button
-            onClick={onCancel}
-            className={styles.cancelButton}
-          >
+          <button onClick={onCancel} className={styles.cancelButton}>
             {cancelText}
           </button>
           <button
@@ -77,7 +74,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   );
 
   // Render the modal at the document body level using a portal
-  return typeof document !== 'undefined' 
+  return typeof document !== "undefined"
     ? createPortal(modalContent, document.body)
     : null;
 };

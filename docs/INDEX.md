@@ -5,7 +5,9 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 ## 📚 Main Documentation
 
 ### [README.md](./README.md)
+
 **Quick Start Guide**
+
 - Installation instructions
 - Prerequisites and setup
 - Available scripts
@@ -13,7 +15,9 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - Platform-specific setup guides
 
 ### [CONFIGURATION.md](./CONFIGURATION.md)
+
 **Configuration Guide**
+
 - Environment variables
 - Coordinate system modes
 - Rotation offsets and camera settings
@@ -22,7 +26,9 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - Advanced configuration options
 
 ### [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
+
 **Comprehensive Troubleshooting**
+
 - Quick diagnostics
 - Installation issues (Python, Node.js, dependencies)
 - Upload problems and solutions
@@ -33,14 +39,18 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 ## 🔐 Authentication & Security
 
 ### [authentication/AUTHENTICATION.md](./authentication/AUTHENTICATION.md)
+
 **Authentication System**
+
 - Password-based authentication with bcrypt hashing
 - Session management and security
 - Protected routes and access control
 - Initial setup and configuration
 
 ### [authentication/SUPABASE_AUTH.md](./authentication/SUPABASE_AUTH.md)
+
 **Supabase Integration**
+
 - Supabase project setup
 - Environment configuration
 - User management and roles
@@ -49,7 +59,9 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 ## 🛠️ Development Guides
 
 ### [development/FIXES_AND_IMPROVEMENTS.md](./development/FIXES_AND_IMPROVEMENTS.md)
+
 **Development History**
+
 - Major improvements and enhancements
 - Bug fixes and their solutions
 - Performance optimizations
@@ -57,7 +69,9 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - Code architecture changes
 
 ### [development/POI_IMPLEMENTATION_GUIDE.md](./development/POI_IMPLEMENTATION_GUIDE.md)
+
 **Point of Interest System**
+
 - POI system components
 - Implementation details
 - Usage instructions
@@ -65,21 +79,27 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - File structure and data formats
 
 ### [development/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md](./development/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md)
+
 **Centralized Credentials System**
+
 - Complete implementation guide
 - Architecture overview
 - Security features and caching
 - Build and deployment instructions
 
 ### [development/SECURE_DISTRIBUTION.md](./development/SECURE_DISTRIBUTION.md)
+
 **Secure App Distribution**
+
 - Electron build optimization
 - File inclusion/exclusion rules
 - Security improvements
 - ASAR packaging and compression
 
 ### [scripts/node/README.md](../scripts/node/README.md)
+
 **Node.js Scripts Documentation**
+
 - Configuration generation scripts
 - Command-line usage
 - Mathematical operations
@@ -88,11 +108,13 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 ## 🚀 Quick Navigation
 
 ### For New Users
+
 1. Start with [README.md](./README.md) for setup
 2. Check [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) if you encounter issues
 3. Review [CONFIGURATION.md](./CONFIGURATION.md) for customization
 
 ### For Developers
+
 1. Read [development/FIXES_AND_IMPROVEMENTS.md](./development/FIXES_AND_IMPROVEMENTS.md) for development history
 2. Check [development/POI_IMPLEMENTATION_GUIDE.md](./development/POI_IMPLEMENTATION_GUIDE.md) for POI system details
 3. Review [scripts/node/README.md](../scripts/node/README.md) for build scripts
@@ -100,6 +122,7 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 5. Check [development/SECURE_DISTRIBUTION.md](./development/SECURE_DISTRIBUTION.md) for distribution setup
 
 ### For Troubleshooting
+
 1. Use the quick diagnostics in [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)
 2. Check specific error sections for your issue
 3. Review [CONFIGURATION.md](./CONFIGURATION.md) for configuration problems
@@ -107,6 +130,7 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 ## 📋 Documentation Standards
 
 ### File Organization
+
 - **Core documentation**: Located in `/docs/` directory
 - **Authentication docs**: Located in `/docs/authentication/` subdirectory
 - **Development docs**: Located in `/docs/development/` subdirectory
@@ -114,6 +138,7 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - **Scripts documentation**: Located in `/scripts/` subdirectories
 
 ### Content Structure
+
 - Clear headings and navigation
 - Step-by-step instructions
 - Code examples and commands
@@ -121,6 +146,7 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - Cross-references between documents
 
 ### Maintenance
+
 - Documentation is updated with each major change
 - Obsolete information is removed or consolidated
 - Examples are tested and verified
@@ -138,6 +164,7 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 ## 📋 Recent Changes (2025-01-28)
 
 ### Documentation Cleanup & Organization
+
 - ✅ **Organized into logical folders**: authentication/, development/, archived/
 - ✅ **Removed outdated Python references**: Updated all installation and troubleshooting guides
 - ✅ **Consolidated redundant documentation**: Archived duplicate credential guides
@@ -145,6 +172,7 @@ This directory contains all the documentation for the Panorama Viewer Applicatio
 - ✅ **Added folder README files**: Each subfolder now has clear documentation of its contents
 
 ### Key Improvements
+
 - **Cleaner structure**: Related documentation is now grouped together
 - **Removed confusion**: Eliminated outdated Python setup instructions
 - **Better navigation**: Clear folder organization with descriptive README files

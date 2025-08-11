@@ -16,18 +16,21 @@ function loadCredentialConfig() {
   if (process.resourcesPath) {
     // Packaged app - data is now inside ASAR archive
     // Check if we're in ASAR mode
-    const isAsar = __dirname.includes('.asar');
-    
+    const isAsar = __dirname.includes(".asar");
+
     if (isAsar) {
       // ASAR mode - data is inside the archive
       // In Electron, ASAR files are automatically handled by Node.js fs module
       try {
         // __dirname in ASAR points to app.asar/desktop, so go up one level to access data
-        const configPath = path.join(__dirname, '../data/credential-config.json');
-        console.log('Loading credential config from ASAR at:', configPath);
-        const configData = fs.readFileSync(configPath, 'utf8');
+        const configPath = path.join(
+          __dirname,
+          "../data/credential-config.json",
+        );
+        console.log("Loading credential config from ASAR at:", configPath);
+        const configData = fs.readFileSync(configPath, "utf8");
         const config = JSON.parse(configData);
-        console.log('Successfully loaded credential config from ASAR');
+        console.log("Successfully loaded credential config from ASAR");
         if (config.credentialServer) {
           return {
             url: config.credentialServer.url,
@@ -35,17 +38,22 @@ function loadCredentialConfig() {
           };
         }
       } catch (error) {
-        console.warn('Failed to load credential config from ASAR:', error);
-        console.warn('__dirname:', __dirname);
-        console.warn('process.resourcesPath:', process.resourcesPath);
+        console.warn("Failed to load credential config from ASAR:", error);
+        console.warn("__dirname:", __dirname);
+        console.warn("process.resourcesPath:", process.resourcesPath);
       }
     } else {
       // Non-ASAR packaged app - check multiple possible locations
       const possiblePaths = [
-        path.join(process.resourcesPath, "app", "data", "credential-config.json"),
-        path.join(process.resourcesPath, "data", "credential-config.json")
+        path.join(
+          process.resourcesPath,
+          "app",
+          "data",
+          "credential-config.json",
+        ),
+        path.join(process.resourcesPath, "data", "credential-config.json"),
       ];
-      
+
       for (const possiblePath of possiblePaths) {
         if (fs.existsSync(possiblePath)) {
           configPath = possiblePath;
@@ -101,7 +109,7 @@ async function fetchCredentials(retryCount = 0) {
     }
 
     console.log(
-      `Attempting to fetch credentials (attempt ${retryCount + 1}/${maxRetries + 1})`
+      `Attempting to fetch credentials (attempt ${retryCount + 1}/${maxRetries + 1})`,
     );
 
     const url = new URL(CREDENTIAL_SERVER_URL);
@@ -210,7 +218,7 @@ function cacheCredentials(credentials) {
 
   fs.writeFileSync(
     path.join(cacheDir, "credentials-cache.json"),
-    JSON.stringify(cacheData, null, 2)
+    JSON.stringify(cacheData, null, 2),
   );
 }
 
@@ -222,7 +230,7 @@ function loadCachedCredentials() {
     const cacheFile = path.join(
       os.homedir(),
       ".panorama-viewer",
-      "credentials-cache.json"
+      "credentials-cache.json",
     );
     if (fs.existsSync(cacheFile)) {
       const cacheData = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
@@ -244,7 +252,7 @@ function loadExpiredCachedCredentials() {
     const cacheFile = path.join(
       os.homedir(),
       ".panorama-viewer",
-      "credentials-cache.json"
+      "credentials-cache.json",
     );
     if (fs.existsSync(cacheFile)) {
       const cacheData = JSON.parse(fs.readFileSync(cacheFile, "utf8"));
@@ -254,7 +262,7 @@ function loadExpiredCachedCredentials() {
         if (isExpired) {
           console.log(
             "Found expired cached credentials from",
-            new Date(cacheData.cachedAt).toISOString()
+            new Date(cacheData.cachedAt).toISOString(),
           );
         }
         return cacheData.credentials;
@@ -278,33 +286,52 @@ function getOfflineCredentials() {
     if (process.resourcesPath) {
       // Packaged app - data is now inside ASAR archive
       // Check if we're in ASAR mode
-      const isAsar = __dirname.includes('.asar');
-      
+      const isAsar = __dirname.includes(".asar");
+
       if (isAsar) {
-         // ASAR mode - data is inside the archive
-          // In Electron, ASAR files are automatically handled by Node.js fs module
-          try {
-            const configPath = path.join(__dirname, '../data/credential-config.json');
-            console.log("Loading offline credential config from ASAR at:", configPath);
-            const configData = fs.readFileSync(configPath, 'utf8');
-            config = JSON.parse(configData);
-            console.log("Successfully loaded offline credential config from ASAR archive");
-          } catch (error) {
-            console.warn('Failed to load offline credential config from ASAR:', error);
-            console.warn('__dirname:', __dirname);
-            console.warn('process.resourcesPath:', process.resourcesPath);
-          }
+        // ASAR mode - data is inside the archive
+        // In Electron, ASAR files are automatically handled by Node.js fs module
+        try {
+          const configPath = path.join(
+            __dirname,
+            "../data/credential-config.json",
+          );
+          console.log(
+            "Loading offline credential config from ASAR at:",
+            configPath,
+          );
+          const configData = fs.readFileSync(configPath, "utf8");
+          config = JSON.parse(configData);
+          console.log(
+            "Successfully loaded offline credential config from ASAR archive",
+          );
+        } catch (error) {
+          console.warn(
+            "Failed to load offline credential config from ASAR:",
+            error,
+          );
+          console.warn("__dirname:", __dirname);
+          console.warn("process.resourcesPath:", process.resourcesPath);
+        }
       } else {
         // Non-ASAR packaged app - check multiple possible locations
         const possiblePaths = [
-          path.join(process.resourcesPath, "app", "data", "credential-config.json"),
-          path.join(process.resourcesPath, "data", "credential-config.json")
+          path.join(
+            process.resourcesPath,
+            "app",
+            "data",
+            "credential-config.json",
+          ),
+          path.join(process.resourcesPath, "data", "credential-config.json"),
         ];
-        
+
         for (const possiblePath of possiblePaths) {
           if (fs.existsSync(possiblePath)) {
             configPath = possiblePath;
-            console.log("Looking for offline credential config at:", configPath);
+            console.log(
+              "Looking for offline credential config at:",
+              configPath,
+            );
             try {
               config = JSON.parse(fs.readFileSync(configPath, "utf8"));
               break;
@@ -318,7 +345,7 @@ function getOfflineCredentials() {
       // Development mode
       configPath = path.join(__dirname, "../data/credential-config.json");
       console.log("Looking for offline credential config at:", configPath);
-      
+
       if (fs.existsSync(configPath)) {
         try {
           config = JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -328,32 +355,33 @@ function getOfflineCredentials() {
       }
     }
 
-    if (config &&
-        config.offlineMode &&
-        config.offlineMode.enabled &&
-        config.offlineMode.fallbackCredentials &&
-        config.offlineMode.fallbackCredentials.supabase
-      ) {
-        const supabaseConfig = config.offlineMode.fallbackCredentials.supabase;
-        const isPlaceholder =
-          supabaseConfig.url === "https://placeholder.supabase.co" ||
-          supabaseConfig.anonKey === "placeholder-anon-key" ||
-          supabaseConfig.serviceRoleKey === "placeholder-service-role-key";
+    if (
+      config &&
+      config.offlineMode &&
+      config.offlineMode.enabled &&
+      config.offlineMode.fallbackCredentials &&
+      config.offlineMode.fallbackCredentials.supabase
+    ) {
+      const supabaseConfig = config.offlineMode.fallbackCredentials.supabase;
+      const isPlaceholder =
+        supabaseConfig.url === "https://placeholder.supabase.co" ||
+        supabaseConfig.anonKey === "placeholder-anon-key" ||
+        supabaseConfig.serviceRoleKey === "placeholder-service-role-key";
 
-        // Use credentials if they're real OR if placeholders are explicitly allowed
-        if (!isPlaceholder || config.offlineMode.allowPlaceholders) {
-          console.log(
-            isPlaceholder
-              ? "Using placeholder offline credentials (allowed by config)"
-              : "Using valid offline credentials from config"
-          );
-          return config.offlineMode.fallbackCredentials;
-        } else {
-          console.log(
-            "Offline credentials in config are placeholder values, skipping"
-          );
-        }
+      // Use credentials if they're real OR if placeholders are explicitly allowed
+      if (!isPlaceholder || config.offlineMode.allowPlaceholders) {
+        console.log(
+          isPlaceholder
+            ? "Using placeholder offline credentials (allowed by config)"
+            : "Using valid offline credentials from config",
+        );
+        return config.offlineMode.fallbackCredentials;
+      } else {
+        console.log(
+          "Offline credentials in config are placeholder values, skipping",
+        );
       }
+    }
   } catch (error) {
     console.warn("Failed to load offline config:", error);
   }
@@ -422,7 +450,7 @@ async function getCredentials() {
       } catch (fetchError) {
         console.warn(
           "Failed to refresh credentials, using expired cache:",
-          fetchError.message
+          fetchError.message,
         );
         // Use expired credentials as they're better than placeholder ones
         return expiredCached;
@@ -457,7 +485,7 @@ async function getCredentials() {
     // Last resort: throw error instead of using placeholder credentials
     console.error("No valid credentials available - cannot start server");
     throw new Error(
-      "No valid Supabase credentials available. Please check your internet connection and credential server configuration."
+      "No valid Supabase credentials available. Please check your internet connection and credential server configuration.",
     );
   }
 }
@@ -512,45 +540,63 @@ class ServerManager {
 
         if (process.resourcesPath) {
           console.log("Running in packaged mode");
-          
+
           if (isAsar) {
             console.log("ASAR mode detected - using extraResources standalone");
             // In ASAR mode, standalone directory is in extraResources
-            const standalonePath = path.join(process.resourcesPath, "standalone");
+            const standalonePath = path.join(
+              process.resourcesPath,
+              "standalone",
+            );
             console.log("Checking standalone path:", standalonePath);
-            console.log("Standalone path exists:", fs.existsSync(standalonePath));
-            
+            console.log(
+              "Standalone path exists:",
+              fs.existsSync(standalonePath),
+            );
+
             if (!fs.existsSync(standalonePath)) {
               const error = new Error(
-                `Standalone directory not found at: ${standalonePath}`
+                `Standalone directory not found at: ${standalonePath}`,
               );
-              console.error("Standalone path resolution failed:", error.message);
+              console.error(
+                "Standalone path resolution failed:",
+                error.message,
+              );
               throw error;
             }
-            
+
             serverPath = path.join(standalonePath, "server.js");
             cwd = standalonePath;
-            
+
             console.log("Using standalone server path:", serverPath);
             console.log("Server.js exists:", fs.existsSync(serverPath));
           } else {
             // Non-ASAR packaged app - use process.resourcesPath for reliable path resolution
             // Always use the standalone directory which contains the Next.js server
-            const standalonePath = path.join(process.resourcesPath, "standalone");
+            const standalonePath = path.join(
+              process.resourcesPath,
+              "standalone",
+            );
             console.log("Checking standalone path:", standalonePath);
-            console.log("Standalone path exists:", fs.existsSync(standalonePath));
-            
+            console.log(
+              "Standalone path exists:",
+              fs.existsSync(standalonePath),
+            );
+
             if (!fs.existsSync(standalonePath)) {
               const error = new Error(
-                `Standalone directory not found at: ${standalonePath}`
+                `Standalone directory not found at: ${standalonePath}`,
               );
-              console.error("Standalone path resolution failed:", error.message);
+              console.error(
+                "Standalone path resolution failed:",
+                error.message,
+              );
               throw error;
             }
-            
+
             serverPath = path.join(standalonePath, "server.js");
             cwd = standalonePath;
-            
+
             console.log("Using standalone server path:", serverPath);
             console.log("Server.js exists:", fs.existsSync(serverPath));
           }
@@ -577,19 +623,19 @@ class ServerManager {
             process.platform === "win32" ? "node.exe" : "node";
           console.log(
             "Looking for bundled Node.js executable:",
-            nodeExecutableName
+            nodeExecutableName,
           );
 
           const bundledNodePath = path.join(
             process.resourcesPath,
             "node",
-            nodeExecutableName
+            nodeExecutableName,
           );
 
           console.log("Checking bundled Node.js path:", bundledNodePath);
           console.log(
             "Bundled Node.js exists:",
-            fs.existsSync(bundledNodePath)
+            fs.existsSync(bundledNodePath),
           );
 
           if (fs.existsSync(bundledNodePath)) {
@@ -612,7 +658,7 @@ class ServerManager {
           } else {
             console.log(
               "Bundled Node.js not found, using system Node.js:",
-              nodeExecutable
+              nodeExecutable,
             );
 
             // On Windows, also check if system Node.js is accessible
@@ -657,15 +703,15 @@ class ServerManager {
         console.log("Environment variables set:");
         console.log(
           "  NEXT_PUBLIC_SUPABASE_URL:",
-          credentials.supabase.url ? "[SET]" : "[NOT SET]"
+          credentials.supabase.url ? "[SET]" : "[NOT SET]",
         );
         console.log(
           "  NEXT_PUBLIC_SUPABASE_ANON_KEY:",
-          credentials.supabase.anonKey ? "[SET]" : "[NOT SET]"
+          credentials.supabase.anonKey ? "[SET]" : "[NOT SET]",
         );
         console.log(
           "  SUPABASE_SERVICE_ROLE_KEY:",
-          credentials.supabase.serviceRoleKey ? "[SET]" : "[NOT SET]"
+          credentials.supabase.serviceRoleKey ? "[SET]" : "[NOT SET]",
         );
         console.log("  PORT:", this.port.toString());
 
@@ -685,7 +731,7 @@ class ServerManager {
 
           console.log(
             "Server process spawned successfully with PID:",
-            this.serverProcess.pid
+            this.serverProcess.pid,
           );
         } catch (spawnError) {
           console.error("Failed to spawn server process:", spawnError);
@@ -702,11 +748,11 @@ class ServerManager {
 
         this.serverProcess.on("close", (code, signal) => {
           console.log(
-            `Server process exited with code ${code} and signal ${signal}`
+            `Server process exited with code ${code} and signal ${signal}`,
           );
           if (code !== 0) {
             console.error(
-              "Server process exited with non-zero code, indicating an error"
+              "Server process exited with non-zero code, indicating an error",
             );
           }
           this.serverProcess = null;
@@ -726,7 +772,7 @@ class ServerManager {
 
         this.serverProcess.on("spawn", () => {
           console.log(
-            "Server process spawn event fired - process started successfully"
+            "Server process spawn event fired - process started successfully",
           );
         });
 
@@ -782,7 +828,7 @@ class ServerManager {
           console.log(`Server check failed: ${err.message}`);
           if (Date.now() - startTime > timeout) {
             reject(
-              new Error(`Server startup timeout after ${attempts} attempts`)
+              new Error(`Server startup timeout after ${attempts} attempts`),
             );
           } else {
             setTimeout(checkServer, 1000);

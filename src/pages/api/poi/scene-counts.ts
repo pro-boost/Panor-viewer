@@ -1,29 +1,30 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
-import { POIData } from '@/types/poi';
+import { NextApiRequest, NextApiResponse } from "next";
+import fs from "fs";
+import path from "path";
+import { POIData } from "@/types/poi";
 
 // Helper function to get project-specific POI file
 function getProjectPOIFile(projectId: string) {
-  const projectsPath = process.env.PROJECTS_PATH || path.join(process.cwd(), 'public');
-const dataDir = path.join(projectsPath, projectId, 'poi');
-  const dataFile = path.join(dataDir, 'poi-data.json');
+  const projectsPath =
+    process.env.PROJECTS_PATH || path.join(process.cwd(), "public");
+  const dataDir = path.join(projectsPath, projectId, "poi");
+  const dataFile = path.join(dataDir, "poi-data.json");
   return dataFile;
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
     const { projectId } = req.query;
 
-    if (!projectId || typeof projectId !== 'string') {
-      return res.status(400).json({ error: 'Project ID is required' });
+    if (!projectId || typeof projectId !== "string") {
+      return res.status(400).json({ error: "Project ID is required" });
     }
 
     const dataFile = getProjectPOIFile(projectId);
@@ -34,12 +35,12 @@ export default async function handler(
     }
 
     // Read and parse POI data
-    const fileContent = fs.readFileSync(dataFile, 'utf8');
+    const fileContent = fs.readFileSync(dataFile, "utf8");
     const pois: POIData[] = JSON.parse(fileContent);
 
     // Count POIs per scene
     const sceneCounts: Record<string, number> = {};
-    pois.forEach(poi => {
+    pois.forEach((poi) => {
       if (poi.panoramaId) {
         sceneCounts[poi.panoramaId] = (sceneCounts[poi.panoramaId] || 0) + 1;
       }
@@ -47,7 +48,7 @@ export default async function handler(
 
     res.status(200).json({ sceneCounts });
   } catch (error) {
-    console.error('Error loading POI scene counts:', error);
-    res.status(500).json({ error: 'Failed to load POI scene counts' });
+    console.error("Error loading POI scene counts:", error);
+    res.status(500).json({ error: "Failed to load POI scene counts" });
   }
 }

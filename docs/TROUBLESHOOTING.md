@@ -17,6 +17,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Error**: Build failures or dependency conflicts
 
 **Solutions**:
+
 1. **Update Node.js** to v18 or higher
 2. **Clear npm cache**:
    ```bash
@@ -34,16 +35,19 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Check Python Installation**:
+
    ```bash
    python --version  # Should show Python 3.x.x
    ```
 
 2. **Check Required Python Packages**:
+
    ```bash
    python -c "import numpy; print('numpy version:', numpy.__version__)"
    ```
 
 3. **Install Missing Dependencies**:
+
    ```bash
    pip install numpy
    ```
@@ -58,6 +62,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Cause**: CSV file wasn't properly uploaded or named incorrectly
 
 **Solutions**:
+
 1. Ensure your CSV file is named exactly `pano-poses.csv`
 2. Check file permissions in the project directory
 3. Verify the upload completed successfully
@@ -67,6 +72,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Cause**: Application doesn't have permission to create directories or move files
 
 **Solutions**:
+
 1. Check directory permissions for the `public/` folder
 2. Ensure the application has write access to the project directory
 3. On Windows, try running as administrator if needed
@@ -76,6 +82,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Symptoms**: Upload timeout or memory errors
 
 **Solutions**:
+
 1. Upload fewer files at once
 2. Reduce image file sizes if possible
 3. Check available disk space
@@ -90,19 +97,22 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Test coordinate systems**:
+
    ```bash
    npm run test:config
    ```
 
 2. **Try different coordinate modes**:
+
    ```env
    # In .env.local
    PANORAMA_CONFIG_MODE=navvis
    ```
-   
+
    Available modes: `standard`, `inverted_x`, `inverted_y`, `swapped_xy`, `navvis`
 
 3. **Adjust yaw offset**:
+
    ```env
    PANORAMA_YAW_OFFSET=90  # Rotate 90 degrees
    ```
@@ -119,6 +129,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Adjust pitch offset**:
+
    ```env
    PANORAMA_PITCH_OFFSET=-10  # Lower hotspots
    PANORAMA_PITCH_OFFSET=10   # Raise hotspots
@@ -137,6 +148,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Check panorama distances**:
+
    ```env
    PANORAMA_MAX_DISTANCE=15.0  # Increase connection distance
    ```
@@ -155,6 +167,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Adjust connection limits**:
+
    ```env
    PANORAMA_MAX_CONNECTIONS=8   # More connections
    PANORAMA_MAX_CONNECTIONS=3   # Fewer connections
@@ -203,6 +216,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
    - Check browser console for detailed error messages
 
 **Prevention**:
+
 - Keep graphics drivers updated
 - Monitor system temperature
 - Avoid running multiple WebGL applications
@@ -240,6 +254,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
    - Consider multiple resolution levels
 
 2. **Reduce connections**:
+
    ```env
    PANORAMA_MAX_CONNECTIONS=4
    PANORAMA_MAX_DISTANCE=8.0
@@ -257,6 +272,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Already configured** in package.json:
+
    ```json
    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build"
    ```
@@ -279,6 +295,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
    - Be consistent throughout file
 
 2. **Validate headers**:
+
    ```csv
    ID;filename;timestamp;pano_pos_x;pano_pos_y;pano_pos_z;pano_ori_w;pano_ori_x;pano_ori_y;pano_ori_z
    ```
@@ -321,6 +338,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
    - Import correct interfaces
 
 2. **Regenerate config**:
+
    ```bash
    npm run generate-config
    ```
@@ -336,6 +354,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Solutions**:
 
 1. **Restart development server**:
+
    ```bash
    npm run clean
    npm run dev
@@ -352,6 +371,7 @@ Before troubleshooting specific issues, run the built-in diagnostics:
 **Error**: Script execution disabled
 
 **Solutions**:
+
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
@@ -359,6 +379,7 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ### macOS/Linux Permission Errors
 
 **Solutions**:
+
 ```bash
 chmod +x scripts/node/*.js
 ```
@@ -368,6 +389,7 @@ chmod +x scripts/node/*.js
 **Symptoms**: File not found errors on different platforms
 
 **Solutions**:
+
 - Scripts automatically handle platform differences
 - Use forward slashes in configuration
 - Avoid hardcoded paths
@@ -377,6 +399,7 @@ chmod +x scripts/node/*.js
 ### Debug Information
 
 1. **Enable debug mode**:
+
    ```env
    NEXT_PUBLIC_DEV_MODE=true
    NEXT_PUBLIC_SHOW_DEBUG_INFO=true

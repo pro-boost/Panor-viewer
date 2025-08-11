@@ -119,7 +119,7 @@ export default function Register() {
 
       if (response.ok) {
         setSuccess(
-          "Registration successful! Your account is pending admin approval. You will be notified once approved."
+          "Registration successful! Your account is pending admin approval. You will be notified once approved.",
         );
         setEmail("");
         setPassword("");

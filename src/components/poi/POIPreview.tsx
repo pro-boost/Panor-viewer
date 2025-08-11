@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { POIPreviewProps } from '@/types/poi';
-import { getFileCategory } from './utils';
+import React, { useState, useEffect } from "react";
+import { POIPreviewProps } from "@/types/poi";
+import { getFileCategory } from "./utils";
 import {
   FaTimes,
   FaFile,
@@ -13,9 +13,9 @@ import {
   FaEdit,
   FaTrash,
   FaEye,
-} from 'react-icons/fa';
-import ConfirmationModal from '../ui/ConfirmationModal';
-import styles from './POIPreview.module.css';
+} from "react-icons/fa";
+import ConfirmationModal from "../ui/ConfirmationModal";
+import styles from "./POIPreview.module.css";
 // Using iframe-based PDF viewer for better compatibility
 
 const POIPreview: React.FC<POIPreviewProps> = ({
@@ -72,7 +72,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
   };
 
   const getContentPath = (filename?: string) => {
-    if (poi.type === 'iframe') {
+    if (poi.type === "iframe") {
       return poi.content;
     }
     // Use API route for file serving to handle CORS and static file issues
@@ -82,19 +82,19 @@ const POIPreview: React.FC<POIPreviewProps> = ({
 
   const renderFileIcon = (category: string) => {
     switch (category) {
-      case 'image':
-        return <FaImage className='text-blue-500' size={24} />;
-      case 'video':
-        return <FaVideo className='text-green-500' size={24} />;
-      case 'pdf':
-        return <FaFilePdf className='text-red-500' size={24} />;
+      case "image":
+        return <FaImage className="text-blue-500" size={24} />;
+      case "video":
+        return <FaVideo className="text-green-500" size={24} />;
+      case "pdf":
+        return <FaFilePdf className="text-red-500" size={24} />;
       default:
-        return <FaFile className='text-gray-500' size={24} />;
+        return <FaFile className="text-gray-500" size={24} />;
     }
   };
 
   const decodeHtmlEntities = (text: string) => {
-    const textarea = document.createElement('textarea');
+    const textarea = document.createElement("textarea");
     textarea.innerHTML = text;
     return textarea.value;
   };
@@ -109,7 +109,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
       const videoId = match[1];
       // Extract timestamp if present
       const timeMatch = url.match(/[?&]t=([0-9]+)/);
-      const startTime = timeMatch ? `?start=${timeMatch[1]}` : '';
+      const startTime = timeMatch ? `?start=${timeMatch[1]}` : "";
       return `https://www.youtube.com/embed/${videoId}${startTime}`;
     }
 
@@ -132,7 +132,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
     const content = poi.content.trim();
 
     // If it's HTML iframe code, extract src or render directly
-    if (content.toLowerCase().startsWith('<iframe')) {
+    if (content.toLowerCase().startsWith("<iframe")) {
       // Decode HTML entities first
       const decodedContent = decodeHtmlEntities(content);
 
@@ -171,12 +171,12 @@ const POIPreview: React.FC<POIPreviewProps> = ({
 
   const renderFileContent = (filename: string, index?: number) => {
     const contentPath = getContentPath(filename);
-    const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
+    const fileExtension = filename.split(".").pop()?.toLowerCase() || "";
     const mimeType = getMimeType(fileExtension);
     const category = getFileCategory(mimeType);
     const fileKey = index !== undefined ? `${filename}-${index}` : filename;
 
-    if (category === 'image') {
+    if (category === "image") {
       return (
         <div key={fileKey} className={styles.imageContainer}>
           {isLoading && (
@@ -190,7 +190,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               <p className={styles.errorText}>Failed to load image</p>
               <a
                 href={contentPath}
-                rel='noopener noreferrer'
+                rel="noopener noreferrer"
                 className={styles.errorLink}
               >
                 Open file directly
@@ -209,7 +209,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
       );
     }
 
-    if (category === 'video') {
+    if (category === "video") {
       return (
         <div key={fileKey} className={styles.videoContainer}>
           {isLoading && (
@@ -231,7 +231,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
     }
 
     // For PDFs, show PDF viewer
-    if (category === 'pdf') {
+    if (category === "pdf") {
       return (
         <div key={fileKey} className={styles.pdfContainer}>
           {isLoading && (
@@ -246,7 +246,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               <p className={styles.errorText}>Failed to load PDF</p>
               <a
                 href={contentPath}
-                rel='noopener noreferrer'
+                rel="noopener noreferrer"
                 className={styles.errorLink}
               >
                 Open PDF directly
@@ -264,7 +264,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               <div className={styles.pdfActions}>
                 <a
                   href={contentPath}
-                  rel='noopener noreferrer'
+                  rel="noopener noreferrer"
                   className={styles.openFileButton}
                 >
                   Open in new tab
@@ -283,7 +283,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
         <p className={styles.fileName}>{getDisplayFilename(filename, index)}</p>
         <a
           href={contentPath}
-          rel='noopener noreferrer'
+          rel="noopener noreferrer"
           className={styles.openFileButton}
         >
           Open File
@@ -293,7 +293,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
   };
 
   const renderContent = () => {
-    if (poi.type === 'iframe') {
+    if (poi.type === "iframe") {
       const iframeContent = getIframeContent();
 
       return (
@@ -315,17 +315,17 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               title={poi.name}
               onLoad={handleImageLoad}
               onError={() => setIsLoading(false)}
-              allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              sandbox='allow-scripts allow-same-origin allow-popups allow-forms allow-presentation'
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
             />
           )}
           {iframeContent.src && (
             <a
               href={iframeContent.src}
-              rel='noopener noreferrer'
+              rel="noopener noreferrer"
               className={styles.externalLinkButton}
-              title='Open in new tab'
+              title="Open in new tab"
             >
               <FaExternalLinkAlt size={12} />
             </a>
@@ -364,7 +364,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               return (
                 <div
                   key={`stack-${index}`}
-                  className={`${styles.stackItem} ${isSelected ? styles.stackItemSelected : ''}`}
+                  className={`${styles.stackItem} ${isSelected ? styles.stackItemSelected : ""}`}
                   onClick={() => setSelectedFileIndex(index)}
                   style={{ zIndex: poi.files!.length - index }}
                 >
@@ -393,17 +393,17 @@ const POIPreview: React.FC<POIPreviewProps> = ({
     // Check if POI has no files or empty content
     if (
       (!poi.files || poi.files.length === 0) &&
-      (!poi.content || poi.content.trim() === '')
+      (!poi.content || poi.content.trim() === "")
     ) {
       return (
         <div className={styles.emptyContentContainer}>
           <div className={styles.emptyContentIcon}>
-            <FaFile size={48} className='text-gray-400' />
+            <FaFile size={48} className="text-gray-400" />
           </div>
           <p className={styles.emptyContentText}>No content available</p>
           <p className={styles.emptyContentSubtext}>
-              This POI doesn&apos;t have any files or content attached.
-            </p>
+            This POI doesn&apos;t have any files or content attached.
+          </p>
         </div>
       );
     }
@@ -414,15 +414,15 @@ const POIPreview: React.FC<POIPreviewProps> = ({
 
   const getMimeType = (extension: string): string => {
     const mimeTypes: { [key: string]: string } = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      pdf: 'application/pdf',
-      mp4: 'video/mp4',
-      webm: 'video/webm',
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      pdf: "application/pdf",
+      mp4: "video/mp4",
+      webm: "video/webm",
     };
-    return mimeTypes[extension] || 'application/octet-stream';
+    return mimeTypes[extension] || "application/octet-stream";
   };
 
   const getDisplayFilename = (filename: string, index?: number): string => {
@@ -445,7 +445,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
     }
 
     // If we have a stored filename, return it, otherwise return empty string
-    return filename || '';
+    return filename || "";
   };
 
   return (
@@ -460,7 +460,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               <button
                 onClick={handleEdit}
                 className={`${styles.actionButton} ${styles.editButton}`}
-                title='Edit POI'
+                title="Edit POI"
               >
                 <FaEdit size={16} />
               </button>
@@ -469,7 +469,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
               <button
                 onClick={handleDelete}
                 className={`${styles.actionButton} ${styles.deleteButton}`}
-                title='Delete POI'
+                title="Delete POI"
               >
                 <FaTrash size={16} />
               </button>
@@ -477,7 +477,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({
             <button
               onClick={onClose}
               className={`${styles.actionButton} ${styles.closeButton}`}
-              title='Close'
+              title="Close"
             >
               <FaTimes size={16} />
             </button>
@@ -512,13 +512,13 @@ const POIPreview: React.FC<POIPreviewProps> = ({
 
       <ConfirmationModal
         isOpen={showDeleteConfirm}
-        title='Delete POI'
+        title="Delete POI"
         message={`Are you sure you want to delete "${poi.name}"? This action cannot be undone.`}
-        confirmText='Delete'
-        cancelText='Cancel'
+        confirmText="Delete"
+        cancelText="Cancel"
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
-        variant='danger'
+        variant="danger"
       />
     </div>
   );

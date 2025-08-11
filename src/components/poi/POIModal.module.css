@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
- background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   color: #fff;
@@ -651,49 +651,49 @@
     margin: 0 0.5rem;
     max-height: 95vh;
   }
-  
+
   .modalHeader {
     padding: 1rem;
   }
-  
+
   .modalForm {
     padding: 1rem;
   }
-  
+
   .headerTitle {
     font-size: 1.125rem;
   }
-  
+
   .dropzone {
     padding: 1rem;
   }
-  
+
   .filesListHeader {
     padding: 0.5rem 0.75rem;
     font-size: 0.8125rem;
   }
-  
+
   .fileItem {
     padding: 0.5rem 0.75rem;
   }
-  
+
   .fileName {
     font-size: 0.8125rem;
   }
-  
+
   .fileSize {
     font-size: 0.6875rem;
   }
-  
+
   /* Responsive adjustments for existing files */
   .existingFilesSection {
     padding: 0.75rem;
   }
-  
+
   .existingFileItem {
     padding: 0.5rem;
   }
-  
+
   .existingFilesHeader {
     font-size: 13px;
   }

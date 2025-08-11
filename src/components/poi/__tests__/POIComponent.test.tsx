@@ -76,7 +76,7 @@ describe("POIComponent", () => {
     render(<POIComponent {...defaultProps} />);
 
     expect(fetch).toHaveBeenCalledWith(
-      "/advanced-panorama-viewer/data/poi/poi-data.json"
+      "/advanced-panorama-viewer/data/poi/poi-data.json",
     );
   });
 

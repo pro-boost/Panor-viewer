@@ -18,7 +18,7 @@ function getPlatformDirectories() {
     const macArm64DirPath = path.join(distDir, "mac-arm64");
     const macX64DirPath = path.join(distDir, "mac-x64");
     const macDirPath = path.join(distDir, "mac");
-    
+
     let macDirToUse = null;
     if (fs.existsSync(macArm64DirPath)) {
       macDirToUse = macArm64DirPath;
@@ -30,7 +30,7 @@ function getPlatformDirectories() {
       macDirToUse = macDirPath;
       unpackedDir = "mac";
     }
-    
+
     if (macDirToUse) {
       const macDir = fs
         .readdirSync(macDirToUse)
@@ -42,13 +42,13 @@ function getPlatformDirectories() {
           unpackedDir,
           "Contents",
           "Resources",
-          "app"
+          "app",
         );
         resourcesPath = path.join(
           distDir,
           unpackedDir,
           "Contents",
-          "Resources"
+          "Resources",
         );
       } else {
         // Fallback for different macOS build structures
@@ -73,12 +73,15 @@ function getPlatformDirectories() {
   return {
     standalonePath: path.join(appPath, ".next", "standalone"),
     appPath: appPath,
-    resourcesPath: resourcesPath
+    resourcesPath: resourcesPath,
   };
 }
 
-const { standalonePath: packagedStandalonePath, appPath: packagedAppPath, resourcesPath: packagedResourcesPath } =
-  getPlatformDirectories();
+const {
+  standalonePath: packagedStandalonePath,
+  appPath: packagedAppPath,
+  resourcesPath: packagedResourcesPath,
+} = getPlatformDirectories();
 
 console.log("Installing dependencies for packaged application...");
 
@@ -92,24 +95,26 @@ if (fs.existsSync(packagedStandalonePath)) {
     });
 
     console.log(
-      "✓ Dependencies installed successfully in packaged application"
+      "✓ Dependencies installed successfully in packaged application",
     );
   } catch (error) {
     console.error(
       "✗ Failed to install dependencies in packaged app:",
-      error.message
+      error.message,
     );
     process.exit(1);
   }
-} else if (fs.existsSync(path.join(packagedResourcesPath || packagedAppPath, "app.asar"))) {
+} else if (
+  fs.existsSync(path.join(packagedResourcesPath || packagedAppPath, "app.asar"))
+) {
   // For ASAR-packed builds, dependencies are already included
   console.log(
-    "✓ Application is ASAR-packed, dependencies are already included"
+    "✓ Application is ASAR-packed, dependencies are already included",
   );
 } else {
   console.log(
     "✗ Packaged application directory not found at:",
-    packagedAppPath
+    packagedAppPath,
   );
   process.exit(1);
 }

@@ -14,6 +14,7 @@ This documentation provides comprehensive guides for setting up, configuring, an
 ### Installation
 
 1. **Clone and install dependencies:**
+
    ```bash
    git clone <repository-url>
    cd pano-app
@@ -21,27 +22,28 @@ This documentation provides comprehensive guides for setting up, configuring, an
    ```
 
 2. **Generate panorama configuration:**
+
    ```bash
    npm run generate-config
    ```
 
-4. **Start development server:**
+3. **Start development server:**
    ```bash
    npm run dev
    ```
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run generate-config` | Generate Marzipano configuration |
-| `npm run dev:config` | Generate config and start dev server |
-| `npm run test:config` | Test coordinate system configurations |
-| `npm run clean` | Clean build artifacts and config |
+| Script                    | Description                           |
+| ------------------------- | ------------------------------------- |
+| `npm run dev`             | Start development server              |
+| `npm run build`           | Build for production                  |
+| `npm run start`           | Start production server               |
+| `npm run lint`            | Run ESLint                            |
+| `npm run generate-config` | Generate Marzipano configuration      |
+| `npm run dev:config`      | Generate config and start dev server  |
+| `npm run test:config`     | Test coordinate system configurations |
+| `npm run clean`           | Clean build artifacts and config      |
 
 ## Project Structure
 
@@ -75,10 +77,12 @@ See [Troubleshooting Guide](./TROUBLESHOOTING.md) for common issues and solution
 ## Platform-Specific Setup
 
 ### Windows
+
 - Use PowerShell or Command Prompt
 - Scripts automatically detect Windows and use appropriate commands
 
 ### macOS/Linux
+
 - Ensure proper permissions for script execution
 - Use bash or zsh terminal
 
@@ -99,6 +103,7 @@ See [Troubleshooting Guide](./TROUBLESHOOTING.md) for common issues and solution
 ## Support
 
 For issues and questions:
+
 1. Check the troubleshooting guide
 2. Review configuration options
 3. Test with different coordinate modes

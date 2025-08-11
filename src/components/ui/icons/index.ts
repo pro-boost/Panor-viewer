@@ -1,1 +1,6 @@
-export { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon } from './ControlPanelIcons';
+export {
+  ProjectsIcon,
+  FloorsIcon,
+  PerformanceIcon,
+  POIIcon,
+} from "./ControlPanelIcons";

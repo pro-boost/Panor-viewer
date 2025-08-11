@@ -258,6 +258,7 @@ The `config/` directory contains all configuration files for different tools and
 The `scripts/` directory contains build tools and utility scripts:
 
 ### Main Scripts
+
 - **`build-electron-packager.js`** - Packages the application into an Electron desktop app
 - **`fix-standalone-asar.js`** - Fixes ASAR archive issues in standalone builds
 - **`install-packaged-deps.js`** - Installs dependencies for packaged applications
@@ -267,6 +268,7 @@ The `scripts/` directory contains build tools and utility scripts:
 - **`verify-build-contents.js`** - Verifies the integrity and completeness of build outputs
 
 ### Node.js Utilities (`scripts/node/`)
+
 - **`README.md`** - Documentation for Node.js scripts
 - **`calculate-north-offsets.js`** - Calculates north direction offsets for panorama orientation
 - **`cleanup-temp.js`** - Removes temporary files and cleans up build artifacts
@@ -279,6 +281,7 @@ The `scripts/` directory contains build tools and utility scripts:
 The `docs/` directory contains comprehensive project documentation:
 
 ### Main Documentation
+
 - **`CONFIGURATION.md`** - Detailed configuration options and environment variables
 - **`INDEX.md`** - Documentation index and navigation guide
 - **`README.md`** - Setup and installation guide
@@ -286,10 +289,12 @@ The `docs/` directory contains comprehensive project documentation:
 - **`TROUBLESHOOTING.md`** - Common issues, solutions, and debugging guides
 
 ### Authentication Documentation (`docs/authentication/`)
+
 - **`AUTHENTICATION.md`** - General authentication system overview and implementation
 - **`SUPABASE_AUTH.md`** - Supabase authentication setup and configuration guide
 
 ### Development Documentation (`docs/development/`)
+
 - **`BUILD_GUIDE.md`** - Step-by-step build process documentation
 - **`CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md`** - Centralized credentials system implementation guide
 - **`ELECTRON_BUILD_GUIDE.md`** - Electron desktop application build instructions

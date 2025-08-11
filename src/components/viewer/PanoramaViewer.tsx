@@ -26,10 +26,10 @@ export default function PanoramaViewer({
   initialSceneId,
 }: PanoramaViewerProps = {}) {
   const [closePanelsFunc, setClosePanelsFunc] = useState<(() => void) | null>(
-    null
+    null,
   );
   const [poiSceneCounts, setPoiSceneCounts] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const hotspotRendererRef = useRef<HotspotRendererRef>(null);
   const poiComponentRef = useRef<POIComponentRef>(null);
@@ -47,7 +47,7 @@ export default function PanoramaViewer({
 
     try {
       const response = await fetch(
-        `/api/poi/scene-counts?projectId=${encodeURIComponent(projectId)}`
+        `/api/poi/scene-counts?projectId=${encodeURIComponent(projectId)}`,
       );
       if (response.ok) {
         const data = await response.json();
@@ -55,7 +55,7 @@ export default function PanoramaViewer({
       } else {
         console.warn(
           "Failed to fetch POI scene counts for MiniMap:",
-          response.status
+          response.status,
         );
         setPoiSceneCounts({});
       }
@@ -75,7 +75,7 @@ export default function PanoramaViewer({
       // Also refresh local POI scene counts for MiniMap
       fetchPOISceneCounts();
     },
-    [fetchPOISceneCounts]
+    [fetchPOISceneCounts],
   );
 
   // Fetch POI scene counts when projectId changes
@@ -188,12 +188,12 @@ export default function PanoramaViewer({
           // Fetch POI data to determine which scene it belongs to
           try {
             const response = await fetch(
-              `/api/poi/load?projectId=${encodeURIComponent(projectId || "")}`
+              `/api/poi/load?projectId=${encodeURIComponent(projectId || "")}`,
             );
             if (response.ok) {
               const data = await response.json();
               const poiToDelete = data.pois?.find(
-                (poi: any) => poi.id === actualPoiId
+                (poi: any) => poi.id === actualPoiId,
               );
 
               if (poiToDelete) {

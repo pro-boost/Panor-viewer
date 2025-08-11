@@ -1,13 +1,18 @@
-'use client';
+"use client";
 
-import React, { ReactElement, useEffect } from 'react';
-import styles from './ControlPanel.module.css';
-import { SceneData } from '@/types/scenes';
-import { ControlButton } from './ControlButton';
-import { ProjectsPanel, FloorSelectorPanel, PerformanceMonitorPanel, POIManagementPanelWithModal } from './panels';
-import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon } from './icons';
-import { POIData } from '@/types/poi';
-import { usePanelState } from '../../hooks/usePanelState';
+import React, { ReactElement, useEffect } from "react";
+import styles from "./ControlPanel.module.css";
+import { SceneData } from "@/types/scenes";
+import { ControlButton } from "./ControlButton";
+import {
+  ProjectsPanel,
+  FloorSelectorPanel,
+  PerformanceMonitorPanel,
+  POIManagementPanelWithModal,
+} from "./panels";
+import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon } from "./icons";
+import { POIData } from "@/types/poi";
+import { usePanelState } from "../../hooks/usePanelState";
 
 interface PerformanceStats {
   loadedScenes: number;
@@ -25,14 +30,14 @@ interface ControlPanelProps {
   performanceStats?: PerformanceStats;
   totalScenes?: number;
   onOptimize?: () => void;
-  
+
   // POI Management props
   projectId?: string;
   currentPanoramaId?: string | null;
   onPOIEdit?: (poi: POIData) => void;
   onPOIDelete?: (poiId: string | POIData) => void;
   onPOINavigate?: (panoramaId: string) => void;
-  
+
   // Panel control props
   onClosePanels?: (closePanelsFunc: () => void) => void;
 }
@@ -70,7 +75,7 @@ export default function ControlPanel({
     <div className={styles.controlPanel}>
       {/* Projects Panel */}
       <ControlButton
-        id='projects'
+        id="projects"
         expandedPanel={expandedPanel}
         onToggle={handlePanelToggle}
         onMouseEnter={handleMouseEnter}
@@ -83,7 +88,7 @@ export default function ControlPanel({
       {/* Floor Selector Panel */}
       {scenes.length > 0 && onFloorChange && (
         <ControlButton
-          id='floors'
+          id="floors"
           expandedPanel={expandedPanel}
           onToggle={handlePanelToggle}
           onMouseEnter={handleMouseEnter}
@@ -102,7 +107,7 @@ export default function ControlPanel({
       {/* POI Management Panel */}
       {projectId && currentPanoramaId && (
         <ControlButton
-          id='poi'
+          id="poi"
           expandedPanel={expandedPanel}
           onToggle={handlePanelToggle}
           onMouseEnter={handleMouseEnter}
@@ -123,7 +128,7 @@ export default function ControlPanel({
       {/* Performance Monitor Panel */}
       {performanceStats && (
         <ControlButton
-          id='performance'
+          id="performance"
           expandedPanel={expandedPanel}
           onToggle={handlePanelToggle}
           onMouseEnter={handleMouseEnter}

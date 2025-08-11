@@ -30,7 +30,7 @@ function getElectronDataPaths() {
           os.homedir(),
           "Library",
           "Application Support",
-          appName
+          appName,
         );
         break;
       case "linux":
@@ -52,7 +52,7 @@ function getElectronDataPaths() {
 
       networkPersistentStatePath: path.join(
         userDataPath,
-        "Network Persistent State"
+        "Network Persistent State",
       ),
     });
   });
@@ -71,7 +71,7 @@ function getElectronDataPaths() {
     networkPersistentStatePath: null,
     credentialCachePath: path.join(
       credentialCachePath,
-      "credentials-cache.json"
+      "credentials-cache.json",
     ),
   });
 
@@ -157,7 +157,7 @@ function clearElectronData() {
         } catch (error) {
           console.log(
             "   ⚠️  Could not remove credential cache directory:",
-            error.message
+            error.message,
           );
         }
         return;
@@ -224,14 +224,14 @@ function clearElectronData() {
             console.log(`   ✅ Empty ${paths.appName} directory removed`);
           } else {
             console.log(
-              `   ℹ️  ${paths.appName} directory contains ${files.length} remaining files/folders`
+              `   ℹ️  ${paths.appName} directory contains ${files.length} remaining files/folders`,
             );
           }
         }
       } catch (error) {
         console.log(
           `   ⚠️  Could not remove ${paths.appName} directory:`,
-          error.message
+          error.message,
         );
       }
 
@@ -240,7 +240,7 @@ function clearElectronData() {
 
     if (!foundData) {
       console.log(
-        "\n✅ No Electron app data found. App data is already clean."
+        "\n✅ No Electron app data found. App data is already clean.",
       );
       return;
     }
@@ -334,14 +334,14 @@ function clearAuthDataOnly() {
             console.log(`   ✅ Empty ${paths.appName} directory removed`);
           } else {
             console.log(
-              `   ℹ️  ${paths.appName} directory contains ${files.length} remaining files/folders`
+              `   ℹ️  ${paths.appName} directory contains ${files.length} remaining files/folders`,
             );
           }
         }
       } catch (error) {
         console.log(
           `   ⚠️  Could not remove ${paths.appName} directory:`,
-          error.message
+          error.message,
         );
       }
 
@@ -369,17 +369,17 @@ function main() {
     console.log("Electron App Data Cleaner");
     console.log("\nUsage:");
     console.log(
-      "  node scripts/clear-electron-data.js           # Clear all app data"
+      "  node scripts/clear-electron-data.js           # Clear all app data",
     );
     console.log(
-      "  node scripts/clear-electron-data.js --auth    # Clear authentication data only"
+      "  node scripts/clear-electron-data.js --auth    # Clear authentication data only",
     );
     console.log(
-      "  node scripts/clear-electron-data.js --help    # Show this help"
+      "  node scripts/clear-electron-data.js --help    # Show this help",
     );
     console.log("\nOptions:");
     console.log(
-      "  --auth    Clear only authentication data (preserve preferences)"
+      "  --auth    Clear only authentication data (preserve preferences)",
     );
     console.log("  --help    Show help information");
     return;
