@@ -41,16 +41,16 @@ dist/
 
 ## Build Commands
 
-### 1. Standard Build (All Platforms)
+### 1. Cross-Platform Build (Recommended)
 
 ```bash
-npm run build:electron
+npm run desktop:build:installer
 ```
 
-### 2. Windows-Only Build (Recommended)
+### 2. Unpacked Build (For Testing)
 
 ```bash
-npm run build:electron:win
+npm run desktop:build:unpack
 ```
 
 ### 3. Manual Build Process
@@ -186,11 +186,10 @@ Add to `files` array in `electron-builder.json`:
 
 ```json
 {
-  "build:electron": "npm run build && electron-builder",
-  "build:electron:win": "npm run build && electron-builder --win",
-  "build:electron:mac": "npm run build && electron-builder --mac",
-  "build:electron:linux": "npm run build && electron-builder --linux",
-  "clean": "rimraf dist .next out"
+  "desktop:build:installer": "npm run build && electron-builder --config=config/electron-builder.json && node scripts/electron/fix-app-icon.js",
+  "desktop:build:unpack": "npm run build && electron-builder --config=config/electron-builder.json --dir && node scripts/electron/fix-app-icon.js",
+  "clean": "node scripts/utils/cross-platform-cleanup.js && node scripts/node/cleanup-temp-files.js",
+  "clean:electron": "node scripts/electron/clear-electron-data.js"
 }
 ```
 
@@ -236,7 +235,7 @@ For CI/CD builds, version can be set via environment variable:
 
 ```bash
 export npm_package_version=1.0.0-build.123
-npm run build:electron
+npm run desktop:build:installer
 ```
 
 ## Security Considerations

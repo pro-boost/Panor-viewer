@@ -50,23 +50,17 @@ This document provides detailed information about all npm scripts and utilities 
 **Purpose:** Complete desktop application build with installer creation
 **Importance:** Creates production-ready desktop installers for distribution
 
-### `desktop:build:win`
+### `desktop:build:unpack`
 
-**Command:** `npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --win --dir && node scripts/install-packaged-deps.js`
-**Purpose:** Windows-specific desktop build with unpacked directory output
-**Importance:** Creates Windows desktop application for testing and development
+**Command:** `npm run build && electron-builder --config=config/electron-builder.json --dir && node scripts/electron/fix-app-icon.js`
+**Purpose:** Cross-platform desktop build with unpacked directory output (auto-detects current OS)
+**Importance:** Creates desktop application for testing and development on the current platform
 
 ### `build:electron`
 
 **Command:** `node scripts/build-electron-packager.js`
 **Purpose:** Quick Electron packaging using electron-packager (faster alternative)
 **Importance:** Provides faster build option for development and testing
-
-### `desktop:build:linux:local`
-
-**Command:** `npm run download-node && npm run build:standalone && electron-builder --config=config/electron-builder.json --linux --dir`
-**Purpose:** Linux-specific desktop build for local development
-**Importance:** Enables cross-platform development and testing on Linux
 
 ## Utility Scripts
 

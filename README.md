@@ -92,14 +92,10 @@ python3 -m pip install numpy
 
 ### Desktop Application
 
-- `npm run desktop:build` - Build desktop app for current platform
-- `npm run desktop:build:win` - Build Windows desktop app (unpacked)
-- `npm run desktop:build:mac` - Build macOS desktop app (requires macOS)
-- `npm run desktop:build:linux` - Build Linux desktop app (requires Linux)
-- `npm run desktop:build:mac:local` - Build macOS app locally (unpacked)
-- `npm run desktop:build:linux:local` - Build Linux app locally (unpacked)
-- `npm run desktop:test` - Test desktop app with production build
-- `npm run dev:desktop` - Run desktop app in development mode
+- `npm run desktop:build:installer` - Build desktop app installer for current platform
+- `npm run desktop:build:unpack` - Build desktop app (unpacked) for current platform
+- `npm run desktop:dev` - Run desktop app in development mode
+- `npm run clean:electron` - Clear Electron app data and cache
 
 **Cross-Platform Support**: The application now supports building for Windows, macOS, and Linux with automatic platform detection for Node.js bundling and file extraction. See <mcfile name="CROSS_PLATFORM_BUILD.md" path="docs/CROSS_PLATFORM_BUILD.md"></mcfile> for detailed build instructions.
 

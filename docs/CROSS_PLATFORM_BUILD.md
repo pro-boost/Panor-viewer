@@ -39,40 +39,40 @@ The application now supports cross-platform builds with the following features:
 ### Windows Builds
 
 ```bash
-# Build Windows installer (production)
-npm run desktop:build:win
+# Build installer for current platform (production)
+npm run desktop:build:installer
 
-# Build Windows directory only (for testing)
-npm run desktop:build:win:complete
+# Build unpacked directory for current platform (for testing)
+npm run desktop:build:unpack
 ```
 
-### macOS Builds
+### All Platforms
+
+The build scripts now automatically detect your current platform and build accordingly:
 
 ```bash
-# Build macOS DMG and ZIP (production) - requires macOS
-npm run desktop:build:mac
+# Build installer for current platform (production)
+npm run desktop:build:installer
 
-# Build macOS directory only (for testing) - requires macOS
-npm run desktop:build:mac:local
+# Build unpacked directory for current platform (for testing)
+npm run desktop:build:unpack
 ```
 
-### Linux Builds
+**Supported platforms:**
 
-```bash
-# Build Linux packages (production) - requires Linux
-npm run desktop:build:linux
-
-# Build Linux directory only (for testing) - requires Linux
-npm run desktop:build:linux:local
-```
+- **Windows**: Creates NSIS installer and unpacked directory
+- **macOS**: Creates DMG and unpacked app bundle
+- **Linux**: Creates AppImage, DEB, RPM packages and unpacked directory
 
 ## Cross-Platform Development Workflow
 
 ### Option 1: Native Platform Builds (Recommended)
 
-1. **Windows developers**: Use `npm run desktop:build:win`
-2. **macOS developers**: Use `npm run desktop:build:mac`
-3. **Linux developers**: Use `npm run desktop:build:linux`
+**All platforms**: Use `npm run desktop:build:installer` or `npm run desktop:build:unpack`
+
+- Scripts automatically detect the current platform (Windows, macOS, or Linux)
+- No need for platform-specific commands
+- Builds are optimized for the current operating system
 
 ### Option 2: CI/CD Pipeline
 
@@ -85,17 +85,8 @@ strategy:
     os: [windows-latest, macos-latest, ubuntu-latest]
 runs-on: ${{ matrix.os }}
 steps:
-  - name: Build for Windows
-    if: matrix.os == 'windows-latest'
-    run: npm run desktop:build:win
-
-  - name: Build for macOS
-    if: matrix.os == 'macos-latest'
-    run: npm run desktop:build:mac
-
-  - name: Build for Linux
-    if: matrix.os == 'ubuntu-latest'
-    run: npm run desktop:build:linux
+  - name: Build for current platform
+    run: npm run desktop:build:installer
 ```
 
 ### Option 3: Docker (Advanced)
