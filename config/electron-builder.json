@@ -86,7 +86,9 @@
   "compression": "normal",
   "win": {
     "target": "nsis",
-    "signAndEditExecutable": false,
+    "signAndEditExecutable": true,
+    "publisherName": "FRIBOUZ",
+    "certificateSubjectName": "FRIBOUZ",
     "icon": "public/panorama-viewer-icon-multi.ico",
     "requestedExecutionLevel": "requireAdministrator"
   },
