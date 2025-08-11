@@ -13,6 +13,7 @@
     "src/**/*",
     "public/assets/**/*",
     "!public/assets/images/*-unsplash*.jpg",
+    "!public/**/*",
     "public/panorama-viewer-icon.ico",
     "public/panorama-viewer-icon-multi.ico",
     "public/panorama-viewer-icon.png",

@@ -12,6 +12,16 @@
   flex-direction: column;
 }
 
+/* Ensure loading states are properly centered */
+.container .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 200px;
+}
+
 .card {
   background: var(--glass-bg);
   border-radius: var(--radius-xl);

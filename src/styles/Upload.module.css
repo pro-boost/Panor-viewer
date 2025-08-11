@@ -80,6 +80,16 @@
   z-index: 1;
 }
 
+/* Ensure loading states are properly centered */
+.container .content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 200px;
+}
+
 /* ===================================
    HEADER & NAVIGATION
    =================================== */
