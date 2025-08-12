@@ -8,23 +8,21 @@
   "scripts": {
     "dev": "node scripts/utils/dev-with-projects-path.js",
     "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron desktop/main.js\"",
-    "prebuild": "node scripts/build/download-node-binary.js && node scripts/build/fix-swc-platform-binaries.js",
-    "build": "node -e \"const fs = require('fs'); fs.copyFileSync('config/next.config.production.js', 'next.config.js.bak'); fs.copyFileSync('config/next.config.production.js', 'next.config.js');\" && cross-env NODE_OPTIONS='--max-old-space-size=4096' next build && node -e \"const fs = require('fs'); fs.renameSync('next.config.js.bak', 'next.config.js');\"",
-    "postbuild": "node -e \"const fs = require('fs'); const path = require('path'); const standaloneDir = '.next/standalone'; const staticSrc = '.next/static'; const staticDest = path.join(standaloneDir, '.next/static'); const scriptsSrc = 'scripts'; const scriptsDest = path.join(standaloneDir, 'scripts'); if (fs.existsSync(staticSrc) && fs.existsSync(standaloneDir)) { try { fs.cpSync(staticSrc, staticDest, { recursive: true, force: true }); console.log('✅ Static files copied to standalone build'); } catch (error) { console.warn('⚠️ Failed to copy static files:', error.message); } } if (fs.existsSync(scriptsSrc) && fs.existsSync(standaloneDir)) { try { fs.cpSync(scriptsSrc, scriptsDest, { recursive: true, force: true }); console.log('✅ Scripts directory copied to standalone build'); } catch (error) { console.warn('⚠️ Failed to copy scripts directory:', error.message); } }\" && node scripts/build/post-build-setup.js && node scripts/build/install-dependencies.js --type=standalone",
+    "build": "node scripts/build.js web",
+    "desktop:build:unpack": "node scripts/build.js electron",
+    "desktop:build:installer": "node scripts/build.js electron-installer",
     "start": "node .next/standalone/server.js",
     "lint": "next lint",
     "generate-config": "node scripts/node/generate-config.js",
-    "clean": "node scripts/utils/cross-platform-cleanup.js && node scripts/node/cleanup-temp-files.js",
+    "clean": "node scripts/build.js clean",
     "clean:electron": "node scripts/electron/clear-electron-data.js",
-    "desktop:build:installer": "npm run build && electron-builder --config=config/electron-builder.json && node scripts/electron/fix-app-icon.js",
-    "desktop:build:unpack": "npm run build && electron-builder --config=config/electron-builder.json --dir && node scripts/electron/fix-app-icon.js",
     "test:credentials": "node scripts/utils/validate-credentials.js",
     "test": "cd . && jest --config=config/jest.config.js",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
-    "postinstall": "node scripts/build/fix-swc-platform-binaries.js"
+    "postinstall": "echo \"Build fixes are now integrated into the build process\""
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.52.0",

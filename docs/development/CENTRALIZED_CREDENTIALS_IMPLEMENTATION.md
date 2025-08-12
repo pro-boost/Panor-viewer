@@ -54,7 +54,7 @@ The centralized credentials system has been successfully implemented and is read
 ### New Files
 
 1. **`scripts/test-credentials.js`** - Test script for credential server connectivity
-2. **`scripts/build-with-credentials.js`** - Build script with credential server configuration
+2. **`config/build.config.js`** - Build configuration with credential server support
 3. **`docs/CENTRALIZED_CREDENTIALS_IMPLEMENTATION.md`** - This documentation
 
 ## 🚀 Usage Instructions
