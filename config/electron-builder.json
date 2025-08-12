@@ -111,6 +111,7 @@
     "smartUnpack": true
   },
   "compression": "maximum",
+  "afterPack": "scripts/electron/after-pack.js",
   "win": {
     "target": "nsis",
     "signAndEditExecutable": false,
