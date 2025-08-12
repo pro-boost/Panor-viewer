@@ -8,6 +8,7 @@ import { useUploadState } from "@/hooks/useUploadState";
 import { useProjectManager } from "@/hooks/useProjectManager";
 import { useValidation } from "@/hooks/useValidation";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUploadCacheRefresh } from "@/hooks/useCacheRefresh";
 
 export default function Upload() {
   // Initialize authentication
@@ -21,6 +22,7 @@ export default function Upload() {
     projectManager.isEditMode,
     projectManager.existingFiles,
   );
+  const { handleUploadComplete } = useUploadCacheRefresh();
 
   // Destructure commonly used values for cleaner code
   const {
@@ -96,31 +98,7 @@ export default function Upload() {
     // This will update the project status message in the UI
   }, [projectManager.existingFiles]);
 
-  const handleDeleteAllAndUpload = () => {
-    validation.clearAllValidation();
-    // Clear duplicate warnings and images to hide the section
-    validation.clearDuplicateWarning();
-    fileManager.clearDuplicateImages();
-    setDeleteAllAndUpload(true);
-    const form = document.querySelector("form") as HTMLFormElement;
-    if (form) {
-      const syntheticEvent = {
-        preventDefault: () => {},
-        currentTarget: form,
-        target: form,
-        nativeEvent: new Event("submit"),
-        bubbles: true,
-        cancelable: true,
-        defaultPrevented: false,
-        eventPhase: 0,
-        isTrusted: true,
-        timeStamp: Date.now(),
-        type: "submit",
-        _deleteAllMode: true,
-      } as any;
-      handleSubmit(syntheticEvent);
-    }
-  };
+
 
   const handleProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const newName = e.target.value;
@@ -203,11 +181,14 @@ export default function Upload() {
         formData.append("poiFile", fileManager.poiFile);
       }
 
+      // Always use delete all mode when duplicates are detected
+      const hasDuplicates = duplicateImages.length > 0 || duplicateWarning.length > 0;
+      
       if (uploadState.allowOverwrite || event._overwriteMode) {
         formData.append("overwrite", "true");
       }
 
-      if (uploadState.deleteAllAndUpload || event._deleteAllMode) {
+      if (uploadState.deleteAllAndUpload || event._deleteAllMode || hasDuplicates) {
         formData.append("deleteAll", "true");
       }
       uploadState.setAllowOverwrite(false);
@@ -270,6 +251,15 @@ export default function Upload() {
         ? "Project updated successfully!"
         : "Project created successfully!";
       uploadState.finishUpload(true, successMessage);
+      
+      // Trigger cache refresh for the updated project
+      if (projectManager.isEditMode && projectId) {
+        handleUploadComplete(projectId);
+        // Dispatch cache refresh event for immediate UI updates
+        window.dispatchEvent(new CustomEvent('panorama-cache-refresh', {
+          detail: { projectId }
+        }));
+      }
     } catch (error: any) {
       uploadState.handleUploadError(error);
       uploadState.finishUpload(false, "");
@@ -496,17 +486,11 @@ export default function Upload() {
                     </span>
                   </div>
                 )}
-                {fileManager.duplicateImages.length > 0 && (
-                  <div className={styles.summaryItem}>
-                    <span className={styles.summaryIcon}></span>
-                    <span className={styles.summaryText}>
-                      {fileManager.duplicateImages.length} duplicate(s) detected
-                    </span>
-                  </div>
-                )}
               </div>
             </div>
           )}
+
+
 
           <button
             type="submit"
@@ -576,107 +560,7 @@ export default function Upload() {
           </div>
         )}
 
-        {/* Duplicate Files Management */}
-        {(duplicateImages.length > 0 || duplicateWarning.length > 0) && (
-          <div className={`${styles.message} ${styles.messageWarning}`}>
-            <div className={styles.duplicateHeader}>
-              <h4>
-                Duplicate Files Detected (
-                {Math.max(duplicateImages.length, duplicateWarning.length)}{" "}
-                files)
-              </h4>
-              <button
-                type="button"
-                onClick={() => setShowDuplicateDetails(!showDuplicateDetails)}
-                className={styles.toggleDetailsButton}
-              >
-                {showDuplicateDetails ? "Hide Details" : "Show Details"}
-              </button>
-            </div>
-            <div>
-              <p className={styles.duplicateExplanation}>
-                These files have the same names as existing files in your
-                project:
-              </p>
-              {showDuplicateDetails && (
-                <ul className={styles.duplicateList}>
-                  {duplicateImages.length > 0
-                    ? duplicateImages.map((img, index) => (
-                        <li key={index} className={styles.duplicateItem}>
-                          <span className={styles.fileName}>{img.name}</span>
-                          <span className={styles.fileSize}>
-                            ({Math.round(img.size / 1024)} KB)
-                          </span>
-                        </li>
-                      ))
-                    : duplicateWarning.map((filename, index) => (
-                        <li key={index} className={styles.duplicateItem}>
-                          <span className={styles.fileName}>{filename}</span>
-                        </li>
-                      ))}
-                </ul>
-              )}
 
-              <div className={styles.duplicateActions}>
-                <p className={styles.actionText}>
-                  <strong>Options:</strong>
-                </p>
-                <ul className={styles.actionList}>
-                  <li>Rename the duplicate files and re-select them</li>
-                  <li>Continue upload to replace existing files</li>
-                  <li>
-                    Remove all existing files and replace them with the new ones
-                    provided
-                  </li>
-                </ul>
-              </div>
-              <div className={styles.duplicateActions}>
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    // Clear duplicate warnings to hide the section
-                    validation.clearDuplicateWarning();
-                    fileManager.clearDuplicateImages();
-                    const form = document.querySelector(
-                      "form",
-                    ) as HTMLFormElement;
-                    if (form) {
-                      const syntheticEvent = {
-                        preventDefault: () => {},
-                        currentTarget: form,
-                        target: form,
-                        nativeEvent: new Event("submit"),
-                        bubbles: true,
-                        cancelable: true,
-                        defaultPrevented: false,
-                        eventPhase: 0,
-                        isTrusted: true,
-                        timeStamp: Date.now(),
-                        type: "submit",
-                        _overwriteMode: true,
-                      } as unknown as FormEvent<HTMLFormElement> & {
-                        _overwriteMode: boolean;
-                      };
-                      handleSubmit(syntheticEvent);
-                    }
-                  }}
-                  disabled={isLoading}
-                  className={styles.overwriteButton}
-                >
-                  {isLoading && <span className={styles.loadingSpinner}></span>}
-                  {isLoading ? "Overwriting..." : "Upload and Overwrite"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteAllAndUpload}
-                  className={styles.deleteAllButton}
-                >
-                  Delete All & Upload
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {(message || uploadSuccess) && (
           <div

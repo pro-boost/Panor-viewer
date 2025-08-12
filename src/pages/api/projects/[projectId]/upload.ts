@@ -567,10 +567,22 @@ export default async function handler(
         console.warn("Script warnings:", stderr);
       }
 
+      // Trigger cache invalidation for the updated project
+      try {
+        // Import FileURLManager dynamically to avoid potential import issues
+        const { FileURLManager } = await import('@/utils/fileHelpers');
+        FileURLManager.refreshProjectCache(projectId);
+        console.log(`Cache invalidated for project: ${projectId}`);
+      } catch (cacheError) {
+        console.warn('Failed to invalidate cache:', cacheError);
+        // Don't fail the upload if cache invalidation fails
+      }
+
       res.status(200).json({
         message: `Files uploaded successfully to project "${projectId}" and configuration generated!`,
         projectId,
         scriptOutput: stdout,
+        cacheInvalidated: true,
       });
     } catch (scriptError: any) {
       console.error("Script execution error:", scriptError);

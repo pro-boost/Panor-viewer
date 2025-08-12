@@ -12,6 +12,7 @@ import PanoramaContainer from "./PanoramaContainer";
 import HotspotRenderer, { HotspotRendererRef } from "./HotspotRenderer";
 import POIComponent, { POIComponentRef } from "../poi/POIComponent";
 import { usePanoramaManager } from "@/hooks/usePanoramaManager";
+import { useCacheRefresh } from "@/hooks/useCacheRefresh";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { POIData } from "@/types/poi";
@@ -83,6 +84,9 @@ export default function PanoramaViewer({
     fetchPOISceneCounts();
   }, [fetchPOISceneCounts]);
 
+  // Initialize cache refresh functionality
+  const { refreshImages } = useCacheRefresh(projectId);
+
   const {
     state,
     refs,
@@ -105,6 +109,26 @@ export default function PanoramaViewer({
       document.body.classList.remove("panorama-viewer");
     };
   }, []);
+
+  // Listen for cache refresh events and refresh images when needed
+  useEffect(() => {
+    const handleCacheRefresh = () => {
+      refreshImages();
+      // Also refresh the panorama manager to reload scenes with new cache-busted URLs
+      if (refs.viewerRef.current && state.currentScene) {
+        // Force reload current scene with cache-busted URLs
+        setTimeout(() => {
+          navigateToScene(state.currentScene!);
+        }, 100);
+      }
+    };
+
+    window.addEventListener('panorama-cache-refresh', handleCacheRefresh);
+    
+    return () => {
+      window.removeEventListener('panorama-cache-refresh', handleCacheRefresh);
+    };
+  }, [refreshImages, refs.viewerRef, state.currentScene, navigateToScene]);
 
   // Cleanup effect to properly destroy viewer when component unmounts
   useEffect(() => {

@@ -857,6 +857,53 @@
 /* ===================================
    DUPLICATE FILES SECTION
    =================================== */
+.duplicateNotification {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  border-left: 4px solid var(--warning);
+}
+
+.duplicateHeader {
+  margin-bottom: var(--spacing-md);
+}
+
+.duplicateTitle {
+  margin: 0;
+  font-size: var(--font-lg);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.duplicateContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.duplicateMessage {
+  margin: 0;
+  color: var(--warning-dark);
+  font-size: var(--font-sm);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.duplicateAction {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  line-height: 1.5;
+  font-style: italic;
+  padding: var(--spacing-sm);
+  background: rgba(245, 158, 11, 0.05);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
 .duplicateDetails {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-lg);

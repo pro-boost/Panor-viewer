@@ -1,4 +1,6 @@
-// Centralized file URL management
+import { CacheManager } from './cacheManager';
+
+// Centralized file URL management with cache-busting support
 export class FileURLManager {
   static getBaseURL(): string {
     // Always use the API route for file serving
@@ -6,25 +8,59 @@ export class FileURLManager {
     return "/api/files";
   }
 
-  static getProjectFileURL(projectId: string, relativePath: string): string {
+  static getProjectFileURL(projectId: string, relativePath: string, cacheBust: boolean = false): string {
     const baseURL = this.getBaseURL();
-    return `${baseURL}/${projectId}/${relativePath}`;
+    let url = `${baseURL}/${projectId}/${relativePath}`;
+    
+    if (cacheBust) {
+      const cacheManager = CacheManager.getInstance();
+      const timestamp = cacheManager.getProjectTimestamp(projectId);
+      url += `?t=${timestamp}`;
+    }
+    
+    return url;
   }
 
-  static getPanoramaImageURL(projectId: string, imageName: string): string {
-    return this.getProjectFileURL(projectId, `images/${imageName}`);
+  static getPanoramaImageURL(projectId: string, imageName: string, cacheBust: boolean = true): string {
+    const baseURL = this.getBaseURL();
+    let url = `${baseURL}/${projectId}/images/${imageName}`;
+    
+    if (cacheBust) {
+      const cacheManager = CacheManager.getInstance();
+      const timestamp = cacheManager.getImageTimestamp(projectId, imageName);
+      url += `?t=${timestamp}`;
+    }
+    
+    return url;
   }
 
-  static getConfigFileURL(projectId: string, filename: string): string {
-    return this.getProjectFileURL(projectId, `config/${filename}`);
+  static getConfigFileURL(projectId: string, filename: string, cacheBust: boolean = true): string {
+    return this.getProjectFileURL(projectId, `config/${filename}`, cacheBust);
   }
 
   static getPOIFileURL(
     projectId: string,
     poiId: string,
     filename: string,
+    cacheBust: boolean = false
   ): string {
-    return this.getProjectFileURL(projectId, `poi/${poiId}/${filename}`);
+    return this.getProjectFileURL(projectId, `poi/${poiId}/${filename}`, cacheBust);
+  }
+
+  /**
+   * Force refresh cache for a project's images
+   */
+  static refreshProjectCache(projectId: string): void {
+    const cacheManager = CacheManager.getInstance();
+    cacheManager.forceRefreshProject(projectId);
+  }
+
+  /**
+   * Update cache for a specific image
+   */
+  static updateImageCache(projectId: string, imageName: string): void {
+    const cacheManager = CacheManager.getInstance();
+    cacheManager.updateImageCache(projectId, imageName);
   }
 }
 
