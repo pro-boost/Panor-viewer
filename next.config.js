@@ -1,6 +1,8 @@
 const path = require('path');
 
 /** @type {import('next').NextConfig} */
+const { getProjectsPath } = require('./src/utils/paths');
+
 const nextConfig = {
   output: 'standalone',
 
@@ -42,7 +44,7 @@ const nextConfig = {
   },
 
   env: {
-    PROJECTS_PATH: process.env.PROJECTS_PATH,
+    PROJECTS_PATH: getProjectsPath(),
     USER_DATA_PATH: process.env.USER_DATA_PATH,
   },
 

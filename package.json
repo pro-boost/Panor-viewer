@@ -6,7 +6,7 @@
   "private": true,
   "main": "desktop/main.js",
   "scripts": {
-    "dev": "node scripts/utils/dev-with-projects-path.js",
+    "dev": "next dev",
     "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron desktop/main.js\"",
     "build": "node scripts/build.js web",
     "desktop:build:unpack": "node scripts/build.js electron",
