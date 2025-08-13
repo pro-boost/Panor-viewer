@@ -12,27 +12,8 @@
       "to": "desktop",
       "filter": ["**/*"]
     },
-    ".next/standalone/**/*",
-    ".next/static/**/*",
-    "src/**/*",
-    "public/assets/**/*",
-    "!public/assets/images/*-unsplash*.jpg",
-    "!public/**/*",
-    "public/icons/panorama-viewer-icon.ico",
-    "public/icons/panorama-viewer-icon-multi.ico",
-    "public/icons/panorama-viewer-icon.png",
-    "public/icons/panorama-viewer-icon 16x16.ico",
-    "public/icons/panorama-viewer-icon 24x24.ico",
-    "public/icons/panorama-viewer-icon 32x32.ico",
-    "public/icons/panorama-viewer-icon 64x64.ico",
-    "public/icons/panorama-viewer-icon 128x128.ico",
-    "public/icons/panorama-viewer-icon 256x256.ico",
-    "projects/**/*",
     "data/credential-config.json",
-    "scripts/utils/production-server.js",
-    "config/next.config.production.js",
     "package.json",
-    "scripts/node/**/*",
     "!**/*.map",
     "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
     "!**/node_modules/.cache",
@@ -105,6 +86,44 @@
       "from": ".next/standalone",
       "to": "standalone",
       "filter": ["**/*", "!src/**/*"]
+    },
+    {
+      "from": ".next/static",
+      "to": "standalone/.next/static",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "public/assets",
+      "to": "assets",
+      "filter": ["**/*", "!*-unsplash*.jpg"]
+    },
+    {
+      "from": "public/icons",
+      "to": "icons",
+      "filter": [
+        "panorama-viewer-icon.ico",
+        "panorama-viewer-icon-multi.ico",
+        "panorama-viewer-icon.png",
+        "panorama-viewer-icon 16x16.ico",
+        "panorama-viewer-icon 24x24.ico",
+        "panorama-viewer-icon 32x32.ico",
+        "panorama-viewer-icon 64x64.ico",
+        "panorama-viewer-icon 128x128.ico",
+        "panorama-viewer-icon 256x256.ico"
+      ]
+    },
+    {
+      "from": "scripts/node",
+      "to": "scripts/node",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "scripts/utils/production-server.js",
+      "to": "scripts/utils/production-server.js"
+    },
+    {
+      "from": "config/next.config.production.js",
+      "to": "config/next.config.production.js"
     }
   ],
   "asar": {
