@@ -7,13 +7,10 @@
     "output": "dist"
   },
   "files": [
-    {
-      "from": "dist/desktop",
-      "to": "desktop",
-      "filter": ["**/*"]
-    },
+    "desktop/**/*",
     "data/credential-config.json",
     "package.json",
+    "!dist/**/*",
     "!node_modules/**/*",
     "node_modules/mime-types/**/*",
     "node_modules/mime-db/**/*",
