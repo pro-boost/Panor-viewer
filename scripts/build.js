@@ -99,6 +99,9 @@ class UnifiedBuildScript {
     );
 
     console.log("✅ Electron build completed");
+
+    // Clean up only temporary desktop files, preserve .next and other essentials
+    await this.buildManager.cleanupDesktopTemp();
   }
 
   /**
@@ -124,6 +127,9 @@ class UnifiedBuildScript {
     });
 
     console.log("✅ Electron installer build completed");
+
+    // Clean up only temporary desktop files, preserve .next and other essentials
+    await this.buildManager.cleanupDesktopTemp();
   }
 
   /**

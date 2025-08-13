@@ -437,6 +437,35 @@ if (process.defaultApp || /[\\\/]electron-prebuilt[\\\/]/.test(process.execPath)
   }
 
   /**
+   * Selective cleanup that only removes temporary desktop build files
+   * Preserves essential build artifacts like .next for electron app
+   */
+  async cleanupDesktopTemp() {
+    console.log('🧹 Cleaning up temporary desktop build files...');
+
+    const itemsToClean = [
+      path.join(this.projectRoot, 'dist', 'desktop'),
+      path.join(this.projectRoot, 'temp'),
+      path.join(this.projectRoot, 'scripts', 'temp'),
+    ];
+
+    for (const item of itemsToClean) {
+      if (fs.existsSync(item)) {
+        try {
+          await this.removeWithRetry(item, 3);
+          console.log(`✓ Removed: ${path.relative(this.projectRoot, item)}`);
+        } catch (error) {
+          console.warn(
+            `⚠️ Could not remove ${path.relative(this.projectRoot, item)}: ${error.message}`
+          );
+        }
+      }
+    }
+
+    console.log('✅ Temporary desktop files cleaned up (preserving .next and dist)');
+  }
+
+  /**
    * Remove file/directory with retry logic for Windows file locking
    */
   async removeWithRetry(itemPath, maxRetries = 3) {
