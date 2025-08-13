@@ -175,13 +175,15 @@ class BuildManager {
       console.log('✅ Public assets copied');
     }
 
-    // Copy necessary scripts (excluding sensitive ones)
-    const scriptsSrc = path.join(this.projectRoot, 'scripts');
-    const scriptsDest = path.join(this.standaloneDir, 'scripts');
+    // Copy only runtime scripts (node/ folder) - exclude build-only scripts
+    const nodeScriptsSrc = path.join(this.projectRoot, 'scripts', 'node');
+    const nodeScriptsDest = path.join(this.standaloneDir, 'scripts', 'node');
 
-    if (fs.existsSync(scriptsSrc)) {
-      this.copyRecursive(scriptsSrc, scriptsDest);
-      console.log('✅ Scripts copied');
+    if (fs.existsSync(nodeScriptsSrc)) {
+      this.copyRecursive(nodeScriptsSrc, nodeScriptsDest);
+      console.log('✅ Runtime scripts (node/) copied - build scripts excluded');
+    } else {
+      console.warn('⚠️ Node scripts directory not found, skipping runtime scripts copy');
     }
   }
 
