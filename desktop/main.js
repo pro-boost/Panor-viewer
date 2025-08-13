@@ -7,10 +7,13 @@ const forceProduction = process.argv.includes("--force-production");
 const isDev = !app.isPackaged && !forceProduction;
 const { ServerManager } = require("./server");
 const { setupFileProtocol } = require("./file-server");
+const AsarIntegrityChecker = require("./asar-integrity");
 // Test project copying functionality removed - no longer auto-copies test projects
 
 let mainWindow;
 let serverManager;
+let integrityChecker = null;
+let integrityCheckInterval = null;
 
 // Enable GPU acceleration with modern settings for Electron 32
 app.commandLine.appendSwitch("enable-gpu-rasterization");
@@ -49,6 +52,48 @@ async function createWindow() {
     console.log("Development mode:", isDev);
     console.log("App packaged:", app.isPackaged);
     console.log("Force production:", forceProduction);
+
+    // Initialize and perform ASAR integrity check
+    integrityChecker = new AsarIntegrityChecker();
+    const integrityInitialized = await integrityChecker.initialize();
+    
+    if (integrityInitialized) {
+      console.log("Performing initial ASAR integrity check...");
+      const integrityResult = await integrityChecker.performIntegrityCheck();
+      
+      if (!integrityResult.success) {
+        console.error("ASAR integrity check failed!");
+        integrityChecker.handleIntegrityFailure(integrityResult);
+        // Continue execution but log the failure
+      } else {
+        console.log("Initial ASAR integrity check passed");
+        
+        // Set up periodic integrity checks (every 5 minutes in production)
+        if (!isDev) {
+          integrityCheckInterval = setInterval(async () => {
+            try {
+              console.log("Performing periodic integrity check...");
+              const periodicResult = await integrityChecker.performIntegrityCheck();
+              
+              if (!periodicResult.success) {
+                console.error("Periodic integrity check failed!");
+                integrityChecker.handleIntegrityFailure(periodicResult);
+                
+                // Clear the interval to prevent further checks
+                if (integrityCheckInterval) {
+                  clearInterval(integrityCheckInterval);
+                  integrityCheckInterval = null;
+                }
+              }
+            } catch (error) {
+              console.error("Error during periodic integrity check:", error);
+            }
+          }, 5 * 60 * 1000); // 5 minutes
+          
+          console.log("Periodic integrity checks enabled (5-minute intervals)");
+        }
+      }
+    }
 
     // For development, use the Next.js dev server directly
     if (isDev) {
@@ -217,14 +262,62 @@ app.commandLine.appendSwitch("max_old_space_size=4096"); // Increase memory limi
 // app.commandLine.appendSwitch("enable-features", "VaapiVideoDecoder"); // Avoid
 // app.commandLine.appendSwitch("ignore-gpu-blacklist"); // Avoid
 
-// IPC handlers for file operations
+// Enhanced IPC handlers with security validation
 ipcMain.handle("app:getPath", (event, name) => {
+  // Validate the sender
+  if (!validateIPCSender(event.sender)) {
+    console.warn("IPC Security: Unauthorized app:getPath request");
+    throw new Error("Unauthorized request");
+  }
+  
+  // Validate the path name parameter
+  const allowedPaths = ['userData', 'documents', 'downloads', 'temp'];
+  if (!allowedPaths.includes(name)) {
+    console.warn(`IPC Security: Invalid path name requested: ${name}`);
+    throw new Error("Invalid path name");
+  }
+  
   return app.getPath(name);
 });
 
-ipcMain.handle("app:getProjectsPath", () => {
+ipcMain.handle("app:getProjectsPath", (event) => {
+  // Validate the sender
+  if (!validateIPCSender(event.sender)) {
+    console.warn("IPC Security: Unauthorized app:getProjectsPath request");
+    throw new Error("Unauthorized request");
+  }
+  
   return path.join(app.getPath("userData"), "projects");
 });
+
+/**
+ * Validate IPC sender to ensure requests come from authorized renderers
+ */
+function validateIPCSender(sender) {
+  try {
+    // Check if sender is from our main window
+    if (mainWindow && sender === mainWindow.webContents) {
+      return true;
+    }
+    
+    // Additional validation can be added here
+    // For example, checking the sender's URL, origin, etc.
+    const senderURL = sender.getURL();
+    
+    // Allow requests from localhost (development) or file protocol (production)
+    if (senderURL.startsWith('http://localhost:') || 
+        senderURL.startsWith('file://') ||
+        senderURL.startsWith('app://')) {
+      return true;
+    }
+    
+    console.warn(`IPC Security: Unauthorized sender URL: ${senderURL}`);
+    return false;
+  } catch (error) {
+    console.error("IPC Security: Error validating sender:", error);
+    return false;
+  }
+}
 
 app.whenReady().then(() => {
   console.log("App is ready, creating window...");
@@ -253,5 +346,14 @@ app.on("activate", () => {
 app.on("before-quit", () => {
   if (serverManager) {
     serverManager.stop();
+  }
+  if (integrityChecker) {
+    console.log("Cleaning up integrity checker");
+    integrityChecker = null;
+  }
+  if (integrityCheckInterval) {
+    console.log("Clearing integrity check interval");
+    clearInterval(integrityCheckInterval);
+    integrityCheckInterval = null;
   }
 });

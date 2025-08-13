@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const standaloneObfuscator = require('./obfuscate-standalone');
 const os = require('os');
 
 /**
@@ -520,8 +521,16 @@ async function afterPack(context) {
       }
     }
     
-    // Step 2: Handle icon fixing
-    console.log('\n🎨 Step 2: Fixing application icons...');
+    // Step 2: Handle standalone obfuscation
+    console.log('\n🔒 Step 2: Obfuscating standalone resources...');
+    if (standaloneDirs.length > 0) {
+      await standaloneObfuscator.obfuscateStandaloneResources(standaloneDirs);
+    } else {
+      console.log('ℹ️  No standalone directories found for obfuscation');
+    }
+    
+    // Step 3: Handle icon fixing
+    console.log('\n🎨 Step 3: Fixing application icons...');
     await iconFixer.fixAppIcon(context);
     
     console.log('\n🎉 Comprehensive after-pack process completed successfully!');

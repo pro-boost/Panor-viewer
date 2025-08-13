@@ -136,6 +136,9 @@ export default function Upload() {
 
     uploadState.startUpload();
 
+    // Declare progress interval variable outside try block for catch block access
+    let progressInterval: NodeJS.Timeout;
+
     try {
       let projectId: string;
 
@@ -201,7 +204,7 @@ export default function Upload() {
       uploadState.showLargeUploadWarning(totalFiles);
 
       // Create progress simulation
-      const progressInterval = uploadState.createProgressInterval();
+      progressInterval = uploadState.createProgressInterval();
 
       // Upload files to the project
       const response = await fetch(
@@ -261,7 +264,30 @@ export default function Upload() {
         }));
       }
     } catch (error: any) {
-      uploadState.handleUploadError(error);
+      // Clear progress interval immediately to stop any ongoing progress updates
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+      
+      // Immediately reset loading state to prevent UI from getting stuck
+      uploadState.setIsLoading(false);
+      uploadState.setUploadProgress(0);
+      
+      // Handle specific error types from handleUploadResponse
+      if (error.status && error.data) {
+        // This is a structured error from handleUploadResponse
+        const errorMessage = validation.handleUploadError(error.status, error.data);
+        // Set message if one is returned, but validation errors are set regardless
+        if (errorMessage) {
+          uploadState.setMessage(errorMessage);
+        }
+        // For 409 errors, validation errors are set in validation state and will be displayed
+      } else {
+        // Handle other types of errors (network, etc.)
+        uploadState.handleUploadError(error);
+      }
+      
+      // Ensure upload state is properly finished
       uploadState.finishUpload(false, "");
     }
   };

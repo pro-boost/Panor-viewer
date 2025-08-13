@@ -25,10 +25,10 @@
     "public/icons/panorama-viewer-icon 256x256.ico",
     "projects/**/*",
     "data/credential-config.json",
-    "scripts/utils/production-server.js",
+    "scripts/**/*",
+    "!scripts/node/**/*",
     "config/next.config.production.js",
     "package.json",
-    "scripts/node/**/*",
     "!**/*.map",
     "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
     "!**/node_modules/.cache",
@@ -98,9 +98,14 @@
       "filter": ["**/*"]
     },
     {
+      "from": "scripts/node",
+      "to": "standalone/scripts/node",
+      "filter": ["**/*"]
+    },
+    {
       "from": ".next/standalone",
       "to": "standalone",
-      "filter": ["**/*", "!src/**/*"]
+      "filter": ["**/*", "!src/**/*", "!scripts/**/*"]
     }
   ],
   "asar": {

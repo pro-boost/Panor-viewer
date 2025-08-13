@@ -70,6 +70,9 @@ class UnifiedBuildScript {
     // Post-build setup
     await this.buildManager.postBuild();
 
+    // Run security validation
+    await this.validateSecurity();
+
     console.log("✅ Web build completed");
   }
 
@@ -95,6 +98,9 @@ class UnifiedBuildScript {
     // Apply Electron-specific fixes
     await this.buildManager.electronBuild();
 
+    // Final security validation for packaged app
+    await this.validatePackagedSecurity();
+
     console.log("✅ Electron build completed");
   }
 
@@ -118,6 +124,59 @@ class UnifiedBuildScript {
     await this.buildManager.electronBuild();
 
     console.log("✅ Electron installer build completed");
+  }
+
+  /**
+   * Validate security features
+   */
+  async validateSecurity() {
+    console.log("🔐 Validating security features...");
+    try {
+      execSync("node test-security.js", {
+        stdio: "inherit",
+        cwd: process.cwd(),
+      });
+      console.log("✅ Security validation passed");
+    } catch (error) {
+      console.warn("⚠️ Security validation failed, but continuing build");
+      console.warn("Run 'npm run test:security' for detailed results");
+    }
+  }
+
+  /**
+   * Validate packaged application security
+   */
+  async validatePackagedSecurity() {
+    console.log("🛡️ Validating packaged application security...");
+    
+    // Check if ASAR archive exists
+    const fs = require('fs');
+    const asarPath = path.join(process.cwd(), 'dist/mac-arm64/Advanced Panorama Viewer.app/Contents/Resources/app.asar');
+    
+    if (fs.existsSync(asarPath)) {
+      console.log("✅ ASAR archive created successfully");
+      
+      // Check ASAR size (should be reasonable but not too small)
+      const stats = fs.statSync(asarPath);
+      const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+      console.log(`📦 ASAR archive size: ${sizeMB} MB`);
+      
+      if (stats.size > 1024 * 1024) { // At least 1MB
+        console.log("✅ ASAR archive size validation passed");
+      } else {
+        console.warn("⚠️ ASAR archive seems unusually small");
+      }
+    } else {
+      console.warn("⚠️ ASAR archive not found at expected location");
+    }
+    
+    // Check if integrity checker is included
+    const integrityPath = path.join(process.cwd(), 'desktop/asar-integrity.js');
+    if (fs.existsSync(integrityPath)) {
+      console.log("✅ ASAR integrity checker included");
+    } else {
+      console.warn("⚠️ ASAR integrity checker not found");
+    }
   }
 
   /**

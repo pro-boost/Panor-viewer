@@ -124,13 +124,23 @@ export const useProjectManager = () => {
     if (!projectResponse.ok) {
       const projectError = await projectResponse.json();
       if (projectResponse.status === 409) {
-        throw new Error(
-          `Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`,
-        );
+        // Throw structured error for 409 conflicts to match validation.handleUploadError expectations
+        throw {
+          status: 409,
+          data: {
+            error: `Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`,
+            projectName: projectName.trim()
+          }
+        };
       } else if (projectResponse.status === 400) {
-        throw new Error(
-          "Invalid project name. Project names can only contain letters, numbers, spaces, hyphens, and underscores.",
-        );
+        // Throw structured error for 400 validation errors
+        throw {
+          status: 400,
+          data: {
+            error: "Invalid project name. Project names can only contain letters, numbers, spaces, hyphens, and underscores.",
+            projectName: projectName.trim()
+          }
+        };
       } else {
         throw new Error(projectError.error || "Failed to create project");
       }
