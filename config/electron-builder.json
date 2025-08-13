@@ -25,9 +25,9 @@
     "**/resources.pak",
     "**/chrome_100_percent.pak",
     "**/chrome_200_percent.pak",
-    "!scripts/python/**/*",
-    "!scripts/utils/validate-credentials.js",
-    "!scripts/build/verify-build-output.js",
+    "!scripts/**/*",
+    "!public/assets/**/*",
+    "!config/**/*",
     "!public/cars/**/*",
     "!docs/**/*",
     "!.github/**/*",
@@ -78,11 +78,6 @@
       "filter": ["**/*"]
     },
     {
-      "from": "public/assets",
-      "to": "assets",
-      "filter": ["**/*", "!*-unsplash*.jpg"]
-    },
-    {
       "from": "public/icons",
       "to": "icons",
       "filter": [
@@ -96,19 +91,6 @@
         "panorama-viewer-icon 128x128.ico",
         "panorama-viewer-icon 256x256.ico"
       ]
-    },
-    {
-      "from": "scripts/node",
-      "to": "scripts/node",
-      "filter": ["**/*"]
-    },
-    {
-      "from": "scripts/utils/production-server.js",
-      "to": "scripts/utils/production-server.js"
-    },
-    {
-      "from": "config/next.config.production.js",
-      "to": "config/next.config.production.js"
     }
   ],
   "asar": {
