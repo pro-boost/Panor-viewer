@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { execSync } = require('child_process');
 
 /**
  * Centralized build configuration that integrates all fixes directly into the build process
@@ -38,6 +39,11 @@ class BuildManager {
     await this.copyAssets();
     await this.fixStandaloneServer();
     await this.installStandaloneDependencies();
+    
+    // Apply obfuscation in production builds
+    if (process.env.NODE_ENV === 'production') {
+      await this.obfuscateCode();
+    }
 
     console.log('✅ Post-build setup completed');
   }
@@ -47,6 +53,11 @@ class BuildManager {
    */
   async electronBuild() {
     console.log('⚡ Starting Electron build setup...');
+
+    // Apply additional obfuscation for standalone resources in production
+    if (process.env.NODE_ENV === 'production') {
+      await this.obfuscateStandaloneResources();
+    }
 
     await this.packageElectronApp();
 
@@ -221,6 +232,169 @@ if (process.defaultApp || /[\\\/]electron-prebuilt[\\\/]/.test(process.execPath)
 
     // This would integrate the electron packaging logic
     // Currently handled by electron-builder
+  }
+
+  /**
+   * Obfuscate code using the main obfuscation configuration
+   */
+  async obfuscateCode() {
+    try {
+      console.log('🔒 Starting code obfuscation...');
+      
+      const obfuscationConfig = require('./obfuscation.config.js');
+      const JavaScriptObfuscator = require('javascript-obfuscator');
+      
+      // Get production obfuscation settings and exclusion function
+      const options = obfuscationConfig.production;
+      const { shouldExcludeFile } = obfuscationConfig;
+      
+      // Obfuscate standalone build files
+      if (fs.existsSync(this.standaloneDir)) {
+        await this.obfuscateDirectory(this.standaloneDir, options, ['.js'], shouldExcludeFile);
+        console.log('✅ Standalone build obfuscated');
+      }
+      
+      // Obfuscate Next.js build output
+      const nextBuildDir = path.join(this.projectRoot, '.next');
+      if (fs.existsSync(nextBuildDir)) {
+        await this.obfuscateDirectory(nextBuildDir, options, ['.js'], shouldExcludeFile, [
+          'cache', 'static', 'server/pages/_app.js', 'server/pages/_document.js'
+        ]);
+        console.log('✅ Next.js build obfuscated');
+      }
+      
+      console.log('🔒 Code obfuscation completed successfully');
+    } catch (error) {
+      console.error('❌ Code obfuscation failed:', error.message);
+      // Don't fail the build, just warn
+      console.warn('⚠️ Continuing build without obfuscation');
+    }
+  }
+
+  /**
+   * Obfuscate standalone resources using the standalone script
+   * IMPORTANT: This now works on build output, not source files
+   */
+  async obfuscateStandaloneResources() {
+    try {
+      console.log('🔒 Starting standalone resources obfuscation...');
+      
+      const standaloneScript = path.join(this.projectRoot, 'scripts', 'electron', 'obfuscate-standalone.js');
+      
+      if (!fs.existsSync(standaloneScript)) {
+        console.warn('⚠️ Standalone obfuscation script not found, skipping');
+        return;
+      }
+      
+      // Create build directory for desktop files
+      const sourceDesktopDir = path.join(this.projectRoot, 'desktop');
+      const buildDesktopDir = path.join(this.projectRoot, 'dist', 'desktop');
+      
+      if (!fs.existsSync(sourceDesktopDir)) {
+        console.warn('⚠️ Source desktop directory not found, skipping');
+        return;
+      }
+      
+      // Ensure dist directory exists
+      fs.mkdirSync(path.join(this.projectRoot, 'dist'), { recursive: true });
+      
+      // Copy desktop files to build directory (preserve source)
+      console.log('📁 Copying desktop files to build directory...');
+      this.copyRecursive(sourceDesktopDir, buildDesktopDir);
+      console.log('✅ Desktop files copied to build directory');
+      
+      // Obfuscate the copied files in build directory
+      const tempDir = path.join(this.projectRoot, 'temp', 'desktop-obfuscated');
+      
+      // Use the standalone obfuscation script on build directory
+      execSync(`node "${standaloneScript}" "${buildDesktopDir}" "${tempDir}"`, {
+        stdio: 'inherit',
+        cwd: this.projectRoot
+      });
+      
+      // Replace build directory with obfuscated version (not source!)
+      if (fs.existsSync(tempDir)) {
+        fs.rmSync(buildDesktopDir, { recursive: true, force: true });
+        fs.renameSync(tempDir, buildDesktopDir);
+        console.log('✅ Build desktop scripts obfuscated (source files preserved)');
+      }
+      
+      console.log('🔒 Standalone resources obfuscation completed');
+    } catch (error) {
+      console.error('❌ Standalone resources obfuscation failed:', error.message);
+      // Don't fail the build, just warn
+      console.warn('⚠️ Continuing build without standalone obfuscation');
+    }
+  }
+
+  /**
+   * Obfuscate files in a directory with given options
+   */
+  async obfuscateDirectory(dirPath, options, extensions = ['.js'], shouldExcludeFile = null, excludePaths = []) {
+    const JavaScriptObfuscator = require('javascript-obfuscator');
+    
+    const processFile = (filePath) => {
+      try {
+        // Skip excluded paths
+        const relativePath = path.relative(dirPath, filePath);
+        if (excludePaths.some(exclude => relativePath.includes(exclude))) {
+          console.log(`  ⏭️ Skipping (excluded path): ${relativePath}`);
+          return;
+        }
+        
+        // Skip if file should be excluded (node_modules, etc.)
+        if (shouldExcludeFile && shouldExcludeFile(filePath)) {
+          console.log(`  ⏭️ Skipping (excluded file): ${relativePath}`);
+          return;
+        }
+        
+        // Skip if not a target extension
+        if (!extensions.includes(path.extname(filePath))) {
+          return;
+        }
+        
+        // Skip if file is too small (likely empty or minimal)
+        const stats = fs.statSync(filePath);
+        if (stats.size < 100) {
+          return;
+        }
+        
+        console.log(`  🔒 Obfuscating: ${relativePath}`);
+        
+        const sourceCode = fs.readFileSync(filePath, 'utf8');
+        const obfuscationResult = JavaScriptObfuscator.obfuscate(sourceCode, options);
+        
+        fs.writeFileSync(filePath, obfuscationResult.getObfuscatedCode());
+      } catch (error) {
+        console.warn(`  ⚠️ Failed to obfuscate ${filePath}: ${error.message}`);
+      }
+    };
+    
+    const processDirectory = (currentDir) => {
+      if (!fs.existsSync(currentDir)) return;
+      
+      // Skip if directory should be excluded (node_modules, etc.)
+      if (shouldExcludeFile && shouldExcludeFile(currentDir)) {
+        const relativePath = path.relative(dirPath, currentDir);
+        console.log(`  ⏭️ Skipping directory (excluded): ${relativePath}`);
+        return;
+      }
+      
+      const items = fs.readdirSync(currentDir);
+      
+      for (const item of items) {
+        const itemPath = path.join(currentDir, item);
+        const stats = fs.statSync(itemPath);
+        
+        if (stats.isDirectory()) {
+          processDirectory(itemPath);
+        } else if (stats.isFile()) {
+          processFile(itemPath);
+        }
+      }
+    };
+    
+    processDirectory(dirPath);
   }
 
   /**

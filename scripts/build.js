@@ -79,8 +79,14 @@ class UnifiedBuildScript {
   async buildElectron() {
     console.log("⚡ Building Electron application...");
 
+    // Set production environment for obfuscation
+    process.env.NODE_ENV = 'production';
+
     // First build the web app
     await this.buildWeb();
+
+    // Apply Electron-specific fixes and obfuscation BEFORE packaging
+    await this.buildManager.electronBuild();
 
     // Then build Electron with integrated fixes
     console.log("📦 Building Electron package...");
@@ -92,9 +98,6 @@ class UnifiedBuildScript {
       }
     );
 
-    // Apply Electron-specific fixes
-    await this.buildManager.electronBuild();
-
     console.log("✅ Electron build completed");
   }
 
@@ -104,8 +107,14 @@ class UnifiedBuildScript {
   async buildElectronInstaller() {
     console.log("📦 Building Electron installer...");
 
+    // Set production environment for obfuscation
+    process.env.NODE_ENV = 'production';
+
     // First build the web app
     await this.buildWeb();
+
+    // Apply Electron-specific fixes and obfuscation BEFORE packaging
+    await this.buildManager.electronBuild();
 
     // Then build Electron installer with integrated fixes
     console.log("🏗️ Creating Electron installer...");
@@ -113,9 +122,6 @@ class UnifiedBuildScript {
       stdio: "inherit",
       cwd: process.cwd(),
     });
-
-    // Apply Electron-specific fixes
-    await this.buildManager.electronBuild();
 
     console.log("✅ Electron installer build completed");
   }
