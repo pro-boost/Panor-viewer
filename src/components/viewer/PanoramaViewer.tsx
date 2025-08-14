@@ -16,7 +16,7 @@ import { useCacheRefresh } from "@/hooks/useCacheRefresh";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { POIData } from "@/types/poi";
-import { updateElectronMenuProjectId } from "@/utils/electronMenuHelper";
+
 
 interface PanoramaViewerProps {
   projectId?: string;
@@ -85,15 +85,7 @@ export default function PanoramaViewer({
     fetchPOISceneCounts();
   }, [fetchPOISceneCounts]);
 
-  // Update Electron menu with current project ID
-  useEffect(() => {
-    updateElectronMenuProjectId(projectId || null);
-    
-    // Cleanup when component unmounts
-    return () => {
-      updateElectronMenuProjectId(null);
-    };
-  }, [projectId]);
+
 
   // Initialize cache refresh functionality
   const { refreshImages } = useCacheRefresh(projectId);

@@ -40,8 +40,43 @@ if (!gotTheLock) {
   });
 }
 
+// Function to check if a port is available
+function checkPort(port) {
+  return new Promise((resolve) => {
+    const net = require('net');
+    const server = net.createServer();
+    
+    server.listen(port, () => {
+      server.once('close', () => {
+        resolve(false); // Port is available
+      });
+      server.close();
+    });
+    
+    server.on('error', () => {
+      resolve(true); // Port is in use
+    });
+  });
+}
+
+// Function to find the Next.js dev server port
+async function findDevServerPort() {
+  const portsToTry = [3000, 3001, 3002, 3003, 3004, 3005];
+  
+  for (const port of portsToTry) {
+    const isInUse = await checkPort(port);
+    if (isInUse) {
+      console.log(`Found server running on port ${port}`);
+      return `http://localhost:${port}`;
+    }
+  }
+  
+  console.log('No dev server found, using default port 3000');
+  return 'http://localhost:3000';
+}
+
 async function createWindow() {
-  let serverUrl = "http://localhost:3456"; // Default fallback URL
+  serverUrl = "http://localhost:3456"; // Default fallback URL
   let serverStartupError = null;
 
   try {
@@ -50,10 +85,9 @@ async function createWindow() {
     console.log("App packaged:", app.isPackaged);
     console.log("Force production:", forceProduction);
 
-    // For development, use the Next.js dev server directly
+    // For development, dynamically find the Next.js dev server port
     if (isDev) {
-      // Try port 3000 first, then 3001 if 3000 is in use
-      serverUrl = "http://localhost:3001"; // Next.js often falls back to 3001
+      serverUrl = await findDevServerPort();
       console.log("Using development server:", serverUrl);
     } else {
       try {
@@ -86,6 +120,9 @@ async function createWindow() {
     }
 
     console.log(`Final server URL: ${serverUrl}`);
+    
+    // Recreate menu with the correct server URL
+    createMenu();
 
     mainWindow = new BrowserWindow({
       width: 1600,
@@ -202,17 +239,20 @@ async function createWindow() {
 // Store menu template for dynamic updates
 let currentMenuTemplate = null;
 let isAdmin = false;
-let currentProjectId = null;
+let serverUrl = null; // Will be set dynamically
 
 // Create application menu with navigation buttons
 function createMenu() {
+  // Fallback URL if serverUrl is not set yet
+  const baseUrl = serverUrl || 'http://localhost:3000';
+  
   const pagesSubmenu = [
     {
       label: 'Home',
       accelerator: 'CmdOrCtrl+H',
       click: () => {
         if (mainWindow) {
-          mainWindow.loadURL('http://localhost:3001/');
+          mainWindow.loadURL(`${baseUrl}/`);
         }
       }
     },
@@ -221,7 +261,7 @@ function createMenu() {
       accelerator: 'CmdOrCtrl+U',
       click: () => {
         if (mainWindow) {
-          mainWindow.loadURL('http://localhost:3001/upload');
+          mainWindow.loadURL(`${baseUrl}/upload`);
         }
       }
     }
@@ -234,24 +274,13 @@ function createMenu() {
       accelerator: 'CmdOrCtrl+A',
       click: () => {
         if (mainWindow) {
-          mainWindow.loadURL('http://localhost:3001/admin');
+          mainWindow.loadURL(`${baseUrl}/admin`);
         }
       }
     });
   }
 
-  // Add Update Project menu item only if inside a project
-  if (currentProjectId) {
-    pagesSubmenu.push({
-      label: 'Update Project',
-      accelerator: 'CmdOrCtrl+Shift+U',
-      click: () => {
-        if (mainWindow) {
-          mainWindow.loadURL(`http://localhost:3001/upload?project=${encodeURIComponent(currentProjectId)}`);
-        }
-      }
-    });
-  }
+
 
   const template = [
     {
@@ -383,17 +412,13 @@ function createMenu() {
 }
 
 // Function to update menu dynamically
-function updateMenu(adminStatus = null, projectId = null) {
-  console.log("[MENU] updateMenu called with:", { adminStatus, projectId });
+function updateMenu(adminStatus = null) {
+  console.log("[MENU] updateMenu called with:", { adminStatus });
   if (adminStatus !== null) {
     isAdmin = adminStatus;
     console.log("[MENU] Updated isAdmin to:", isAdmin);
   }
-  if (projectId !== null) {
-    currentProjectId = projectId;
-    console.log("[MENU] Updated currentProjectId to:", currentProjectId);
-  }
-  console.log("[MENU] Current state before createMenu:", { isAdmin, currentProjectId });
+  console.log("[MENU] Current state before createMenu:", { isAdmin });
   createMenu();
   console.log("[MENU] Menu recreated");
 }
@@ -429,17 +454,7 @@ ipcMain.handle("app:getProjectsPath", () => {
 // IPC handlers for menu updates
 ipcMain.handle("update-menu-admin-status", (event, adminStatus) => {
   console.log("[IPC] update-menu-admin-status called with:", adminStatus);
-  updateMenu(adminStatus, null);
-});
-
-ipcMain.handle("update-menu-project-id", (event, projectId) => {
-  console.log("[IPC] update-menu-project-id called with:", projectId);
-  updateMenu(null, projectId);
-});
-
-ipcMain.handle("update-menu-context", (event, { adminStatus, projectId }) => {
-  console.log("[IPC] update-menu-context called with:", { adminStatus, projectId });
-  updateMenu(adminStatus, projectId);
+  updateMenu(adminStatus);
 });
 
 app.whenReady().then(() => {
@@ -452,15 +467,9 @@ app.whenReady().then(() => {
   // Test menu update on startup
   console.log("[STARTUP] Testing menu update...");
   setTimeout(() => {
-    console.log("[STARTUP] Calling updateMenu with admin=true, projectId=null...");
-    updateMenu(true, null);
+    console.log("[STARTUP] Calling updateMenu with admin=true...");
+    updateMenu(true);
   }, 3000);
-  
-  // Test menu update with project ID after 6 seconds
-  setTimeout(() => {
-    console.log("[STARTUP] Calling updateMenu with admin=true, projectId='aaa'...");
-    updateMenu(true, "aaa");
-  }, 6000);
 });
 
 app.on("window-all-closed", () => {

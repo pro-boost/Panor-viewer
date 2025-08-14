@@ -25,40 +25,13 @@ export const updateElectronMenuAdminStatus = async (isAdmin: boolean): Promise<v
   }
 };
 
-// Update current project ID in Electron menu
-export const updateElectronMenuProjectId = async (projectId: string | null): Promise<void> => {
-  if (!isElectron()) return;
-  
-  try {
-    // @ts-ignore - Electron IPC is available in Electron context
-    await window.electronAPI?.updateMenuProjectId?.(projectId);
-  } catch (error) {
-    console.warn('Failed to update Electron menu project ID:', error);
-  }
-};
 
-// Update both admin status and project ID in Electron menu
-export const updateElectronMenuContext = async (context: {
-  adminStatus?: boolean;
-  projectId?: string | null;
-}): Promise<void> => {
-  if (!isElectron()) return;
-  
-  try {
-    // @ts-ignore - Electron IPC is available in Electron context
-    await window.electronAPI?.updateMenuContext?.(context);
-  } catch (error) {
-    console.warn('Failed to update Electron menu context:', error);
-  }
-};
 
 // Declare global types for TypeScript
 declare global {
   interface Window {
     electronAPI?: {
       updateMenuAdminStatus?: (isAdmin: boolean) => Promise<void>;
-      updateMenuProjectId?: (projectId: string | null) => Promise<void>;
-      updateMenuContext?: (context: { adminStatus?: boolean; projectId?: string | null }) => Promise<void>;
     };
   }
 }
