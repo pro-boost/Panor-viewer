@@ -6,22 +6,16 @@ export const useValidation = () => {
   const [showDuplicateDetails, setShowDuplicateDetails] = useState(false);
 
   const clearValidationErrors = () => {
-    console.log("[DEBUG] clearValidationErrors called, current errors:", validationErrors);
     setValidationErrors([]);
-    console.log("[DEBUG] Validation errors cleared");
   };
 
   const clearDuplicateWarning = () => {
-    console.log("[DEBUG] clearDuplicateWarning called, current warnings:", duplicateWarning);
     setDuplicateWarning([]);
-    console.log("[DEBUG] Duplicate warnings cleared");
   };
 
   const clearAllValidation = () => {
-    console.log("[DEBUG] clearAllValidation called");
     clearValidationErrors();
     clearDuplicateWarning();
-    console.log("[DEBUG] All validation cleared");
   };
 
   const addValidationError = (error: string) => {
@@ -33,12 +27,7 @@ export const useValidation = () => {
   };
 
   const setValidationErrorsFromArray = (errors: string[]) => {
-    console.log("[DEBUG] setValidationErrorsFromArray called with:", {
-      inputErrors: errors,
-      currentState: validationErrors
-    });
     setValidationErrors(errors);
-    console.log("[DEBUG] Validation errors set to:", errors);
   };
 
   const hasValidationErrors = (): boolean => {

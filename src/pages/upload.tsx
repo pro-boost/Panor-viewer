@@ -97,16 +97,11 @@ export default function Upload() {
   // Update UI when existingFiles changes
   useEffect(() => {
     // Force UI update when existingFiles changes
-    console.log(
-      "ExistingFiles changed in state:",
-      projectManager.existingFiles
-    );
     // This will update the project status message in the UI
   }, [projectManager.existingFiles]);
 
   // Enhanced CSV validation function
   const validateCSVContent = async (file: File): Promise<string[]> => {
-    console.log("[DEBUG] validateCSVContent called for file:", file.name);
     return new Promise((resolve) => {
       const errors: string[] = [];
       const reader = new FileReader();
@@ -114,10 +109,8 @@ export default function Upload() {
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
-          console.log("[DEBUG] CSV file content length:", content?.length || 0);
           
           if (!content || content.trim() === "") {
-            console.log("[DEBUG] CSV file is empty");
             errors.push("CSV file is empty or could not be read.");
             resolve(errors);
             return;
@@ -126,10 +119,8 @@ export default function Upload() {
           const lines = content
             .split("\n")
             .filter((line) => line.trim() !== "");
-          console.log("[DEBUG] CSV lines count:", lines.length);
 
           if (lines.length < 2) {
-            console.log("[DEBUG] CSV has insufficient lines");
             errors.push(
               "CSV file must contain at least a header row and one data row."
             );
@@ -141,13 +132,11 @@ export default function Upload() {
           
           // Detect delimiter (comma or semicolon)
           const delimiter = header.includes(';') && header.split(';').length > header.split(',').length ? ';' : ',';
-          console.log("[DEBUG] Detected CSV delimiter:", delimiter);
           
           const headerColumns = header
             .split(delimiter)
             .map((col) => col.trim().replace(/"/g, "").replace(/^#\s*/, "")) // Remove leading # and whitespace
             .filter(col => col.length > 0); // Remove empty columns
-          console.log("[DEBUG] CSV header columns:", headerColumns);
 
           const requiredColumns = [
             "filename",
@@ -163,21 +152,17 @@ export default function Upload() {
           const missingColumns = requiredColumns.filter(
             (col) => !headerColumns.includes(col)
           );
-          console.log("[DEBUG] Missing columns:", missingColumns);
 
           if (missingColumns.length > 0) {
             const errorMsg = `CSV file is missing required columns: ${missingColumns.join(", ")}. Please ensure your CSV includes position (pano_pos_x, pano_pos_y, pano_pos_z) and orientation (pano_ori_w, pano_ori_x, pano_ori_y, pano_ori_z) columns.`;
-            console.log("[DEBUG] Adding missing columns error:", errorMsg);
             errors.push(errorMsg);
           }
 
           // Validate data rows
           const dataLines = lines.slice(1);
           const validDataLines = dataLines.filter((line) => line.trim() !== "");
-          console.log("[DEBUG] Valid data lines count:", validDataLines.length);
 
           if (validDataLines.length === 0) {
-            console.log("[DEBUG] No valid data lines found");
             errors.push("CSV file contains headers but no data rows.");
             resolve(errors);
             return;
@@ -209,7 +194,6 @@ export default function Upload() {
                 if (colIndex !== -1 && columns[colIndex]) {
                   const value = columns[colIndex].replace(/"/g, "");
                   if (value && isNaN(parseFloat(value))) {
-                    console.log(`[DEBUG] Invalid numeric value in row ${index + 2}, column ${colName}:`, value);
                     errors.push(
                       `Row ${index + 2}, column "${colName}": "${value}" is not a valid number.`
                     );
@@ -221,19 +205,13 @@ export default function Upload() {
           });
 
           if (rowErrorCount > maxRowErrorsToReport) {
-            console.log("[DEBUG] Too many row errors, truncating:", rowErrorCount);
             errors.push(
               `... and ${rowErrorCount - maxRowErrorsToReport} more row validation errors.`
             );
           }
 
-          console.log("[DEBUG] validateCSVContent returning errors:", {
-            totalErrors: errors.length,
-            errors: errors
-          });
           resolve(errors);
         } catch (parseError) {
-          console.error("[DEBUG] CSV parse error:", parseError);
           errors.push(
             "Error reading CSV file. Please ensure it's a valid CSV format."
           );
@@ -242,7 +220,6 @@ export default function Upload() {
       };
 
       reader.onerror = () => {
-        console.error("[DEBUG] File read error");
         errors.push(
           "Failed to read CSV file. Please try selecting the file again."
         );
@@ -287,7 +264,6 @@ export default function Upload() {
 
   // Helper function to reset validation and file input (only call when explicitly needed)
   const resetValidationAndFileInput = () => {
-    console.log("[DEBUG] Manually resetting validation and file input");
     validation.clearAllValidation();
     
     // Clear file input values to prevent stale file references
@@ -306,12 +282,6 @@ export default function Upload() {
   const handleFileChangeWithValidation = async (
     event: ChangeEvent<HTMLInputElement>
   ) => {
-    console.log("[DEBUG] handleFileChangeWithValidation started", {
-      inputName: event.target.name,
-      hasFiles: !!event.target.files,
-      fileCount: event.target.files?.length || 0,
-      fileName: event.target.files?.[0]?.name
-    });
 
     // Call the original file handler first
     fileManager.handleFileChange(event);
@@ -323,9 +293,7 @@ export default function Upload() {
     if (event.target.name === "csv" && event.target.files && event.target.files[0]) {
       // For CSV files being changed, validate the fresh file
       const freshCsvFile = event.target.files[0];
-      console.log("[DEBUG] Validating fresh CSV file:", freshCsvFile.name);
       const csvFileErrors = fileManager.validateCSVFile(freshCsvFile);
-      console.log("[DEBUG] Fresh CSV file validation errors:", csvFileErrors);
       allErrors.push(...csvFileErrors);
     } else if (fileManager.selectedFiles.csv) {
       // If CSV exists but we're not changing it, validate existing CSV
@@ -337,9 +305,7 @@ export default function Upload() {
     if (event.target.name === "images" && event.target.files && event.target.files.length > 0) {
       // For image files being changed, validate the fresh files
       const imageFiles = Array.from(event.target.files);
-      console.log("[DEBUG] Validating fresh image files:", imageFiles.map(f => f.name));
       const imageErrors = fileManager.validateImageFiles(imageFiles);
-      console.log("[DEBUG] Fresh image validation errors:", imageErrors);
       allErrors.push(...imageErrors);
     } else if (fileManager.selectedFiles.images.length > 0) {
       // If images exist but we're not changing them, validate existing images
@@ -358,15 +324,12 @@ export default function Upload() {
     }
 
     if (csvFileToValidate) {
-      console.log("[DEBUG] Starting CSV content validation for file:", csvFileToValidate.name);
-
       // Set loading state
       setCsvValidating(true);
 
       try {
         // Validate CSV content
         const csvContentErrors = await validateCSVContent(csvFileToValidate);
-        console.log("[DEBUG] CSV content validation errors:", csvContentErrors);
         allErrors.push(...csvContentErrors);
       } catch (error) {
         console.error("CSV validation error:", error);
@@ -380,16 +343,9 @@ export default function Upload() {
 
     // Get project name validation errors
     const projectNameErrors = projectManager.validateProjectName(projectName);
-    console.log("[DEBUG] Project name validation errors:", projectNameErrors);
     allErrors.push(...projectNameErrors);
 
-    console.log("[DEBUG] All collected errors:", {
-      allErrors,
-      totalErrors: allErrors.length
-    });
-
     // Set the complete error list
-    console.log("[DEBUG] Setting all errors at once");
     validation.setValidationErrorsFromArray(allErrors);
     
     // Note: Don't reset file input key on successful validation as it clears the input
@@ -582,15 +538,7 @@ export default function Upload() {
 
       // Refresh project data to update the UI with new file information
       if (projectManager.isEditMode && projectManager.editingProjectId) {
-        console.log(
-          "Refreshing project data after successful upload for project:",
-          projectManager.editingProjectId
-        );
         await projectManager.loadProjectData(projectManager.editingProjectId);
-        console.log(
-          "Project data refreshed, current files:",
-          projectManager.existingFiles
-        );
 
         // Force UI update by setting a message that includes the updated file information
         const updatedStatusMessage = projectManager.getProjectStatusMessage();

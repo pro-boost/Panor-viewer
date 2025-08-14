@@ -30,23 +30,15 @@ export const useFileManager = (
 
   // Validation functions
   const validateCSVFile = (file: File): string[] => {
-    console.log("[DEBUG] validateCSVFile called for:", {
-      fileName: file.name,
-      fileType: file.type,
-      fileSize: file.size
-    });
     const errors: string[] = [];
     if (file.name !== "pano-poses.csv") {
       const nameError = 'CSV file must be named exactly "pano-poses.csv"';
-      console.log("[DEBUG] Adding filename error:", nameError);
       errors.push(nameError);
     }
     if (!file.type.includes("csv") && !file.name.endsWith(".csv")) {
       const typeError = "File must be a valid CSV file";
-      console.log("[DEBUG] Adding file type error:", typeError);
       errors.push(typeError);
     }
-    console.log("[DEBUG] validateCSVFile returning errors:", errors);
     return errors;
   };
 
