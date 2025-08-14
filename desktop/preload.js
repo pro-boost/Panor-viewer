@@ -7,7 +7,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Menu update functions
   updateMenuAdminStatus: (isAdmin) => {
-    console.log('[PRELOAD] updateMenuAdminStatus called with:', isAdmin);
+    console.log("[PRELOAD] updateMenuAdminStatus called with:", isAdmin);
     return ipcRenderer.invoke("update-menu-admin-status", isAdmin);
   },
 

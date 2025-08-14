@@ -10,14 +10,13 @@ import { useValidation } from "@/hooks/useValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUploadCacheRefresh } from "@/hooks/useCacheRefresh";
 
-
 export default function Upload() {
   // Initialize authentication
   const { isAuthenticated, loading: authLoading } = useAuth();
 
   // Add state for CSV validation loading
   const [csvValidating, setCsvValidating] = useState(false);
-  
+
   // Add state for file input reset key to force re-render when same file is selected
   const [fileInputKey, setFileInputKey] = useState(0);
 
@@ -95,8 +94,6 @@ export default function Upload() {
     projectManager.initializeFromUrl();
   }, []);
 
-
-
   // Update UI when existingFiles changes
   useEffect(() => {
     // Force UI update when existingFiles changes
@@ -112,7 +109,7 @@ export default function Upload() {
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
-          
+
           if (!content || content.trim() === "") {
             errors.push("CSV file is empty or could not be read.");
             resolve(errors);
@@ -132,14 +129,18 @@ export default function Upload() {
           }
 
           const header = lines[0].toLowerCase().trim();
-          
+
           // Detect delimiter (comma or semicolon)
-          const delimiter = header.includes(';') && header.split(';').length > header.split(',').length ? ';' : ',';
-          
+          const delimiter =
+            header.includes(";") &&
+            header.split(";").length > header.split(",").length
+              ? ";"
+              : ",";
+
           const headerColumns = header
             .split(delimiter)
             .map((col) => col.trim().replace(/"/g, "").replace(/^#\s*/, "")) // Remove leading # and whitespace
-            .filter(col => col.length > 0); // Remove empty columns
+            .filter((col) => col.length > 0); // Remove empty columns
 
           const requiredColumns = [
             "filename",
@@ -177,8 +178,6 @@ export default function Upload() {
 
           validDataLines.forEach((line, index) => {
             const columns = line.split(delimiter).map((col) => col.trim());
-
-
 
             // Validate numeric columns for first few rows
             if (index < 5 && rowErrorCount < maxRowErrorsToReport) {
@@ -233,9 +232,9 @@ export default function Upload() {
     });
   };
 
-
-
-  const handleProjectNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleProjectNameChange = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
     const newProjectName = event.target.value;
     setProjectName(newProjectName);
 
@@ -249,16 +248,24 @@ export default function Upload() {
     // Add CSV content validation if CSV file exists
     if (fileManager.selectedFiles.csv) {
       try {
-        const csvContentErrors = await validateCSVContent(fileManager.selectedFiles.csv);
+        const csvContentErrors = await validateCSVContent(
+          fileManager.selectedFiles.csv
+        );
         allErrors.push(...csvContentErrors);
       } catch (error) {
-        console.error("CSV validation error in handleProjectNameChange:", error);
-        allErrors.push("An error occurred while validating the CSV file. Please try again.");
+        console.error(
+          "CSV validation error in handleProjectNameChange:",
+          error
+        );
+        allErrors.push(
+          "An error occurred while validating the CSV file. Please try again."
+        );
       }
     }
 
     // Get project name validation errors
-    const projectNameErrors = projectManager.validateProjectName(newProjectName);
+    const projectNameErrors =
+      projectManager.validateProjectName(newProjectName);
     allErrors.push(...projectNameErrors);
 
     // Check for duplicate project names (only if basic validation passes)
@@ -269,14 +276,16 @@ export default function Upload() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             projectName: newProjectName.trim(),
-            checkOnly: true // Add a flag to only check, not create
+            checkOnly: true, // Add a flag to only check, not create
           }),
         });
 
         if (!checkResponse.ok && checkResponse.status === 409) {
-          allErrors.push(`Project name "${newProjectName.trim()}" already exists. Please choose a different name or edit the existing project.`);
+          allErrors.push(
+            `Project name "${newProjectName.trim()}" already exists. Please choose a different name or edit the existing project.`
+          );
         }
       } catch (error) {
         // Silently ignore network errors for real-time validation
@@ -291,24 +300,23 @@ export default function Upload() {
   // Helper function to reset validation and file input (only call when explicitly needed)
   const resetValidationAndFileInput = () => {
     validation.clearAllValidation();
-    
+
     // Clear file input values to prevent stale file references
-    const csvInput = document.getElementById('csv') as HTMLInputElement;
+    const csvInput = document.getElementById("csv") as HTMLInputElement;
     if (csvInput) {
-      csvInput.value = '';
+      csvInput.value = "";
     }
-    
+
     // Reset file manager state
-    fileManager.setSelectedFiles(prev => ({ ...prev, csv: null }));
-    
+    fileManager.setSelectedFiles((prev) => ({ ...prev, csv: null }));
+
     // Force re-render of file input to allow same file selection
-    setFileInputKey(prev => prev + 1);
+    setFileInputKey((prev) => prev + 1);
   };
 
   const handleFileChangeWithValidation = async (
     event: ChangeEvent<HTMLInputElement>
   ) => {
-
     // Call the original file handler first
     fileManager.handleFileChange(event);
 
@@ -316,32 +324,48 @@ export default function Upload() {
     let allErrors: string[] = [];
 
     // Always validate CSV file (either fresh file or existing state)
-    if (event.target.name === "csv" && event.target.files && event.target.files[0]) {
+    if (
+      event.target.name === "csv" &&
+      event.target.files &&
+      event.target.files[0]
+    ) {
       // For CSV files being changed, validate the fresh file
       const freshCsvFile = event.target.files[0];
       const csvFileErrors = fileManager.validateCSVFile(freshCsvFile);
       allErrors.push(...csvFileErrors);
     } else if (fileManager.selectedFiles.csv) {
       // If CSV exists but we're not changing it, validate existing CSV
-      const csvFileErrors = fileManager.validateCSVFile(fileManager.selectedFiles.csv);
+      const csvFileErrors = fileManager.validateCSVFile(
+        fileManager.selectedFiles.csv
+      );
       allErrors.push(...csvFileErrors);
     }
-    
+
     // Always validate image files (either fresh files or existing state)
-    if (event.target.name === "images" && event.target.files && event.target.files.length > 0) {
+    if (
+      event.target.name === "images" &&
+      event.target.files &&
+      event.target.files.length > 0
+    ) {
       // For image files being changed, validate the fresh files
       const imageFiles = Array.from(event.target.files);
       const imageErrors = fileManager.validateImageFiles(imageFiles);
       allErrors.push(...imageErrors);
     } else if (fileManager.selectedFiles.images.length > 0) {
       // If images exist but we're not changing them, validate existing images
-      const imageErrors = fileManager.validateImageFiles(fileManager.selectedFiles.images);
+      const imageErrors = fileManager.validateImageFiles(
+        fileManager.selectedFiles.images
+      );
       allErrors.push(...imageErrors);
     }
 
     // Validate CSV content asynchronously (for fresh CSV files or existing CSV when other inputs change)
     let csvFileToValidate: File | null = null;
-    if (event.target.name === "csv" && event.target.files && event.target.files[0]) {
+    if (
+      event.target.name === "csv" &&
+      event.target.files &&
+      event.target.files[0]
+    ) {
       // Fresh CSV file being uploaded
       csvFileToValidate = event.target.files[0];
     } else if (fileManager.selectedFiles.csv) {
@@ -374,28 +398,30 @@ export default function Upload() {
     // Check for duplicate project name if project name is valid
     if (projectName.trim() && projectNameErrors.length === 0) {
       try {
-        const response = await fetch('/api/projects', {
-          method: 'POST',
+        const response = await fetch("/api/projects", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             projectName: projectName.trim(),
-            checkOnly: true
-          })
+            checkOnly: true,
+          }),
         });
 
         if (response.status === 409) {
-          allErrors.push(`Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`);
+          allErrors.push(
+            `Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`
+          );
         }
       } catch (error) {
-        console.error('Error checking project name:', error);
+        console.error("Error checking project name:", error);
       }
     }
 
     // Set the complete error list
     validation.setValidationErrorsFromArray(allErrors);
-    
+
     // Note: Don't reset file input key on successful validation as it clears the input
     // The key reset should only happen when manually clearing or when there are persistent errors
   };
@@ -416,11 +442,18 @@ export default function Upload() {
     // Add CSV content validation if CSV file exists
     if (fileManager.selectedFiles.csv) {
       try {
-        const csvContentErrors = await validateCSVContent(fileManager.selectedFiles.csv);
+        const csvContentErrors = await validateCSVContent(
+          fileManager.selectedFiles.csv
+        );
         allErrors.push(...csvContentErrors);
       } catch (error) {
-        console.error("CSV validation error in handlePOIFileChangeWithValidation:", error);
-        allErrors.push("An error occurred while validating the CSV file. Please try again.");
+        console.error(
+          "CSV validation error in handlePOIFileChangeWithValidation:",
+          error
+        );
+        allErrors.push(
+          "An error occurred while validating the CSV file. Please try again."
+        );
       }
     }
 
@@ -431,22 +464,24 @@ export default function Upload() {
     // Check for duplicate project name if project name is valid
     if (projectName.trim() && projectNameErrors.length === 0) {
       try {
-        const response = await fetch('/api/projects', {
-          method: 'POST',
+        const response = await fetch("/api/projects", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             projectName: projectName.trim(),
-            checkOnly: true
-          })
+            checkOnly: true,
+          }),
         });
 
         if (response.status === 409) {
-          allErrors.push(`Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`);
+          allErrors.push(
+            `Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`
+          );
         }
       } catch (error) {
-        console.error('Error checking project name:', error);
+        console.error("Error checking project name:", error);
       }
     }
 
@@ -515,7 +550,9 @@ export default function Upload() {
         // Use existing project ID for editing
         projectId = projectManager.editingProjectId;
         // Update project name and get the new project ID
-        projectId = await projectManager.updateProjectName(projectManager.editingProjectId);
+        projectId = await projectManager.updateProjectName(
+          projectManager.editingProjectId
+        );
       } else {
         // Create new project
         projectId = await projectManager.createProject();
@@ -637,9 +674,7 @@ export default function Upload() {
       // Handle project creation/update errors specifically
       if (error.message && error.message.includes("already exists")) {
         // Add the error to validation system for proper display
-        validation.setValidationErrorsFromArray([
-          error.message
-        ]);
+        validation.setValidationErrorsFromArray([error.message]);
         uploadState.finishUpload(false, "");
       } else {
         // Handle other upload errors normally

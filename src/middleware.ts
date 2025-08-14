@@ -15,6 +15,7 @@ const protectedRoutes = [
 // Define test routes that bypass authentication (for development/testing)
 const testRoutes = [
   "/api/projects", // Temporarily allow unauthenticated access for upload testing
+  "/api/poi/load", // Allow unauthenticated access for Electron menu POI fetching
 ];
 
 // Define public routes that don't require authentication

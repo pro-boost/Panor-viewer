@@ -251,8 +251,9 @@ async function fetchProjects() {
     if (!serverUrl) return [];
     const response = await fetch(`${serverUrl}/api/projects`);
     if (response.ok) {
-      const projects = await response.json();
-      return projects || [];
+      const data = await response.json();
+      console.log('[MENU] Projects API response:', data);
+      return data.projects || [];
     }
   } catch (error) {
     console.log('[MENU] Failed to fetch projects:', error.message);
@@ -260,15 +261,36 @@ async function fetchProjects() {
   return [];
 }
 
-// Function to fetch POIs dynamically
+// Function to fetch POIs dynamically from all projects
 async function fetchPOIs() {
   try {
-    if (!serverUrl) return [];
-    const response = await fetch(`${serverUrl}/api/poi`);
-    if (response.ok) {
-      const pois = await response.json();
-      return pois || [];
+    if (!serverUrl || projectsList.length === 0) return [];
+    
+    const allPOIs = [];
+    
+    // Fetch POIs from each project
+    for (const project of projectsList) {
+      try {
+        const response = await fetch(`${serverUrl}/api/poi/load?projectId=${encodeURIComponent(project.id)}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.pois && data.pois.length > 0) {
+            // Add project info to each POI for menu navigation
+            const poisWithProject = data.pois.map(poi => ({
+              ...poi,
+              projectId: project.id,
+              projectName: project.name
+            }));
+            allPOIs.push(...poisWithProject);
+          }
+        }
+      } catch (error) {
+        console.log(`[MENU] Failed to fetch POIs for project ${project.id}:`, error.message);
+      }
     }
+    
+    console.log('[MENU] Total POIs fetched:', allPOIs.length);
+    return allPOIs;
   } catch (error) {
     console.log('[MENU] Failed to fetch POIs:', error.message);
   }

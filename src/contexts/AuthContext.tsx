@@ -140,7 +140,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Update Electron menu when user state changes
   useEffect(() => {
     const isAdmin = user?.role === "admin";
-    console.log('[AUTH CONTEXT] User state changed, isAdmin:', isAdmin, 'user:', user);
+    console.log(
+      "[AUTH CONTEXT] User state changed, isAdmin:",
+      isAdmin,
+      "user:",
+      user
+    );
     updateElectronMenuAdminStatus(isAdmin);
   }, [user]);
 
