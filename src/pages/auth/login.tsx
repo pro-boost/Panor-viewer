@@ -65,16 +65,6 @@ export default function Login() {
     };
 
     resetState();
-
-    // Also reset on window focus (when user returns to tab)
-    const handleFocus = () => {
-      if (router.pathname === "/auth/login") {
-        resetState();
-      }
-    };
-
-    window.addEventListener("focus", handleFocus);
-    return () => window.removeEventListener("focus", handleFocus);
   }, []);
 
   const checkAuthStatus = async () => {
