@@ -255,7 +255,7 @@ export default function Upload() {
 
 
 
-  const handleProjectNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleProjectNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const newProjectName = event.target.value;
     setProjectName(newProjectName);
 
@@ -266,12 +266,22 @@ export default function Upload() {
     const fileErrors = fileManager.getFileValidationErrors();
     allErrors.push(...fileErrors);
 
+    // Add CSV content validation if CSV file exists
+    if (fileManager.selectedFiles.csv) {
+      try {
+        const csvContentErrors = await validateCSVContent(fileManager.selectedFiles.csv);
+        allErrors.push(...csvContentErrors);
+      } catch (error) {
+        console.error("CSV validation error in handleProjectNameChange:", error);
+        allErrors.push("An error occurred while validating the CSV file. Please try again.");
+      }
+    }
+
     // Get project name validation errors
     const projectNameErrors = projectManager.validateProjectName(newProjectName);
     allErrors.push(...projectNameErrors);
 
-    // Clear all validation errors and set the complete error list once
-    validation.clearAllValidation();
+    // Set the complete error list without clearing existing errors first
     validation.setValidationErrorsFromArray(allErrors);
   };
 
@@ -303,45 +313,59 @@ export default function Upload() {
       fileName: event.target.files?.[0]?.name
     });
 
-    // Clear validation state immediately to prevent stale errors
-    console.log("[DEBUG] Clearing validation state at start");
-    validation.clearAllValidation();
-
     // Call the original file handler first
     fileManager.handleFileChange(event);
 
     // Collect all validation errors before setting them
     let allErrors: string[] = [];
 
-    // For CSV files, validate the actual file from the event (not from state to avoid stale data)
+    // Always validate CSV file (either fresh file or existing state)
     if (event.target.name === "csv" && event.target.files && event.target.files[0]) {
+      // For CSV files being changed, validate the fresh file
       const freshCsvFile = event.target.files[0];
       console.log("[DEBUG] Validating fresh CSV file:", freshCsvFile.name);
       const csvFileErrors = fileManager.validateCSVFile(freshCsvFile);
       console.log("[DEBUG] Fresh CSV file validation errors:", csvFileErrors);
       allErrors.push(...csvFileErrors);
-    } else {
-      // For non-CSV files or when no file selected, use the general validation
-      const fileErrors = fileManager.getFileValidationErrors();
-      console.log("[DEBUG] General file validation errors:", fileErrors);
-      allErrors.push(...fileErrors);
+    } else if (fileManager.selectedFiles.csv) {
+      // If CSV exists but we're not changing it, validate existing CSV
+      const csvFileErrors = fileManager.validateCSVFile(fileManager.selectedFiles.csv);
+      allErrors.push(...csvFileErrors);
+    }
+    
+    // Always validate image files (either fresh files or existing state)
+    if (event.target.name === "images" && event.target.files && event.target.files.length > 0) {
+      // For image files being changed, validate the fresh files
+      const imageFiles = Array.from(event.target.files);
+      console.log("[DEBUG] Validating fresh image files:", imageFiles.map(f => f.name));
+      const imageErrors = fileManager.validateImageFiles(imageFiles);
+      console.log("[DEBUG] Fresh image validation errors:", imageErrors);
+      allErrors.push(...imageErrors);
+    } else if (fileManager.selectedFiles.images.length > 0) {
+      // If images exist but we're not changing them, validate existing images
+      const imageErrors = fileManager.validateImageFiles(fileManager.selectedFiles.images);
+      allErrors.push(...imageErrors);
     }
 
-    // If it's a CSV file, validate its content asynchronously (use the same fresh file)
-    if (
-      event.target.name === "csv" &&
-      event.target.files &&
-      event.target.files[0]
-    ) {
-      const csvFile = event.target.files[0];
-      console.log("[DEBUG] Starting CSV content validation for fresh file:", csvFile.name);
+    // Validate CSV content asynchronously (for fresh CSV files or existing CSV when other inputs change)
+    let csvFileToValidate: File | null = null;
+    if (event.target.name === "csv" && event.target.files && event.target.files[0]) {
+      // Fresh CSV file being uploaded
+      csvFileToValidate = event.target.files[0];
+    } else if (fileManager.selectedFiles.csv) {
+      // Existing CSV file when other inputs change
+      csvFileToValidate = fileManager.selectedFiles.csv;
+    }
+
+    if (csvFileToValidate) {
+      console.log("[DEBUG] Starting CSV content validation for file:", csvFileToValidate.name);
 
       // Set loading state
       setCsvValidating(true);
 
       try {
         // Validate CSV content
-        const csvContentErrors = await validateCSVContent(csvFile);
+        const csvContentErrors = await validateCSVContent(csvFileToValidate);
         console.log("[DEBUG] CSV content validation errors:", csvContentErrors);
         allErrors.push(...csvContentErrors);
       } catch (error) {
@@ -372,7 +396,7 @@ export default function Upload() {
     // The key reset should only happen when manually clearing or when there are persistent errors
   };
 
-  const handlePOIFileChangeWithValidation = (
+  const handlePOIFileChangeWithValidation = async (
     event: ChangeEvent<HTMLInputElement>
   ) => {
     // Call the original POI file handler
@@ -385,12 +409,22 @@ export default function Upload() {
     const fileErrors = fileManager.getFileValidationErrors();
     allErrors.push(...fileErrors);
 
+    // Add CSV content validation if CSV file exists
+    if (fileManager.selectedFiles.csv) {
+      try {
+        const csvContentErrors = await validateCSVContent(fileManager.selectedFiles.csv);
+        allErrors.push(...csvContentErrors);
+      } catch (error) {
+        console.error("CSV validation error in handlePOIFileChangeWithValidation:", error);
+        allErrors.push("An error occurred while validating the CSV file. Please try again.");
+      }
+    }
+
     // Get project name validation errors
     const projectNameErrors = projectManager.validateProjectName(projectName);
     allErrors.push(...projectNameErrors);
 
-    // Clear all validation errors and set the complete error list once
-    validation.clearAllValidation();
+    // Set the complete error list without clearing existing errors first
     validation.setValidationErrorsFromArray(allErrors);
   };
 
@@ -701,7 +735,7 @@ export default function Upload() {
                 projectManager.existingFiles.images.length === 0
               }
               onChange={handleFileChangeWithValidation}
-              className={styles.fileInput}
+              className={`${styles.fileInput} ${validation.validationErrors.some((error) => error.includes("Image")) ? styles.inputError : ""}`}
             />
           </div>
 
