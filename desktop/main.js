@@ -122,7 +122,7 @@ async function createWindow() {
     console.log(`Final server URL: ${serverUrl}`);
     
     // Recreate menu with the correct server URL
-    createMenu();
+    await createMenu();
 
     mainWindow = new BrowserWindow({
       width: 1600,
@@ -241,10 +241,114 @@ let currentMenuTemplate = null;
 let isAdmin = false;
 let serverUrl = null; // Will be set dynamically
 
+// Store dynamic menu data
+let projectsList = [];
+let poiList = [];
+
+// Function to fetch projects dynamically
+async function fetchProjects() {
+  try {
+    if (!serverUrl) return [];
+    const response = await fetch(`${serverUrl}/api/projects`);
+    if (response.ok) {
+      const projects = await response.json();
+      return projects || [];
+    }
+  } catch (error) {
+    console.log('[MENU] Failed to fetch projects:', error.message);
+  }
+  return [];
+}
+
+// Function to fetch POIs dynamically
+async function fetchPOIs() {
+  try {
+    if (!serverUrl) return [];
+    const response = await fetch(`${serverUrl}/api/poi`);
+    if (response.ok) {
+      const pois = await response.json();
+      return pois || [];
+    }
+  } catch (error) {
+    console.log('[MENU] Failed to fetch POIs:', error.message);
+  }
+  return [];
+}
+
 // Create application menu with navigation buttons
-function createMenu() {
+async function createMenu() {
   // Fallback URL if serverUrl is not set yet
   const baseUrl = serverUrl || 'http://localhost:3000';
+  
+  // Fetch dynamic data
+  projectsList = await fetchProjects();
+  poiList = await fetchPOIs();
+  
+  // Build Projects submenu
+  const projectsSubmenu = [
+    {
+      label: 'Create New Project',
+      accelerator: 'CmdOrCtrl+N',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.loadURL(`${baseUrl}/upload`);
+        }
+      }
+    }
+  ];
+  
+  // Add separator if there are projects
+  if (projectsList.length > 0) {
+    projectsSubmenu.push({ type: 'separator' });
+    
+    // Add dynamic project items
+    projectsList.forEach(project => {
+      projectsSubmenu.push({
+        label: project.name || project.id,
+        click: () => {
+          if (mainWindow) {
+            mainWindow.loadURL(`${baseUrl}/${project.id}`);
+          }
+        }
+      });
+    });
+  }
+  
+  // Build POI submenu
+  const poiSubmenu = [
+    {
+      label: 'Manage POI',
+      accelerator: 'CmdOrCtrl+P',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.loadURL(`${baseUrl}/poi-management`);
+        }
+      }
+    }
+  ];
+  
+  // Add separator if there are POIs
+  if (poiList.length > 0) {
+    poiSubmenu.push({ type: 'separator' });
+    
+    // Add dynamic POI items
+    poiList.forEach(poi => {
+      poiSubmenu.push({
+        label: poi.name || poi.title || `POI ${poi.id}`,
+        click: () => {
+          if (mainWindow) {
+            // Navigate to the project containing this POI
+            const projectId = poi.projectId || poi.project_id;
+            if (projectId) {
+              mainWindow.loadURL(`${baseUrl}/${projectId}?poi=${poi.id}`);
+            } else {
+              mainWindow.loadURL(`${baseUrl}/poi-management`);
+            }
+          }
+        }
+      });
+    });
+  }
   
   const pagesSubmenu = [
     {
@@ -253,15 +357,6 @@ function createMenu() {
       click: () => {
         if (mainWindow) {
           mainWindow.loadURL(`${baseUrl}/`);
-        }
-      }
-    },
-    {
-      label: 'Upload',
-      accelerator: 'CmdOrCtrl+U',
-      click: () => {
-        if (mainWindow) {
-          mainWindow.loadURL(`${baseUrl}/upload`);
         }
       }
     }
@@ -279,6 +374,18 @@ function createMenu() {
       }
     });
   }
+  
+  // Add Projects submenu
+  pagesSubmenu.push({
+    label: 'Projects',
+    submenu: projectsSubmenu
+  });
+  
+  // Add POI submenu
+  pagesSubmenu.push({
+    label: 'POI',
+    submenu: poiSubmenu
+  });
 
 
 
@@ -412,15 +519,31 @@ function createMenu() {
 }
 
 // Function to update menu dynamically
-function updateMenu(adminStatus = null) {
+async function updateMenu(adminStatus = null) {
   console.log("[MENU] updateMenu called with:", { adminStatus });
   if (adminStatus !== null) {
     isAdmin = adminStatus;
     console.log("[MENU] Updated isAdmin to:", isAdmin);
   }
   console.log("[MENU] Current state before createMenu:", { isAdmin });
-  createMenu();
+  await createMenu();
   console.log("[MENU] Menu recreated");
+}
+
+// Function to refresh menu with updated dynamic content
+async function refreshMenu() {
+  console.log('[MENU] Refreshing menu with updated content');
+  await createMenu();
+}
+
+// Set up periodic menu refresh to update dynamic content
+function setupMenuRefresh() {
+  // Refresh menu every 30 seconds to update projects and POIs
+  setInterval(async () => {
+    if (serverUrl && mainWindow) {
+      await refreshMenu();
+    }
+  }, 30000);
 }
 
 // Optimized GPU settings for Electron 27 - performance focused
@@ -452,23 +575,24 @@ ipcMain.handle("app:getProjectsPath", () => {
 });
 
 // IPC handlers for menu updates
-ipcMain.handle("update-menu-admin-status", (event, adminStatus) => {
+ipcMain.handle("update-menu-admin-status", async (event, adminStatus) => {
   console.log("[IPC] update-menu-admin-status called with:", adminStatus);
-  updateMenu(adminStatus);
+  await updateMenu(adminStatus);
 });
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   console.log("App is ready, creating window...");
   createWindow().catch((error) => {
     console.error("Failed to start application:", error);
     app.quit();
   });
-  createMenu();
+  await createMenu();
+  setupMenuRefresh();
   // Test menu update on startup
   console.log("[STARTUP] Testing menu update...");
-  setTimeout(() => {
+  setTimeout(async () => {
     console.log("[STARTUP] Calling updateMenu with admin=true...");
-    updateMenu(true);
+    await updateMenu(true);
   }, 3000);
 });
 
