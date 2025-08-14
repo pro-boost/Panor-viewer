@@ -1,4 +1,11 @@
-const { app, BrowserWindow, protocol, ipcMain, shell, Menu } = require("electron");
+const {
+  app,
+  BrowserWindow,
+  protocol,
+  ipcMain,
+  shell,
+  Menu,
+} = require("electron");
 const path = require("path");
 
 // Simple development mode detection without external dependency
@@ -22,7 +29,7 @@ app.commandLine.appendSwitch("disable-renderer-backgrounding");
 app.commandLine.appendSwitch("disable-backgrounding-occluded-windows");
 app.commandLine.appendSwitch(
   "enable-features",
-  "VaapiVideoDecoder,VaapiVideoEncoder",
+  "VaapiVideoDecoder,VaapiVideoEncoder"
 );
 app.commandLine.appendSwitch("max_old_space_size", "4096");
 
@@ -43,17 +50,17 @@ if (!gotTheLock) {
 // Function to check if a port is available
 function checkPort(port) {
   return new Promise((resolve) => {
-    const net = require('net');
+    const net = require("net");
     const server = net.createServer();
-    
+
     server.listen(port, () => {
-      server.once('close', () => {
+      server.once("close", () => {
         resolve(false); // Port is available
       });
       server.close();
     });
-    
-    server.on('error', () => {
+
+    server.on("error", () => {
       resolve(true); // Port is in use
     });
   });
@@ -62,7 +69,7 @@ function checkPort(port) {
 // Function to find the Next.js dev server port
 async function findDevServerPort() {
   const portsToTry = [3000, 3001, 3002, 3003, 3004, 3005];
-  
+
   for (const port of portsToTry) {
     const isInUse = await checkPort(port);
     if (isInUse) {
@@ -70,9 +77,9 @@ async function findDevServerPort() {
       return `http://localhost:${port}`;
     }
   }
-  
-  console.log('No dev server found, using default port 3000');
-  return 'http://localhost:3000';
+
+  console.log("No dev server found, using default port 3000");
+  return "http://localhost:3000";
 }
 
 async function createWindow() {
@@ -105,7 +112,7 @@ async function createWindow() {
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(
             () => reject(new Error("Server startup timeout after 30 seconds")),
-            30000,
+            30000
           );
         });
 
@@ -120,7 +127,7 @@ async function createWindow() {
     }
 
     console.log(`Final server URL: ${serverUrl}`);
-    
+
     // Recreate menu with the correct server URL
     await createMenu();
 
@@ -142,7 +149,7 @@ async function createWindow() {
       },
       icon: path.join(
         __dirname,
-        "../public/icons/panorama-viewer-icon-multi.ico",
+        "../public/icons/panorama-viewer-icon-multi.ico"
       ),
       show: false, // Start hidden for smooth loading
       backgroundColor: "#ffffff",
@@ -200,7 +207,7 @@ async function createWindow() {
           mainWindow.show();
           mainWindow.focus();
         }
-      },
+      }
     );
 
     mainWindow.webContents.on("did-finish-load", () => {
@@ -252,11 +259,11 @@ async function fetchProjects() {
     const response = await fetch(`${serverUrl}/api/projects`);
     if (response.ok) {
       const data = await response.json();
-      console.log('[MENU] Projects API response:', data);
+      console.log("[MENU] Projects API response:", data);
       return data.projects || [];
     }
   } catch (error) {
-    console.log('[MENU] Failed to fetch projects:', error.message);
+    console.log("[MENU] Failed to fetch projects:", error.message);
   }
   return [];
 }
@@ -265,34 +272,39 @@ async function fetchProjects() {
 async function fetchPOIs() {
   try {
     if (!serverUrl || projectsList.length === 0) return [];
-    
+
     const allPOIs = [];
-    
+
     // Fetch POIs from each project
     for (const project of projectsList) {
       try {
-        const response = await fetch(`${serverUrl}/api/poi/load?projectId=${encodeURIComponent(project.id)}`);
+        const response = await fetch(
+          `${serverUrl}/api/poi/load?projectId=${encodeURIComponent(project.id)}`
+        );
         if (response.ok) {
           const data = await response.json();
           if (data.pois && data.pois.length > 0) {
             // Add project info to each POI for menu navigation
-            const poisWithProject = data.pois.map(poi => ({
+            const poisWithProject = data.pois.map((poi) => ({
               ...poi,
               projectId: project.id,
-              projectName: project.name
+              projectName: project.name,
             }));
             allPOIs.push(...poisWithProject);
           }
         }
       } catch (error) {
-        console.log(`[MENU] Failed to fetch POIs for project ${project.id}:`, error.message);
+        console.log(
+          `[MENU] Failed to fetch POIs for project ${project.id}:`,
+          error.message
+        );
       }
     }
-    
-    console.log('[MENU] Total POIs fetched:', allPOIs.length);
+
+    console.log("[MENU] Total POIs fetched:", allPOIs.length);
     return allPOIs;
   } catch (error) {
-    console.log('[MENU] Failed to fetch POIs:', error.message);
+    console.log("[MENU] Failed to fetch POIs:", error.message);
   }
   return [];
 }
@@ -300,238 +312,259 @@ async function fetchPOIs() {
 // Create application menu with navigation buttons
 async function createMenu() {
   // Fallback URL if serverUrl is not set yet
-  const baseUrl = serverUrl || 'http://localhost:3000';
-  
+  const baseUrl = serverUrl || "http://localhost:3000";
+
   // Fetch dynamic data
   projectsList = await fetchProjects();
   poiList = await fetchPOIs();
-  
+
   // Build Projects submenu
   const projectsSubmenu = [
     {
-      label: 'Create New Project',
-      accelerator: 'CmdOrCtrl+N',
+      label: "Create New Project",
+      accelerator: "CmdOrCtrl+N",
       click: () => {
         if (mainWindow) {
           mainWindow.loadURL(`${baseUrl}/upload`);
         }
-      }
-    }
+      },
+    },
   ];
-  
+
   // Add separator if there are projects
   if (projectsList.length > 0) {
-    projectsSubmenu.push({ type: 'separator' });
-    
+    projectsSubmenu.push({ type: "separator" });
+
     // Add dynamic project items
-    projectsList.forEach(project => {
+    projectsList.forEach((project) => {
       projectsSubmenu.push({
         label: project.name || project.id,
         click: () => {
           if (mainWindow) {
             mainWindow.loadURL(`${baseUrl}/${project.id}`);
           }
-        }
+        },
       });
     });
   }
-  
+
   // Build POI submenu
   const poiSubmenu = [
     {
-      label: 'Manage POI',
-      accelerator: 'CmdOrCtrl+P',
+      label: "Manage POI",
+      accelerator: "CmdOrCtrl+P",
       click: () => {
         if (mainWindow) {
           mainWindow.loadURL(`${baseUrl}/poi-management`);
         }
-      }
-    }
+      },
+    },
   ];
-  
+
   // Add separator if there are POIs
   if (poiList.length > 0) {
-    poiSubmenu.push({ type: 'separator' });
-    
-    // Add dynamic POI items
-    poiList.forEach(poi => {
-      poiSubmenu.push({
+    poiSubmenu.push({ type: "separator" });
+
+    // Group POIs by project
+    const poisByProject = {};
+    poiList.forEach((poi) => {
+      const projectId = poi.projectId || poi.project_id;
+      const projectName = poi.projectName || `Project ${projectId}`;
+      if (projectId) {
+        if (!poisByProject[projectId]) {
+          poisByProject[projectId] = {
+            name: projectName,
+            pois: [],
+          };
+        }
+        poisByProject[projectId].pois.push(poi);
+      }
+    });
+
+    // Add dynamic POI items, grouped by project
+    for (const projectId in poisByProject) {
+      const project = poisByProject[projectId];
+      const projectPOIs = project.pois.map((poi) => ({
         label: poi.name || poi.title || `POI ${poi.id}`,
         click: () => {
           if (mainWindow) {
-            // Navigate to the project containing this POI
-            const projectId = poi.projectId || poi.project_id;
-            if (projectId) {
+            const panoramaId = poi.panoramaId;
+            if (projectId && panoramaId) {
+              mainWindow.loadURL(
+                `${baseUrl}/${projectId}?scene=${panoramaId}&poi=${poi.id}`
+              );
+            } else if (projectId) {
               mainWindow.loadURL(`${baseUrl}/${projectId}?poi=${poi.id}`);
             } else {
               mainWindow.loadURL(`${baseUrl}/poi-management`);
             }
           }
-        }
+        },
+      }));
+
+      poiSubmenu.push({
+        label: project.name,
+        submenu: projectPOIs,
       });
-    });
+    }
   }
-  
+
   const pagesSubmenu = [
     {
-      label: 'Home',
-      accelerator: 'CmdOrCtrl+H',
+      label: "Home",
+      accelerator: "CmdOrCtrl+H",
       click: () => {
         if (mainWindow) {
           mainWindow.loadURL(`${baseUrl}/`);
         }
-      }
-    }
+      },
+    },
   ];
 
   // Add Admin menu item only if user is admin
   if (isAdmin) {
     pagesSubmenu.push({
-      label: 'Admin',
-      accelerator: 'CmdOrCtrl+A',
+      label: "Admin",
+      accelerator: "CmdOrCtrl+A",
       click: () => {
         if (mainWindow) {
-          mainWindow.loadURL(`${baseUrl}/admin`);
+          mainWindow.loadURL(`${baseUrl}/admin/users`);
         }
-      }
+      },
     });
   }
-  
+
   // Add Projects submenu
   pagesSubmenu.push({
-    label: 'Projects',
-    submenu: projectsSubmenu
+    label: "Projects",
+    submenu: projectsSubmenu,
   });
-  
+
   // Add POI submenu
   pagesSubmenu.push({
-    label: 'POI',
-    submenu: poiSubmenu
+    label: "POI",
+    submenu: poiSubmenu,
   });
-
-
 
   const template = [
     {
-      label: 'File',
+      label: "File",
       submenu: [
         {
-          label: 'Quit',
-          accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+          label: "Quit",
+          accelerator: process.platform === "darwin" ? "Cmd+Q" : "Ctrl+Q",
           click: () => {
             app.quit();
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
-      label: 'Edit',
+      label: "Edit",
       submenu: [
-        { role: 'undo' },
-        { role: 'redo' },
-        { type: 'separator' },
-        { role: 'cut' },
-        { role: 'copy' },
-        { role: 'paste' },
-        { role: 'selectall' }
-      ]
+        { role: "undo" },
+        { role: "redo" },
+        { type: "separator" },
+        { role: "cut" },
+        { role: "copy" },
+        { role: "paste" },
+        { role: "selectall" },
+      ],
     },
     {
-      label: 'Pages',
-      submenu: pagesSubmenu
+      label: "Pages",
+      submenu: pagesSubmenu,
     },
     {
-      label: 'View',
+      label: "View",
       submenu: [
         {
-          label: 'Back',
-          accelerator: 'Alt+Left',
+          label: "Back",
+          accelerator: "Alt+Left",
           click: () => {
             if (mainWindow && mainWindow.webContents.canGoBack()) {
               mainWindow.webContents.goBack();
             }
-          }
+          },
         },
         {
-          label: 'Forward',
-          accelerator: 'Alt+Right',
+          label: "Forward",
+          accelerator: "Alt+Right",
           click: () => {
             if (mainWindow && mainWindow.webContents.canGoForward()) {
               mainWindow.webContents.goForward();
             }
-          }
+          },
         },
         {
-          label: 'Reload',
-          accelerator: 'CmdOrCtrl+R',
+          label: "Reload",
+          accelerator: "CmdOrCtrl+R",
           click: () => {
             if (mainWindow) {
               mainWindow.webContents.reload();
             }
-          }
+          },
         },
-        { type: 'separator' },
-        { role: 'resetzoom' },
-        { role: 'zoomin' },
-        { role: 'zoomout' },
-         { type: 'separator' },
-         { role: 'togglefullscreen' },
-         { type: 'separator' },
-         {
-           label: 'Toggle Developer Tools',
-           accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+Shift+I',
-           click: () => {
-             if (mainWindow) {
-               mainWindow.webContents.toggleDevTools();
-             }
-           }
-         }
-      ]
+        { type: "separator" },
+        { role: "resetzoom" },
+        { role: "zoomin" },
+        { role: "zoomout" },
+        { type: "separator" },
+        { role: "togglefullscreen" },
+        { type: "separator" },
+        {
+          label: "Toggle Developer Tools",
+          accelerator:
+            process.platform === "darwin" ? "Alt+Cmd+I" : "Ctrl+Shift+I",
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.toggleDevTools();
+            }
+          },
+        },
+      ],
     },
     {
-      label: 'Window',
-      submenu: [
-        { role: 'minimize' },
-        { role: 'close' }
-      ]
+      label: "Window",
+      submenu: [{ role: "minimize" }, { role: "close" }],
     },
     {
-      label: 'Help',
+      label: "Help",
       submenu: [
         {
-          label: 'About',
+          label: "About",
           click: () => {
             // You can add an about dialog here if needed
-          }
-        }
-      ]
-    }
+          },
+        },
+      ],
+    },
   ];
 
   // macOS specific menu adjustments
-  if (process.platform === 'darwin') {
+  if (process.platform === "darwin") {
     template.unshift({
       label: app.getName(),
       submenu: [
-        { role: 'about' },
-        { type: 'separator' },
-        { role: 'services', submenu: [] },
-        { type: 'separator' },
-        { role: 'hide' },
-        { role: 'hideothers' },
-        { role: 'unhide' },
-        { type: 'separator' },
-        { role: 'quit' }
-      ]
+        { role: "about" },
+        { type: "separator" },
+        { role: "services", submenu: [] },
+        { type: "separator" },
+        { role: "hide" },
+        { role: "hideothers" },
+        { role: "unhide" },
+        { type: "separator" },
+        { role: "quit" },
+      ],
     });
 
     // Window menu
     template[4].submenu = [
-      { role: 'close' },
-      { role: 'minimize' },
-      { role: 'zoom' },
-      { type: 'separator' },
-      { role: 'front' }
+      { role: "close" },
+      { role: "minimize" },
+      { role: "zoom" },
+      { type: "separator" },
+      { role: "front" },
     ];
   }
 
@@ -554,7 +587,7 @@ async function updateMenu(adminStatus = null) {
 
 // Function to refresh menu with updated dynamic content
 async function refreshMenu() {
-  console.log('[MENU] Refreshing menu with updated content');
+  console.log("[MENU] Refreshing menu with updated content");
   await createMenu();
 }
 

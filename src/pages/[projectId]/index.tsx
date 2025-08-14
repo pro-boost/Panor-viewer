@@ -31,7 +31,7 @@ interface ConfigData {
 
 export default function ProjectViewer(): ReactElement {
   const router = useRouter();
-  const { projectId } = router.query;
+  const { projectId, scene, poi } = router.query;
   const [hasPanoramas, setHasPanoramas] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -166,7 +166,13 @@ export default function ProjectViewer(): ReactElement {
 
   // If panoramas exist, show the viewer with project context
   if (hasPanoramas && config) {
-    return <PanoramaViewer projectId={projectId as string} />;
+    return (
+      <PanoramaViewer 
+        projectId={projectId as string} 
+        initialSceneId={typeof scene === 'string' ? scene : undefined}
+        initialPOIId={typeof poi === 'string' ? poi : undefined}
+      />
+    );
   }
 
   // Fallback - should not reach here

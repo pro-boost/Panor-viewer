@@ -20,11 +20,13 @@ import { POIData } from "@/types/poi";
 interface PanoramaViewerProps {
   projectId?: string;
   initialSceneId?: string;
+  initialPOIId?: string;
 }
 
 export default function PanoramaViewer({
   projectId,
   initialSceneId,
+  initialPOIId,
 }: PanoramaViewerProps = {}) {
   const [closePanelsFunc, setClosePanelsFunc] = useState<(() => void) | null>(
     null
@@ -129,6 +131,43 @@ export default function PanoramaViewer({
       window.removeEventListener("panorama-cache-refresh", handleCacheRefresh);
     };
   }, [refreshImages, refs.viewerRef, state.currentScene, navigateToScene]);
+
+  // Handle POI highlighting when viewer is ready and initialPOIId is provided
+  useEffect(() => {
+    if (initialPOIId && state.currentScene && !state.isLoading && projectId) {
+      // Wait a bit for POI hotspots to be created
+      const timer = setTimeout(async () => {
+        try {
+          // Fetch POI data to find the specific POI
+          const response = await fetch(
+            `/api/poi/load?projectId=${encodeURIComponent(projectId)}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            const targetPOI = data.pois?.find((poi: POIData) => poi.id === initialPOIId);
+            
+            if (targetPOI) {
+              // If POI is in a different scene, navigate to it first
+              if (targetPOI.panoramaId !== state.currentScene) {
+                navigateToScene(targetPOI.panoramaId);
+                // Wait for scene to load, then highlight POI
+                setTimeout(() => {
+                  poiComponentRef.current?.editPOI(targetPOI);
+                }, 1500);
+              } else {
+                // POI is in current scene, highlight it immediately
+                poiComponentRef.current?.editPOI(targetPOI);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error highlighting POI:', error);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [initialPOIId, state.currentScene, state.isLoading, projectId, navigateToScene]);
 
   // Cleanup effect to properly destroy viewer when component unmounts
   useEffect(() => {
