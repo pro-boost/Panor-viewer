@@ -19,7 +19,33 @@ export default async function handler(
   try {
     const projectsPath =
       process.env.PROJECTS_PATH || path.join(process.cwd(), "public");
-    const projectDir = path.join(projectsPath, projectId);
+    
+    // First try to find the project directory by the projectId
+    let projectDir = path.join(projectsPath, projectId);
+    
+    // If the directory doesn't exist, search for it using metadata files
+    if (!fs.existsSync(projectDir)) {
+      const directories = fs.readdirSync(projectsPath, { withFileTypes: true })
+        .filter(dirent => dirent.isDirectory())
+        .map(dirent => dirent.name);
+      
+      // Search through all directories for a matching metadata file
+      for (const dirName of directories) {
+        const metadataPath = path.join(projectsPath, dirName, "project-metadata.json");
+        if (fs.existsSync(metadataPath)) {
+          try {
+            const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+            if (metadata.id === projectId) {
+              projectDir = path.join(projectsPath, dirName);
+              break;
+            }
+          } catch (error) {
+            // Skip invalid metadata files
+            continue;
+          }
+        }
+      }
+    }
 
     if (!fs.existsSync(projectDir)) {
       return res.status(404).json({ error: "Project not found" });

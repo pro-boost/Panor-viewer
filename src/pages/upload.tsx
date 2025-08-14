@@ -444,7 +444,8 @@ export default function Upload() {
       if (projectManager.isEditMode && projectManager.editingProjectId) {
         // Use existing project ID for editing
         projectId = projectManager.editingProjectId;
-        await projectManager.updateProjectName(projectManager.editingProjectId);
+        // Update project name and get the new project ID
+        projectId = await projectManager.updateProjectName(projectManager.editingProjectId);
       } else {
         // Create new project
         projectId = await projectManager.createProject();
@@ -537,8 +538,9 @@ export default function Upload() {
       fileManager.clearDuplicateImages();
 
       // Refresh project data to update the UI with new file information
-      if (projectManager.isEditMode && projectManager.editingProjectId) {
-        await projectManager.loadProjectData(projectManager.editingProjectId);
+      if (projectManager.isEditMode) {
+        // Use the correct project ID (which might have changed during the update)
+        await projectManager.loadProjectData(projectId);
 
         // Force UI update by setting a message that includes the updated file information
         const updatedStatusMessage = projectManager.getProjectStatusMessage();

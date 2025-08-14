@@ -81,9 +81,24 @@ const getProjectInfo = async (projectId: string): Promise<Project | null> => {
       }
     }
 
+    // Check for project metadata file to get the actual project name and ID
+    const metadataPath = path.join(projectPath, "project-metadata.json");
+    let projectName = projectId;
+    let actualProjectId = projectId;
+    
+    if (fs.existsSync(metadataPath)) {
+      try {
+        const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+        if (metadata.name) projectName = metadata.name;
+        if (metadata.id) actualProjectId = metadata.id;
+      } catch {
+        // If metadata file is corrupted, fall back to directory name
+      }
+    }
+
     return {
-      id: projectId,
-      name: projectId,
+      id: actualProjectId,
+      name: projectName,
       createdAt: stats.birthtime.toISOString(),
       updatedAt: stats.mtime.toISOString(),
       sceneCount,
@@ -200,6 +215,117 @@ export default async function handler(
         res.status(201).json({ project: newProject });
         break;
 
+      case "PUT":
+        // Update a project
+        const { projectId: updateProjectId, projectName: newProjectName } = req.body;
+
+        if (!updateProjectId || typeof updateProjectId !== "string") {
+          return res.status(400).json({ error: "Project ID is required" });
+        }
+
+        if (!newProjectName || typeof newProjectName !== "string") {
+          return res.status(400).json({ error: "Project name is required" });
+        }
+
+        // Sanitize new project name
+        const sanitizedNewName = newProjectName
+          .replace(/[^a-zA-Z0-9-_]/g, "-")
+          .toLowerCase();
+
+        if (!sanitizedNewName) {
+          return res.status(400).json({ error: "Invalid project name" });
+        }
+
+        const currentProjectPath = path.join(
+          process.env.PROJECTS_PATH || path.join(process.cwd(), "public"),
+          updateProjectId,
+        );
+
+        const updatedProjectPath = path.join(
+          process.env.PROJECTS_PATH || path.join(process.cwd(), "public"),
+          sanitizedNewName,
+        );
+
+        if (!fs.existsSync(currentProjectPath)) {
+          return res.status(404).json({ error: "Project not found" });
+        }
+
+        // If the sanitized name is different from current ID, we need to handle directory renaming
+        let finalProjectId = updateProjectId;
+        if (sanitizedNewName !== updateProjectId) {
+          if (fs.existsSync(updatedProjectPath)) {
+            return res.status(409).json({ error: "A project with this name already exists" });
+          }
+
+          // For now, we'll skip the directory rename if it fails due to permissions
+          // and just update the project metadata. The directory can be renamed later.
+          try {
+            // Use async rename with retry mechanism
+            await new Promise((resolve, reject) => {
+              const attemptRename = (attempts: number) => {
+                fs.rename(currentProjectPath, updatedProjectPath, (error) => {
+                  if (error) {
+                    if (error.code === 'EPERM' && attempts > 0) {
+                      // Wait a bit and retry
+                      setTimeout(() => attemptRename(attempts - 1), 200);
+                    } else {
+                      reject(error);
+                    }
+                  } else {
+                    resolve(undefined);
+                  }
+                });
+              };
+              attemptRename(5); // Try up to 5 times with longer delays
+            });
+            finalProjectId = sanitizedNewName;
+          } catch (error: any) {
+            console.error("Failed to rename project directory:", error);
+            if (error.code === 'EPERM') {
+              // Instead of failing, we'll continue with the old directory name
+              // but still update the project name in memory
+              console.warn(`Directory rename failed for project ${updateProjectId} -> ${sanitizedNewName}, continuing with old directory name`);
+              finalProjectId = updateProjectId; // Keep using the old directory name
+            } else if (error.code === 'ENOENT') {
+              return res.status(404).json({ error: "Project directory not found" });
+            } else {
+              return res.status(500).json({ error: "Failed to rename project directory" });
+            }
+          }
+        }
+
+        const updatedProject = await getProjectInfo(finalProjectId);
+        
+        if (!updatedProject) {
+          return res.status(404).json({ error: "Project not found after update" });
+        }
+
+        // If directory rename failed but we want to show the new name, update the project object
+        if (finalProjectId === updateProjectId && sanitizedNewName !== updateProjectId) {
+          updatedProject.name = newProjectName.trim();
+          updatedProject.id = sanitizedNewName; // Return the new ID even if directory wasn't renamed
+          console.log(`Project name updated: ${updateProjectId} -> ${sanitizedNewName}, returning updated project:`, updatedProject);
+          
+          // Create/update project metadata file to persist the new name and ID
+          const metadataPath = path.join(currentProjectPath, "project-metadata.json");
+          const metadata = {
+            id: sanitizedNewName,
+            name: newProjectName.trim(),
+            directoryName: updateProjectId, // Keep track of the actual directory name
+            updatedAt: new Date().toISOString()
+          };
+          
+          try {
+            fs.writeFileSync(metadataPath, JSON.stringify(metadata, null, 2));
+            console.log(`Project metadata saved to ${metadataPath}`);
+          } catch (error) {
+            console.error(`Failed to save project metadata:`, error);
+          }
+        }
+
+        res.status(200).json({ project: updatedProject });
+        break;
+
       case "DELETE":
         // Delete a project
         const { projectId } = req.query;
@@ -223,7 +349,7 @@ export default async function handler(
         break;
 
       default:
-        res.setHeader("Allow", ["GET", "POST", "DELETE"]);
+        res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
         res.status(405).json({ error: `Method ${method} not allowed` });
     }
   } catch (error: any) {

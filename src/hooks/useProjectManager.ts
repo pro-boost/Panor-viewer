@@ -142,9 +142,9 @@ export const useProjectManager = () => {
     return projectId;
   };
 
-  const updateProjectName = async (projectId: string): Promise<void> => {
+  const updateProjectName = async (projectId: string): Promise<string> => {
     try {
-      await fetch("/api/projects", {
+      const response = await fetch("/api/projects", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -154,8 +154,32 @@ export const useProjectManager = () => {
           projectName: projectName.trim(),
         }),
       });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Project update response:', data);
+        console.log('Original projectId:', projectId, 'New project ID:', data.project?.id);
+        // Always update the project name to reflect the new name
+        if (data.project && data.project.name) {
+          setProjectName(data.project.name);
+        }
+        // Update the editing project ID if the directory was renamed
+        if (data.project && data.project.id !== projectId) {
+          console.log('Updating editingProjectId from', projectId, 'to', data.project.id);
+          setEditingProjectId(data.project.id);
+          setCreatedProjectId(data.project.id);
+        } else {
+          console.log('Project ID unchanged, not updating editingProjectId');
+        }
+        // Return the new project ID (which might be different from the original)
+        return data.project?.id || projectId;
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update project name");
+      }
     } catch (error) {
       console.warn("Failed to update project name:", error);
+      throw error;
     }
   };
 
