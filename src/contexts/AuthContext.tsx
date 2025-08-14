@@ -16,7 +16,10 @@ interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   isAuthenticated: boolean;
@@ -77,7 +80,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
@@ -97,7 +103,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      return { success: false, error: "Network error. Please check your connection and try again." };
+      return {
+        success: false,
+        error: "Network error. Please check your connection and try again.",
+      };
     }
   };
 

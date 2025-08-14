@@ -108,6 +108,14 @@ export default function Upload() {
     if (validationErrors.length > 0) {
       validation.clearAllValidation();
     }
+
+    // Re-validate the project name in real-time
+    if (newName.trim()) {
+      const nameErrors = validateProjectName(newName);
+      if (nameErrors.length > 0) {
+        validation.addValidationError(nameErrors[0]);
+      }
+    }
   };
 
   const handleSubmit = async (
@@ -325,7 +333,7 @@ export default function Upload() {
               id="projectName"
               name="projectName"
               value={projectManager.projectName}
-              onChange={(e) => projectManager.setProjectName(e.target.value)}
+              onChange={handleProjectNameChange}
               placeholder="Enter a name for your project"
               required
               className={`${styles.textInput} ${validation.validationErrors.some((error) => error.includes("Project name")) ? styles.inputError : ""}`}
