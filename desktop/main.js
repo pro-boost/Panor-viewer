@@ -1,4 +1,4 @@
-const { app, BrowserWindow, protocol, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, protocol, ipcMain, shell, Menu } = require("electron");
 const path = require("path");
 
 // Simple development mode detection without external dependency
@@ -198,6 +198,132 @@ async function createWindow() {
   }
 }
 
+// Create application menu with navigation buttons
+function createMenu() {
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Quit',
+          accelerator: process.platform === 'darwin' ? 'Cmd+Q' : 'Ctrl+Q',
+          click: () => {
+            app.quit();
+          }
+        }
+      ]
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        { role: 'selectall' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        {
+          label: 'Back',
+          accelerator: 'Alt+Left',
+          click: () => {
+            if (mainWindow && mainWindow.webContents.canGoBack()) {
+              mainWindow.webContents.goBack();
+            }
+          }
+        },
+        {
+          label: 'Forward',
+          accelerator: 'Alt+Right',
+          click: () => {
+            if (mainWindow && mainWindow.webContents.canGoForward()) {
+              mainWindow.webContents.goForward();
+            }
+          }
+        },
+        {
+          label: 'Reload',
+          accelerator: 'CmdOrCtrl+R',
+          click: () => {
+            if (mainWindow) {
+              mainWindow.webContents.reload();
+            }
+          }
+        },
+        { type: 'separator' },
+        { role: 'resetzoom' },
+        { role: 'zoomin' },
+        { role: 'zoomout' },
+         { type: 'separator' },
+         { role: 'togglefullscreen' },
+         { type: 'separator' },
+         {
+           label: 'Toggle Developer Tools',
+           accelerator: process.platform === 'darwin' ? 'Alt+Cmd+I' : 'Ctrl+Shift+I',
+           click: () => {
+             if (mainWindow) {
+               mainWindow.webContents.toggleDevTools();
+             }
+           }
+         }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'close' }
+      ]
+    },
+    {
+      label: 'Help',
+      submenu: [
+        {
+          label: 'About',
+          click: () => {
+            // You can add an about dialog here if needed
+          }
+        }
+      ]
+    }
+  ];
+
+  // macOS specific menu adjustments
+  if (process.platform === 'darwin') {
+    template.unshift({
+      label: app.getName(),
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'services', submenu: [] },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideothers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    });
+
+    // Window menu
+    template[4].submenu = [
+      { role: 'close' },
+      { role: 'minimize' },
+      { role: 'zoom' },
+      { type: 'separator' },
+      { role: 'front' }
+    ];
+  }
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 // Optimized GPU settings for Electron 27 - performance focused
 app.commandLine.appendSwitch("enable-webgl");
 app.commandLine.appendSwitch("enable-accelerated-2d-canvas");
@@ -232,6 +358,7 @@ app.whenReady().then(() => {
     console.error("Failed to start application:", error);
     app.quit();
   });
+  createMenu();
 });
 
 app.on("window-all-closed", () => {
