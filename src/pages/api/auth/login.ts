@@ -45,8 +45,49 @@ export default async function handler(
         role: profile.role,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login error:", error);
-    res.status(500).json({ error: "Internal server error" });
+
+    // Handle specific Supabase authentication errors
+    if (error.message?.includes("Invalid login credentials") || 
+        error.message?.includes("Email not confirmed") ||
+        error.message?.includes("Invalid email or password")) {
+      return res.status(401).json({ 
+        error: "Invalid email or password. Please check your credentials and try again." 
+      });
+    }
+
+    if (error.message?.includes("Email not confirmed")) {
+      return res.status(401).json({ 
+        error: "Please check your email and confirm your account before signing in." 
+      });
+    }
+
+    if (error.message?.includes("Too many requests") || 
+        error.message?.includes("rate limit")) {
+      return res.status(429).json({ 
+        error: "Too many login attempts. Please wait a few minutes before trying again." 
+      });
+    }
+
+    if (error.message?.includes("Network") || 
+        error.message?.includes("fetch") ||
+        error.code === "NETWORK_ERROR") {
+      return res.status(503).json({ 
+        error: "Network connection error. Please check your internet connection and try again." 
+      });
+    }
+
+    if (error.message?.includes("Database") || 
+        error.message?.includes("Connection")) {
+      return res.status(503).json({ 
+        error: "Service temporarily unavailable. Please try again later." 
+      });
+    }
+
+    // Generic error for other cases
+    res.status(500).json({ 
+      error: "An unexpected error occurred. Please try again later or contact support if the problem persists." 
+    });
   }
 }
