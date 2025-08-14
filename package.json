@@ -7,7 +7,7 @@
   "main": "desktop/main.js",
   "scripts": {
     "dev": "node scripts/utils/dev-with-projects-path.js",
-    "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3000 && electron desktop/main.js\"",
+    "desktop:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:3001 && electron desktop/main.js\"",
     "build": "node scripts/build.js web",
     "desktop:build:unpack": "node scripts/build.js electron",
     "desktop:build:installer": "node scripts/build.js electron-installer",

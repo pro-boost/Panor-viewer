@@ -9,6 +9,7 @@ import { FileURLManager } from "@/utils/fileHelpers";
 import Logo from "@/components/ui/Logo";
 import LogoutButton from "@/components/ui/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
+import { updateElectronMenuProjectId } from "@/utils/electronMenuHelper";
 // ProjectManager moved to PanoramaViewer component
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
@@ -53,6 +54,11 @@ export default function Home(): ReactElement {
   const [config, setConfig] = useState<ConfigData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [showProjects, setShowProjects] = useState<boolean>(false);
+
+  // Clear project context when on home page
+  useEffect(() => {
+    updateElectronMenuProjectId(null);
+  }, []);
 
   const loadProjects = async () => {
     try {

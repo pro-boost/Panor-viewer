@@ -6,6 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 import { useRouter } from "next/router";
+import { updateElectronMenuAdminStatus } from "../utils/electronMenuHelper";
 
 interface User {
   email: string;
@@ -135,6 +136,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     }
   }, [router.isReady, router.pathname]);
+
+  // Update Electron menu when user state changes
+  useEffect(() => {
+    const isAdmin = user?.role === "admin";
+    console.log('[AUTH CONTEXT] User state changed, isAdmin:', isAdmin, 'user:', user);
+    updateElectronMenuAdminStatus(isAdmin);
+  }, [user]);
 
   const value: AuthContextType = {
     user,

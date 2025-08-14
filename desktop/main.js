@@ -52,7 +52,8 @@ async function createWindow() {
 
     // For development, use the Next.js dev server directly
     if (isDev) {
-      serverUrl = "http://localhost:3000";
+      // Try port 3000 first, then 3001 if 3000 is in use
+      serverUrl = "http://localhost:3001"; // Next.js often falls back to 3001
       console.log("Using development server:", serverUrl);
     } else {
       try {
@@ -198,8 +199,60 @@ async function createWindow() {
   }
 }
 
+// Store menu template for dynamic updates
+let currentMenuTemplate = null;
+let isAdmin = false;
+let currentProjectId = null;
+
 // Create application menu with navigation buttons
 function createMenu() {
+  const pagesSubmenu = [
+    {
+      label: 'Home',
+      accelerator: 'CmdOrCtrl+H',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.loadURL('http://localhost:3001/');
+        }
+      }
+    },
+    {
+      label: 'Upload',
+      accelerator: 'CmdOrCtrl+U',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.loadURL('http://localhost:3001/upload');
+        }
+      }
+    }
+  ];
+
+  // Add Admin menu item only if user is admin
+  if (isAdmin) {
+    pagesSubmenu.push({
+      label: 'Admin',
+      accelerator: 'CmdOrCtrl+A',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.loadURL('http://localhost:3001/admin');
+        }
+      }
+    });
+  }
+
+  // Add Update Project menu item only if inside a project
+  if (currentProjectId) {
+    pagesSubmenu.push({
+      label: 'Update Project',
+      accelerator: 'CmdOrCtrl+Shift+U',
+      click: () => {
+        if (mainWindow) {
+          mainWindow.loadURL(`http://localhost:3001/upload?project=${encodeURIComponent(currentProjectId)}`);
+        }
+      }
+    });
+  }
+
   const template = [
     {
       label: 'File',
@@ -224,6 +277,10 @@ function createMenu() {
         { role: 'paste' },
         { role: 'selectall' }
       ]
+    },
+    {
+      label: 'Pages',
+      submenu: pagesSubmenu
     },
     {
       label: 'View',
@@ -320,8 +377,25 @@ function createMenu() {
     ];
   }
 
+  currentMenuTemplate = template;
   const menu = Menu.buildFromTemplate(template);
   Menu.setApplicationMenu(menu);
+}
+
+// Function to update menu dynamically
+function updateMenu(adminStatus = null, projectId = null) {
+  console.log("[MENU] updateMenu called with:", { adminStatus, projectId });
+  if (adminStatus !== null) {
+    isAdmin = adminStatus;
+    console.log("[MENU] Updated isAdmin to:", isAdmin);
+  }
+  if (projectId !== null) {
+    currentProjectId = projectId;
+    console.log("[MENU] Updated currentProjectId to:", currentProjectId);
+  }
+  console.log("[MENU] Current state before createMenu:", { isAdmin, currentProjectId });
+  createMenu();
+  console.log("[MENU] Menu recreated");
 }
 
 // Optimized GPU settings for Electron 27 - performance focused
@@ -352,6 +426,22 @@ ipcMain.handle("app:getProjectsPath", () => {
   return path.join(app.getPath("userData"), "projects");
 });
 
+// IPC handlers for menu updates
+ipcMain.handle("update-menu-admin-status", (event, adminStatus) => {
+  console.log("[IPC] update-menu-admin-status called with:", adminStatus);
+  updateMenu(adminStatus, null);
+});
+
+ipcMain.handle("update-menu-project-id", (event, projectId) => {
+  console.log("[IPC] update-menu-project-id called with:", projectId);
+  updateMenu(null, projectId);
+});
+
+ipcMain.handle("update-menu-context", (event, { adminStatus, projectId }) => {
+  console.log("[IPC] update-menu-context called with:", { adminStatus, projectId });
+  updateMenu(adminStatus, projectId);
+});
+
 app.whenReady().then(() => {
   console.log("App is ready, creating window...");
   createWindow().catch((error) => {
@@ -359,6 +449,18 @@ app.whenReady().then(() => {
     app.quit();
   });
   createMenu();
+  // Test menu update on startup
+  console.log("[STARTUP] Testing menu update...");
+  setTimeout(() => {
+    console.log("[STARTUP] Calling updateMenu with admin=true, projectId=null...");
+    updateMenu(true, null);
+  }, 3000);
+  
+  // Test menu update with project ID after 6 seconds
+  setTimeout(() => {
+    console.log("[STARTUP] Calling updateMenu with admin=true, projectId='aaa'...");
+    updateMenu(true, "aaa");
+  }, 6000);
 });
 
 app.on("window-all-closed", () => {

@@ -9,6 +9,7 @@ import { useProjectManager } from "@/hooks/useProjectManager";
 import { useValidation } from "@/hooks/useValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUploadCacheRefresh } from "@/hooks/useCacheRefresh";
+import { updateElectronMenuProjectId } from "@/utils/electronMenuHelper";
 
 export default function Upload() {
   // Initialize authentication
@@ -93,6 +94,11 @@ export default function Upload() {
   useEffect(() => {
     projectManager.initializeFromUrl();
   }, []);
+
+  // Update Electron menu project context
+  useEffect(() => {
+    updateElectronMenuProjectId(editingProjectId || null);
+  }, [editingProjectId]);
 
   // Update UI when existingFiles changes
   useEffect(() => {
