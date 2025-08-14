@@ -268,8 +268,9 @@ export default function Upload() {
       projectManager.validateProjectName(newProjectName);
     allErrors.push(...projectNameErrors);
 
-    // Check for duplicate project names (only if basic validation passes)
-    if (projectNameErrors.length === 0 && newProjectName.trim()) {
+    // Check for duplicate project names (only if basic validation passes and name has changed in edit mode)
+    if (projectNameErrors.length === 0 && newProjectName.trim() && 
+        (!projectManager.isEditMode || projectManager.hasProjectNameChanged())) {
       try {
         const checkResponse = await fetch("/api/projects", {
           method: "POST",
@@ -395,8 +396,9 @@ export default function Upload() {
     const projectNameErrors = projectManager.validateProjectName(projectName);
     allErrors.push(...projectNameErrors);
 
-    // Check for duplicate project name if project name is valid
-    if (projectName.trim() && projectNameErrors.length === 0) {
+    // Check for duplicate project name if project name is valid and name has changed in edit mode
+    if (projectName.trim() && projectNameErrors.length === 0 && 
+        (!projectManager.isEditMode || projectManager.hasProjectNameChanged())) {
       try {
         const response = await fetch("/api/projects", {
           method: "POST",
@@ -461,8 +463,9 @@ export default function Upload() {
     const projectNameErrors = projectManager.validateProjectName(projectName);
     allErrors.push(...projectNameErrors);
 
-    // Check for duplicate project name if project name is valid
-    if (projectName.trim() && projectNameErrors.length === 0) {
+    // Check for duplicate project name if project name is valid and name has changed in edit mode
+    if (projectName.trim() && projectNameErrors.length === 0 && 
+        (!projectManager.isEditMode || projectManager.hasProjectNameChanged())) {
       try {
         const response = await fetch("/api/projects", {
           method: "POST",
@@ -534,7 +537,9 @@ export default function Upload() {
       fileManager.hasRequiredFiles(),
       finalFileErrors,
       projectManager.validateProjectName,
-      fileManager.selectedFiles.csv
+      fileManager.selectedFiles.csv,
+      projectManager.isEditMode,
+      projectManager.hasProjectNameChanged()
     );
 
     if (!isValid) {

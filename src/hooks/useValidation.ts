@@ -44,13 +44,17 @@ export const useValidation = () => {
     fileValidationErrors: string[],
     projectNameValidator: (name: string) => string[],
     csvFile?: File,
+    isEditMode?: boolean,
+    hasProjectNameChanged?: boolean,
   ): Promise<boolean> => {
     return new Promise((resolve) => {
       const allErrors: string[] = [];
 
-      // Validate project name
-      const nameErrors = projectNameValidator(projectName);
-      allErrors.push(...nameErrors);
+      // Validate project name only if not in edit mode or if the name has changed
+      if (!isEditMode || hasProjectNameChanged) {
+        const nameErrors = projectNameValidator(projectName);
+        allErrors.push(...nameErrors);
+      }
 
       // Validate required files
       if (!hasRequiredFiles) {

@@ -10,6 +10,7 @@ interface ExistingFiles {
 export const useProjectManager = () => {
   const router = useRouter();
   const [projectName, setProjectName] = useState("");
+  const [originalProjectName, setOriginalProjectName] = useState(""); // Track original name for edit mode
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -67,6 +68,7 @@ export const useProjectManager = () => {
         );
         if (project) {
           setProjectName(project.name);
+          setOriginalProjectName(project.name); // Store original name for comparison
           console.log("Project name loaded:", project.name);
         }
       }
@@ -233,9 +235,14 @@ export const useProjectManager = () => {
     }
   };
 
+  const hasProjectNameChanged = (): boolean => {
+    return isEditMode && projectName.trim() !== originalProjectName.trim();
+  };
+
   return {
     projectName,
     setProjectName,
+    originalProjectName,
     createdProjectId,
     setCreatedProjectId,
     editingProjectId,
@@ -255,5 +262,6 @@ export const useProjectManager = () => {
     navigateBack,
     loadProjectData,
     initializeFromUrl,
+    hasProjectNameChanged,
   };
 };
