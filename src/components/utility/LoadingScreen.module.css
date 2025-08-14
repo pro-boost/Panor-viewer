@@ -40,6 +40,36 @@
   opacity: 0.8;
 }
 
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: var(--font-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-top: 20px;
+  background: var(--glass-bg);
+  border: 1px solid rgba(255, 255, 255, 0.284);
+  border-radius: var(--radius-full);
+  transition: var(--transition-base);
+  backdrop-filter: blur(10px);
+  cursor: pointer;
+}
+
+.backButton:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  transform: translateX(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.backButton:focus-visible {
+  outline: 2px solid var(--primary-light);
+  outline-offset: 2px;
+}
+
 .helpSection {
   margin-top: 20px;
   text-align: left;

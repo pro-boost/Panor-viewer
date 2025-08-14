@@ -21,6 +21,12 @@ export default function LoadingScreen({
           </div>
           <div className={styles.errorMessage}>{error}</div>
 
+          {onRetry && (
+            <button onClick={onRetry} className={styles.backButton}>
+              ← Back to Panorama Viewer
+            </button>
+          )}
+
           {error.includes("WebGL") && (
             <div className={styles.helpSection}>
               <div className={styles.helpTitle}>To fix this issue:</div>
