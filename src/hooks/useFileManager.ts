@@ -30,13 +30,23 @@ export const useFileManager = (
 
   // Validation functions
   const validateCSVFile = (file: File): string[] => {
+    console.log("[DEBUG] validateCSVFile called for:", {
+      fileName: file.name,
+      fileType: file.type,
+      fileSize: file.size
+    });
     const errors: string[] = [];
     if (file.name !== "pano-poses.csv") {
-      errors.push('CSV file must be named exactly "pano-poses.csv"');
+      const nameError = 'CSV file must be named exactly "pano-poses.csv"';
+      console.log("[DEBUG] Adding filename error:", nameError);
+      errors.push(nameError);
     }
     if (!file.type.includes("csv") && !file.name.endsWith(".csv")) {
-      errors.push("File must be a valid CSV file");
+      const typeError = "File must be a valid CSV file";
+      console.log("[DEBUG] Adding file type error:", typeError);
+      errors.push(typeError);
     }
+    console.log("[DEBUG] validateCSVFile returning errors:", errors);
     return errors;
   };
 
@@ -108,17 +118,28 @@ export const useFileManager = (
     const { name, files } = event.target;
     setDuplicateImages([]);
 
-    if (name === "csv" && files && files[0]) {
-      setSelectedFiles((prev) => ({ ...prev, csv: files[0] }));
-    } else if (name === "images" && files) {
-      const fileArray = Array.from(files);
-      const duplicates = detectDuplicateImages(fileArray);
-
-      if (duplicates.length > 0) {
-        setDuplicateImages(duplicates);
+    if (name === "csv") {
+      // Handle CSV file selection or removal
+      if (files && files[0]) {
+        setSelectedFiles((prev) => ({ ...prev, csv: files[0] }));
+      } else {
+        // File was removed/cleared
+        setSelectedFiles((prev) => ({ ...prev, csv: null }));
       }
+    } else if (name === "images") {
+      if (files && files.length > 0) {
+        const fileArray = Array.from(files);
+        const duplicates = detectDuplicateImages(fileArray);
 
-      setSelectedFiles((prev) => ({ ...prev, images: fileArray }));
+        if (duplicates.length > 0) {
+          setDuplicateImages(duplicates);
+        }
+
+        setSelectedFiles((prev) => ({ ...prev, images: fileArray }));
+      } else {
+        // Files were removed/cleared
+        setSelectedFiles((prev) => ({ ...prev, images: [] }));
+      }
     }
   };
 

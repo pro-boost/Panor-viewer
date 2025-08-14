@@ -1,4 +1,4 @@
-import { FormEvent, ChangeEvent, useEffect } from "react";
+import { FormEvent, ChangeEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "@/styles/Upload.module.css";
 import Logo from "@/components/ui/Logo";
@@ -14,13 +14,19 @@ export default function Upload() {
   // Initialize authentication
   const { isAuthenticated, loading: authLoading } = useAuth();
 
+  // Add state for CSV validation loading
+  const [csvValidating, setCsvValidating] = useState(false);
+  
+  // Add state for file input reset key to force re-render when same file is selected
+  const [fileInputKey, setFileInputKey] = useState(0);
+
   // Initialize custom hooks
   const projectManager = useProjectManager();
   const uploadState = useUploadState();
   const validation = useValidation();
   const fileManager = useFileManager(
     projectManager.isEditMode,
-    projectManager.existingFiles,
+    projectManager.existingFiles
   );
   const { handleUploadComplete } = useUploadCacheRefresh();
 
@@ -93,51 +99,349 @@ export default function Upload() {
     // Force UI update when existingFiles changes
     console.log(
       "ExistingFiles changed in state:",
-      projectManager.existingFiles,
+      projectManager.existingFiles
     );
     // This will update the project status message in the UI
   }, [projectManager.existingFiles]);
 
+  // Enhanced CSV validation function
+  const validateCSVContent = async (file: File): Promise<string[]> => {
+    console.log("[DEBUG] validateCSVContent called for file:", file.name);
+    return new Promise((resolve) => {
+      const errors: string[] = [];
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          console.log("[DEBUG] CSV file content length:", content?.length || 0);
+          
+          if (!content || content.trim() === "") {
+            console.log("[DEBUG] CSV file is empty");
+            errors.push("CSV file is empty or could not be read.");
+            resolve(errors);
+            return;
+          }
+
+          const lines = content
+            .split("\n")
+            .filter((line) => line.trim() !== "");
+          console.log("[DEBUG] CSV lines count:", lines.length);
+
+          if (lines.length < 2) {
+            console.log("[DEBUG] CSV has insufficient lines");
+            errors.push(
+              "CSV file must contain at least a header row and one data row."
+            );
+            resolve(errors);
+            return;
+          }
+
+          const header = lines[0].toLowerCase().trim();
+          
+          // Detect delimiter (comma or semicolon)
+          const delimiter = header.includes(';') && header.split(';').length > header.split(',').length ? ';' : ',';
+          console.log("[DEBUG] Detected CSV delimiter:", delimiter);
+          
+          const headerColumns = header
+            .split(delimiter)
+            .map((col) => col.trim().replace(/"/g, "").replace(/^#\s*/, "")) // Remove leading # and whitespace
+            .filter(col => col.length > 0); // Remove empty columns
+          console.log("[DEBUG] CSV header columns:", headerColumns);
+
+          const requiredColumns = [
+            "filename",
+            "pano_pos_x",
+            "pano_pos_y",
+            "pano_pos_z",
+            "pano_ori_w",
+            "pano_ori_x",
+            "pano_ori_y",
+            "pano_ori_z",
+          ];
+
+          const missingColumns = requiredColumns.filter(
+            (col) => !headerColumns.includes(col)
+          );
+          console.log("[DEBUG] Missing columns:", missingColumns);
+
+          if (missingColumns.length > 0) {
+            const errorMsg = `CSV file is missing required columns: ${missingColumns.join(", ")}. Please ensure your CSV includes position (pano_pos_x, pano_pos_y, pano_pos_z) and orientation (pano_ori_w, pano_ori_x, pano_ori_y, pano_ori_z) columns.`;
+            console.log("[DEBUG] Adding missing columns error:", errorMsg);
+            errors.push(errorMsg);
+          }
+
+          // Validate data rows
+          const dataLines = lines.slice(1);
+          const validDataLines = dataLines.filter((line) => line.trim() !== "");
+          console.log("[DEBUG] Valid data lines count:", validDataLines.length);
+
+          if (validDataLines.length === 0) {
+            console.log("[DEBUG] No valid data lines found");
+            errors.push("CSV file contains headers but no data rows.");
+            resolve(errors);
+            return;
+          }
+
+          // Validate numeric columns
+          let rowErrorCount = 0;
+          const maxRowErrorsToReport = 3;
+
+          validDataLines.forEach((line, index) => {
+            const columns = line.split(delimiter).map((col) => col.trim());
 
 
-  const handleProjectNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const newName = e.target.value;
-    setProjectName(newName);
 
-    // Clear validation errors when user starts typing
-    if (validationErrors.length > 0) {
-      validation.clearAllValidation();
+            // Validate numeric columns for first few rows
+            if (index < 5 && rowErrorCount < maxRowErrorsToReport) {
+              const numericColumns = [
+                "pano_pos_x",
+                "pano_pos_y",
+                "pano_pos_z",
+                "pano_ori_w",
+                "pano_ori_x",
+                "pano_ori_y",
+                "pano_ori_z",
+              ];
+
+              numericColumns.forEach((colName) => {
+                const colIndex = headerColumns.indexOf(colName);
+                if (colIndex !== -1 && columns[colIndex]) {
+                  const value = columns[colIndex].replace(/"/g, "");
+                  if (value && isNaN(parseFloat(value))) {
+                    console.log(`[DEBUG] Invalid numeric value in row ${index + 2}, column ${colName}:`, value);
+                    errors.push(
+                      `Row ${index + 2}, column "${colName}": "${value}" is not a valid number.`
+                    );
+                    rowErrorCount++;
+                  }
+                }
+              });
+            }
+          });
+
+          if (rowErrorCount > maxRowErrorsToReport) {
+            console.log("[DEBUG] Too many row errors, truncating:", rowErrorCount);
+            errors.push(
+              `... and ${rowErrorCount - maxRowErrorsToReport} more row validation errors.`
+            );
+          }
+
+          console.log("[DEBUG] validateCSVContent returning errors:", {
+            totalErrors: errors.length,
+            errors: errors
+          });
+          resolve(errors);
+        } catch (parseError) {
+          console.error("[DEBUG] CSV parse error:", parseError);
+          errors.push(
+            "Error reading CSV file. Please ensure it's a valid CSV format."
+          );
+          resolve(errors);
+        }
+      };
+
+      reader.onerror = () => {
+        console.error("[DEBUG] File read error");
+        errors.push(
+          "Failed to read CSV file. Please try selecting the file again."
+        );
+        resolve(errors);
+      };
+
+      reader.readAsText(file);
+    });
+  };
+
+
+
+  const handleProjectNameChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newProjectName = event.target.value;
+    setProjectName(newProjectName);
+
+    // Collect all validation errors before setting them
+    let allErrors: string[] = [];
+
+    // Get current file validation errors
+    const fileErrors = fileManager.getFileValidationErrors();
+    allErrors.push(...fileErrors);
+
+    // Get project name validation errors
+    const projectNameErrors = projectManager.validateProjectName(newProjectName);
+    allErrors.push(...projectNameErrors);
+
+    // Clear all validation errors and set the complete error list once
+    validation.clearAllValidation();
+    validation.setValidationErrorsFromArray(allErrors);
+  };
+
+  // Helper function to reset validation and file input (only call when explicitly needed)
+  const resetValidationAndFileInput = () => {
+    console.log("[DEBUG] Manually resetting validation and file input");
+    validation.clearAllValidation();
+    
+    // Clear file input values to prevent stale file references
+    const csvInput = document.getElementById('csv') as HTMLInputElement;
+    if (csvInput) {
+      csvInput.value = '';
+    }
+    
+    // Reset file manager state
+    fileManager.setSelectedFiles(prev => ({ ...prev, csv: null }));
+    
+    // Force re-render of file input to allow same file selection
+    setFileInputKey(prev => prev + 1);
+  };
+
+  const handleFileChangeWithValidation = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    console.log("[DEBUG] handleFileChangeWithValidation started", {
+      inputName: event.target.name,
+      hasFiles: !!event.target.files,
+      fileCount: event.target.files?.length || 0,
+      fileName: event.target.files?.[0]?.name
+    });
+
+    // Clear validation state immediately to prevent stale errors
+    console.log("[DEBUG] Clearing validation state at start");
+    validation.clearAllValidation();
+
+    // Call the original file handler first
+    fileManager.handleFileChange(event);
+
+    // Collect all validation errors before setting them
+    let allErrors: string[] = [];
+
+    // For CSV files, validate the actual file from the event (not from state to avoid stale data)
+    if (event.target.name === "csv" && event.target.files && event.target.files[0]) {
+      const freshCsvFile = event.target.files[0];
+      console.log("[DEBUG] Validating fresh CSV file:", freshCsvFile.name);
+      const csvFileErrors = fileManager.validateCSVFile(freshCsvFile);
+      console.log("[DEBUG] Fresh CSV file validation errors:", csvFileErrors);
+      allErrors.push(...csvFileErrors);
+    } else {
+      // For non-CSV files or when no file selected, use the general validation
+      const fileErrors = fileManager.getFileValidationErrors();
+      console.log("[DEBUG] General file validation errors:", fileErrors);
+      allErrors.push(...fileErrors);
     }
 
-    // Re-validate the project name in real-time
-    if (newName.trim()) {
-      const nameErrors = validateProjectName(newName);
-      if (nameErrors.length > 0) {
-        validation.addValidationError(nameErrors[0]);
+    // If it's a CSV file, validate its content asynchronously (use the same fresh file)
+    if (
+      event.target.name === "csv" &&
+      event.target.files &&
+      event.target.files[0]
+    ) {
+      const csvFile = event.target.files[0];
+      console.log("[DEBUG] Starting CSV content validation for fresh file:", csvFile.name);
+
+      // Set loading state
+      setCsvValidating(true);
+
+      try {
+        // Validate CSV content
+        const csvContentErrors = await validateCSVContent(csvFile);
+        console.log("[DEBUG] CSV content validation errors:", csvContentErrors);
+        allErrors.push(...csvContentErrors);
+      } catch (error) {
+        console.error("CSV validation error:", error);
+        allErrors.push(
+          "An error occurred while validating the CSV file. Please try again."
+        );
+      } finally {
+        setCsvValidating(false);
       }
     }
+
+    // Get project name validation errors
+    const projectNameErrors = projectManager.validateProjectName(projectName);
+    console.log("[DEBUG] Project name validation errors:", projectNameErrors);
+    allErrors.push(...projectNameErrors);
+
+    console.log("[DEBUG] All collected errors:", {
+      allErrors,
+      totalErrors: allErrors.length
+    });
+
+    // Set the complete error list
+    console.log("[DEBUG] Setting all errors at once");
+    validation.setValidationErrorsFromArray(allErrors);
+    
+    // Note: Don't reset file input key on successful validation as it clears the input
+    // The key reset should only happen when manually clearing or when there are persistent errors
+  };
+
+  const handlePOIFileChangeWithValidation = (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    // Call the original POI file handler
+    fileManager.handlePOIFileChange(event);
+
+    // Collect all validation errors
+    let allErrors: string[] = [];
+
+    // Get current file validation errors
+    const fileErrors = fileManager.getFileValidationErrors();
+    allErrors.push(...fileErrors);
+
+    // Get project name validation errors
+    const projectNameErrors = projectManager.validateProjectName(projectName);
+    allErrors.push(...projectNameErrors);
+
+    // Clear all validation errors and set the complete error list once
+    validation.clearAllValidation();
+    validation.setValidationErrorsFromArray(allErrors);
   };
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement> & {
       _overwriteMode?: boolean;
       _deleteAllMode?: boolean;
-    },
+    }
   ) => {
     event.preventDefault();
+
+    // Prevent submission if CSV is still being validated
+    if (csvValidating) {
+      uploadState.setMessage(
+        "Please wait for CSV validation to complete before submitting."
+      );
+      return;
+    }
 
     // Clear previous state
     uploadState.clearState();
     validation.clearAllValidation();
 
-    // Validate before submission
+    // Re-validate CSV content if present before submission
+    let finalFileErrors = fileManager.getFileValidationErrors();
+
+    if (fileManager.selectedFiles.csv) {
+      setCsvValidating(true);
+      try {
+        const csvContentErrors = await validateCSVContent(
+          fileManager.selectedFiles.csv
+        );
+        finalFileErrors.push(...csvContentErrors);
+      } catch (error) {
+        finalFileErrors.push(
+          "CSV validation failed. Please check your file and try again."
+        );
+      } finally {
+        setCsvValidating(false);
+      }
+    }
+
+    // Validate before submission with updated errors
     const isValid = await validation.validateBeforeSubmit(
       projectManager.projectName,
       fileManager.hasRequiredFiles(),
-      fileManager.getFileValidationErrors(),
+      finalFileErrors,
       projectManager.validateProjectName,
-      fileManager.selectedFiles.csv,
+      fileManager.selectedFiles.csv
     );
+
     if (!isValid) {
       return;
     }
@@ -190,13 +494,18 @@ export default function Upload() {
       }
 
       // Always use delete all mode when duplicates are detected
-      const hasDuplicates = duplicateImages.length > 0 || duplicateWarning.length > 0;
-      
+      const hasDuplicates =
+        duplicateImages.length > 0 || duplicateWarning.length > 0;
+
       if (uploadState.allowOverwrite || event._overwriteMode) {
         formData.append("overwrite", "true");
       }
 
-      if (uploadState.deleteAllAndUpload || event._deleteAllMode || hasDuplicates) {
+      if (
+        uploadState.deleteAllAndUpload ||
+        event._deleteAllMode ||
+        hasDuplicates
+      ) {
         formData.append("deleteAll", "true");
       }
       uploadState.setAllowOverwrite(false);
@@ -217,7 +526,7 @@ export default function Upload() {
         {
           method: "POST",
           body: formData,
-        },
+        }
       );
 
       clearInterval(progressInterval);
@@ -241,12 +550,12 @@ export default function Upload() {
       if (projectManager.isEditMode && projectManager.editingProjectId) {
         console.log(
           "Refreshing project data after successful upload for project:",
-          projectManager.editingProjectId,
+          projectManager.editingProjectId
         );
         await projectManager.loadProjectData(projectManager.editingProjectId);
         console.log(
           "Project data refreshed, current files:",
-          projectManager.existingFiles,
+          projectManager.existingFiles
         );
 
         // Force UI update by setting a message that includes the updated file information
@@ -259,14 +568,16 @@ export default function Upload() {
         ? "Project updated successfully!"
         : "Project created successfully!";
       uploadState.finishUpload(true, successMessage);
-      
+
       // Trigger cache refresh for the updated project
       if (projectManager.isEditMode && projectId) {
         handleUploadComplete(projectId);
         // Dispatch cache refresh event for immediate UI updates
-        window.dispatchEvent(new CustomEvent('panorama-cache-refresh', {
-          detail: { projectId }
-        }));
+        window.dispatchEvent(
+          new CustomEvent("panorama-cache-refresh", {
+            detail: { projectId },
+          })
+        );
       }
     } catch (error: any) {
       uploadState.handleUploadError(error);
@@ -348,16 +659,9 @@ export default function Upload() {
                 : ""}
               :
             </label>
-            {fileManager.selectedFiles.csv &&
-              fileManager.selectedFiles.csv.name !== "pano-poses.csv" && (
-                <div className={styles.csvInstruction}>
-                  <p>
-                    Important: Your CSV file must be named exactly{" "}
-                    <strong>&quot;pano-poses.csv&quot;</strong>
-                  </p>
-                </div>
-              )}
+
             <input
+              key={`csv-${fileInputKey}`}
               type="file"
               id="csv"
               name="csv"
@@ -365,9 +669,16 @@ export default function Upload() {
               required={
                 !projectManager.isEditMode || !projectManager.existingFiles.csv
               }
-              onChange={fileManager.handleFileChange}
-              className={styles.fileInput}
+              onChange={handleFileChangeWithValidation}
+              className={`${styles.fileInput} ${validation.validationErrors.some((error) => error.includes("CSV")) ? styles.inputError : ""}`}
+              disabled={csvValidating}
             />
+            {csvValidating && (
+              <div className={styles.validationStatus}>
+                <span className={styles.loadingSpinner}></span>
+                <span>Validating CSV content...</span>
+              </div>
+            )}
           </div>
 
           <div className={styles.formGroup}>
@@ -389,7 +700,7 @@ export default function Upload() {
                 !projectManager.isEditMode ||
                 projectManager.existingFiles.images.length === 0
               }
-              onChange={fileManager.handleFileChange}
+              onChange={handleFileChangeWithValidation}
               className={styles.fileInput}
             />
           </div>
@@ -403,7 +714,7 @@ export default function Upload() {
               id="poiFile"
               name="poiFile"
               accept=".json,.zip"
-              onChange={fileManager.handlePOIFileChange}
+              onChange={handlePOIFileChangeWithValidation}
               className={styles.fileInput}
             />
           </div>
@@ -422,7 +733,7 @@ export default function Upload() {
                       type="button"
                       onClick={() =>
                         projectManager.setShowExistingFiles(
-                          !projectManager.showExistingFiles,
+                          !projectManager.showExistingFiles
                         )
                       }
                       className={styles.toggleButton}
@@ -441,7 +752,7 @@ export default function Upload() {
                       {projectManager.existingFiles.images.map(
                         (imageName, index) => (
                           <li key={index}>Image: {imageName}</li>
-                        ),
+                        )
                       )}
                     </ul>
                   )}
@@ -476,10 +787,10 @@ export default function Upload() {
                       {Math.round(
                         fileManager.selectedFiles.images.reduce(
                           (sum, file) => sum + file.size,
-                          0,
+                          0
                         ) /
                           1024 /
-                          1024,
+                          1024
                       )}{" "}
                       MB total)
                     </span>
@@ -498,24 +809,24 @@ export default function Upload() {
             </div>
           )}
 
-
-
           <button
             type="submit"
-            disabled={validation.isSubmitDisabled()}
+            disabled={validation.isSubmitDisabled() || csvValidating}
             className={`${styles.submitButton} ${
-              validation.validationErrors.length > 0
+              validation.validationErrors.length > 0 || csvValidating
                 ? styles.submitButtonDisabled
                 : ""
             }`}
           >
-            {uploadState.isLoading && (
+            {(uploadState.isLoading || csvValidating) && (
               <span className={styles.loadingSpinner}></span>
             )}
-            {validation.getSubmitButtonText(
-              uploadState.isLoading,
-              projectManager.isEditMode,
-            )}
+            {csvValidating
+              ? "Validating CSV..."
+              : validation.getSubmitButtonText(
+                  uploadState.isLoading,
+                  projectManager.isEditMode
+                )}
           </button>
 
           {uploadState.isLoading && uploadState.uploadProgress > 0 && (
@@ -567,8 +878,6 @@ export default function Upload() {
             </ul>
           </div>
         )}
-
-
 
         {(message || uploadSuccess) && (
           <div
