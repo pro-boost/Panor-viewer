@@ -89,7 +89,10 @@
 }
 
 /* Ensure loading states are properly centered */
-.container .content {
+.container .content.loadingState,
+.container .content.emptyState,
+.container .accessDeniedContent,
+.container .authLoadingContent {
   display: flex;
   flex-direction: column;
   align-items: center;

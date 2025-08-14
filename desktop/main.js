@@ -311,8 +311,43 @@ async function fetchPOIs() {
 
 // Create application menu with navigation buttons
 async function createMenu() {
-  // Fallback URL if serverUrl is not set yet
-  const baseUrl = serverUrl || "http://localhost:3000";
+  // Use the exact same URL that the main window is using
+  // This ensures menu navigation works consistently with the main window
+  let baseUrl = serverUrl;
+
+  // If serverUrl is not set, use fallback
+  if (!baseUrl) {
+    baseUrl = "http://localhost:3000";
+  }
+
+  // Store the current main window URL for comparison
+  let currentWindowUrl = null;
+  if (mainWindow && mainWindow.webContents) {
+    try {
+      currentWindowUrl = mainWindow.webContents.getURL();
+      console.log("[MENU] Main window current URL:", currentWindowUrl);
+
+      // If the main window has a different base URL, use that instead
+      if (currentWindowUrl && currentWindowUrl.startsWith("http")) {
+        const urlObj = new URL(currentWindowUrl);
+        const windowBaseUrl = `${urlObj.protocol}//${urlObj.host}`;
+        if (windowBaseUrl !== baseUrl) {
+          console.log(
+            "[MENU] Using main window base URL instead:",
+            windowBaseUrl
+          );
+          baseUrl = windowBaseUrl;
+        }
+      }
+    } catch (error) {
+      console.log("[MENU] Could not get main window URL:", error.message);
+    }
+  }
+
+  console.log("[MENU] Creating menu with baseUrl:", baseUrl);
+  console.log("[MENU] Original serverUrl:", serverUrl);
+  console.log("[MENU] isDev:", isDev);
+  console.log("[MENU] isAdmin:", isAdmin);
 
   // Fetch dynamic data
   projectsList = await fetchProjects();
@@ -428,7 +463,11 @@ async function createMenu() {
       accelerator: "CmdOrCtrl+A",
       click: () => {
         if (mainWindow) {
-          mainWindow.loadURL(`${baseUrl}/admin/users`);
+          const adminUrl = `${baseUrl}/admin/users`;
+          console.log("[MENU] Admin menu clicked, navigating to:", adminUrl);
+          console.log("[MENU] Current baseUrl:", baseUrl);
+          console.log("[MENU] Current serverUrl:", serverUrl);
+          mainWindow.loadURL(adminUrl);
         }
       },
     });
