@@ -258,6 +258,29 @@ export default function Upload() {
     const projectNameErrors = projectManager.validateProjectName(newProjectName);
     allErrors.push(...projectNameErrors);
 
+    // Check for duplicate project names (only if basic validation passes)
+    if (projectNameErrors.length === 0 && newProjectName.trim()) {
+      try {
+        const checkResponse = await fetch("/api/projects", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ 
+            projectName: newProjectName.trim(),
+            checkOnly: true // Add a flag to only check, not create
+          }),
+        });
+
+        if (!checkResponse.ok && checkResponse.status === 409) {
+          allErrors.push(`Project name "${newProjectName.trim()}" already exists. Please choose a different name or edit the existing project.`);
+        }
+      } catch (error) {
+        // Silently ignore network errors for real-time validation
+        console.warn("Failed to check duplicate project name:", error);
+      }
+    }
+
     // Set the complete error list without clearing existing errors first
     validation.setValidationErrorsFromArray(allErrors);
   };
@@ -345,6 +368,28 @@ export default function Upload() {
     const projectNameErrors = projectManager.validateProjectName(projectName);
     allErrors.push(...projectNameErrors);
 
+    // Check for duplicate project name if project name is valid
+    if (projectName.trim() && projectNameErrors.length === 0) {
+      try {
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectName: projectName.trim(),
+            checkOnly: true
+          })
+        });
+
+        if (response.status === 409) {
+          allErrors.push(`Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`);
+        }
+      } catch (error) {
+        console.error('Error checking project name:', error);
+      }
+    }
+
     // Set the complete error list
     validation.setValidationErrorsFromArray(allErrors);
     
@@ -379,6 +424,28 @@ export default function Upload() {
     // Get project name validation errors
     const projectNameErrors = projectManager.validateProjectName(projectName);
     allErrors.push(...projectNameErrors);
+
+    // Check for duplicate project name if project name is valid
+    if (projectName.trim() && projectNameErrors.length === 0) {
+      try {
+        const response = await fetch('/api/projects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectName: projectName.trim(),
+            checkOnly: true
+          })
+        });
+
+        if (response.status === 409) {
+          allErrors.push(`Project name "${projectName.trim()}" already exists. Please choose a different name or edit the existing project.`);
+        }
+      } catch (error) {
+        console.error('Error checking project name:', error);
+      }
+    }
 
     // Set the complete error list without clearing existing errors first
     validation.setValidationErrorsFromArray(allErrors);
@@ -564,8 +631,18 @@ export default function Upload() {
         );
       }
     } catch (error: any) {
-      uploadState.handleUploadError(error);
-      uploadState.finishUpload(false, "");
+      // Handle project creation/update errors specifically
+      if (error.message && error.message.includes("already exists")) {
+        // Add the error to validation system for proper display
+        validation.setValidationErrorsFromArray([
+          error.message
+        ]);
+        uploadState.finishUpload(false, "");
+      } else {
+        // Handle other upload errors normally
+        uploadState.handleUploadError(error);
+        uploadState.finishUpload(false, "");
+      }
     }
   };
 
@@ -631,7 +708,7 @@ export default function Upload() {
               onChange={handleProjectNameChange}
               placeholder="Enter a name for your project"
               required
-              className={`${styles.textInput} ${validation.validationErrors.some((error) => error.includes("Project name")) ? styles.inputError : ""}`}
+              className={`${styles.textInput} ${validation.validationErrors.some((error) => error.includes("Project name") || error.includes("already exists")) ? styles.inputError : ""}`}
             />
           </div>
 

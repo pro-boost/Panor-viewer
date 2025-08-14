@@ -134,6 +134,64 @@ const deleteProjectRecursively = async (dirPath: string): Promise<void> => {
   await rmdir(dirPath);
 };
 
+const checkProjectNameExists = async (projectName: string, excludeProjectId?: string): Promise<boolean> => {
+  const publicDir = process.env.PROJECTS_PATH || path.join(process.cwd(), "public");
+  const sanitizedName = projectName.replace(/[^a-zA-Z0-9-_]/g, "-").toLowerCase();
+  
+  try {
+    const items = await readdir(publicDir);
+    
+    for (const item of items) {
+      const itemPath = path.join(publicDir, item);
+      const itemStat = await stat(itemPath);
+      
+      // Skip files and system directories
+      if (
+        !itemStat.isDirectory() ||
+        item.startsWith(".") ||
+        ["assets", "images", "data", "csv"].includes(item)
+      ) {
+        continue;
+      }
+      
+      // Skip the project we're updating
+      if (excludeProjectId && item === excludeProjectId) {
+        continue;
+      }
+      
+      // Check if directory name matches the sanitized name
+      if (item === sanitizedName) {
+        return true;
+      }
+      
+      // Check metadata file for project name
+      const metadataPath = path.join(itemPath, "project-metadata.json");
+      if (fs.existsSync(metadataPath)) {
+        try {
+          const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+          if (metadata.id === sanitizedName || metadata.name?.toLowerCase() === projectName.toLowerCase()) {
+            return true;
+          }
+        } catch (error) {
+          // Ignore metadata parsing errors
+        }
+      } else {
+        // For projects without metadata, check if the directory name matches
+        // the sanitized version of any potential project name
+        const projectInfo = await getProjectInfo(item);
+        if (projectInfo && projectInfo.name.toLowerCase() === projectName.toLowerCase()) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error checking project name existence:", error);
+    return false;
+  }
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -180,8 +238,8 @@ export default async function handler(
         break;
 
       case "POST":
-        // Create a new project
-        const { projectName } = req.body;
+        // Create a new project or check for duplicates
+        const { projectName, checkOnly } = req.body;
 
         if (!projectName || typeof projectName !== "string") {
           return res.status(400).json({ error: "Project name is required" });
@@ -196,14 +254,21 @@ export default async function handler(
           return res.status(400).json({ error: "Invalid project name" });
         }
 
+        // Check if project name already exists
+        const nameExists = await checkProjectNameExists(projectName);
+        if (nameExists) {
+          return res.status(409).json({ error: "Project already exists" });
+        }
+
+        // If this is just a check, return success without creating
+        if (checkOnly) {
+          return res.status(200).json({ available: true });
+        }
+
         const newProjectPath = path.join(
           process.env.PROJECTS_PATH || path.join(process.cwd(), "public"),
           sanitizedName,
         );
-
-        if (fs.existsSync(newProjectPath)) {
-          return res.status(409).json({ error: "Project already exists" });
-        }
 
         // Create project directories
         ensureDirectoryExists(newProjectPath);
@@ -250,12 +315,17 @@ export default async function handler(
           return res.status(404).json({ error: "Project not found" });
         }
 
+        // Check if the new project name already exists (excluding the current project)
+        if (sanitizedNewName !== updateProjectId) {
+          const nameExists = await checkProjectNameExists(newProjectName, updateProjectId);
+          if (nameExists) {
+            return res.status(409).json({ error: "A project with this name already exists" });
+          }
+        }
+
         // If the sanitized name is different from current ID, we need to handle directory renaming
         let finalProjectId = updateProjectId;
         if (sanitizedNewName !== updateProjectId) {
-          if (fs.existsSync(updatedProjectPath)) {
-            return res.status(409).json({ error: "A project with this name already exists" });
-          }
 
           // For now, we'll skip the directory rename if it fails due to permissions
           // and just update the project metadata. The directory can be renamed later.
