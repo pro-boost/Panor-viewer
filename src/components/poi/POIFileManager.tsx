@@ -89,7 +89,7 @@ export default function POIFileManager({
       formData.append("overwrite", importOptions.overwrite.toString());
       formData.append("generateNewId", importOptions.generateNewId.toString());
 
-      const response = await fetch("/api/poi/import-single", {
+      const response = await fetch("/api/poi/import-multiple", {
         method: "POST",
         body: formData,
       });
@@ -97,26 +97,30 @@ export default function POIFileManager({
       const result = await response.json();
 
       if (!response.ok) {
-        if (response.status === 409) {
-          // POI already exists - show confirmation modal
-          setOverwriteData({
-            file,
-            existingPOI: result.existingPOI,
-            formData,
-          });
-          setShowOverwriteConfirm(true);
-          setIsImporting(false);
-          return;
-        }
-        throw new Error(result.error || "Failed to import POI");
+        throw new Error(result.error || "Failed to import POIs");
       }
 
-      onPOIImported?.(result.poi);
-      onSuccess?.(result.message || "POI imported successfully");
+      // Handle multiple POI import results
+      if (result.result && result.result.processedPOIs) {
+        // Notify about each imported POI
+        result.result.processedPOIs.forEach((poi: any) => {
+          onPOIImported?.(poi);
+        });
+      }
+
+      // Show comprehensive success message
+      const { imported, updated, skipped, errors } = result.result || {};
+      let message = result.message || "POIs processed successfully";
+      
+      if (errors && errors.length > 0) {
+        message += `\n\nWarnings:\n${errors.join('\n')}`;
+      }
+      
+      onSuccess?.(message);
     } catch (error) {
       console.error("Import error:", error);
       onError?.(
-        error instanceof Error ? error.message : "Failed to import POI",
+        error instanceof Error ? error.message : "Failed to import POIs",
       );
     } finally {
       setIsImporting(false);
@@ -130,22 +134,28 @@ export default function POIFileManager({
     try {
       // Retry with overwrite enabled
       overwriteData.formData.set("overwrite", "true");
-      const retryResponse = await fetch("/api/poi/import-single", {
+      const retryResponse = await fetch("/api/poi/import-multiple", {
         method: "POST",
         body: overwriteData.formData,
       });
 
       const retryResult = await retryResponse.json();
       if (!retryResponse.ok) {
-        throw new Error(retryResult.error || "Failed to import POI");
+        throw new Error(retryResult.error || "Failed to import POIs");
       }
 
-      onPOIImported?.(retryResult.poi);
-      onSuccess?.(retryResult.message || "POI imported successfully");
+      // Handle multiple POI import results
+      if (retryResult.result && retryResult.result.processedPOIs) {
+        retryResult.result.processedPOIs.forEach((poi: any) => {
+          onPOIImported?.(poi);
+        });
+      }
+
+      onSuccess?.(retryResult.message || "POIs imported successfully");
     } catch (error) {
       console.error("Import error:", error);
       onError?.(
-        error instanceof Error ? error.message : "Failed to import POI",
+        error instanceof Error ? error.message : "Failed to import POIs",
       );
     } finally {
       setIsImporting(false);
@@ -263,7 +273,7 @@ export default function POIFileManager({
           {isImporting ? (
             <div className={styles.importing}>
               <div className={styles.spinner}></div>
-              <p>Importing POI...</p>
+              <p>Importing POIs...</p>
             </div>
           ) : (
             <div className={styles.dropContent}>
