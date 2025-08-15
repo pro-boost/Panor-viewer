@@ -195,7 +195,14 @@ export default function Home(): ReactElement {
       availableOptions = [3, 2, 1];
     }
 
-    // No project count restrictions - allow all grid options based on screen size
+    // Apply project count restrictions
+    if (projectCount === 1) {
+      return [1]; // Only 1 column for single project
+    }
+    if (projectCount === 2) {
+      availableOptions = availableOptions.filter(option => option <= 2);
+    }
+    
     return availableOptions;
   }, [filteredProjects.length, screenSize]);
 

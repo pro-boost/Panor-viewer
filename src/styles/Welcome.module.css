@@ -938,7 +938,6 @@ background: var(--glass-bg-hover); color: var(--primary-light);
   align-items: center; /* vertical centering in flexbox */
   justify-content: space-between;
   gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
 }
 
 .projectHeaderLeft {
