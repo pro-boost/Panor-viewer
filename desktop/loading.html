@@ -37,16 +37,15 @@
             width: 72px;
             height: 72px;
             margin: 0 auto 24px;
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+        }
+        
+        .app-logo img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
         }
 
         .app-title {
@@ -186,7 +185,9 @@
 </head>
 <body>
     <div class="loading-container">
-        <div class="app-logo">📱</div>
+        <div class="app-logo">
+            <img src="../../icons/panorama-viewer-icon.png" alt="Advanced Panorama Viewer Studio" onerror="this.src='../icons/panorama-viewer-icon.png'; this.onerror=function(){this.src='../public/icons/panorama-viewer-icon.png'; this.onerror=function(){this.style.display='none'; this.parentNode.innerHTML='📱';}}" />
+        </div>
         <div class="app-title">Advanced Panorama Viewer Studio</div>
         <div class="app-subtitle">Professional Panoramic Visualization Platform</div>
         
