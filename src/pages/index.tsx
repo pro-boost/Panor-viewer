@@ -133,6 +133,22 @@ export default function Home(): ReactElement {
     };
   }, [showSortDropdown, showGridDropdown]);
 
+  // Close dropdowns on scroll to prevent positioning issues
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowSortDropdown(false);
+      setShowGridDropdown(false);
+    };
+
+    if (showSortDropdown || showGridDropdown) {
+      window.addEventListener("scroll", handleScroll, true);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll, true);
+    };
+  }, [showSortDropdown, showGridDropdown]);
+
   // Filtered and sorted projects
   const filteredProjects = useMemo(() => {
     let filtered = projects.filter((project) => {
@@ -570,17 +586,18 @@ export default function Home(): ReactElement {
                                 className={styles.dropdownMenu}
                                 style={{
                                   position: "fixed",
-                                  top: dropdownButtonRef.current?.getBoundingClientRect()
-                                    .bottom
-                                    ? dropdownButtonRef.current.getBoundingClientRect()
-                                        .bottom + 4
-                                    : 0,
-                                  left:
-                                    dropdownButtonRef.current?.getBoundingClientRect()
-                                      .left || 0,
-                                  width:
-                                    dropdownButtonRef.current?.getBoundingClientRect()
-                                      .width || "auto",
+                                  top: (() => {
+                                    const button = dropdownButtonRef.current;
+                                    return button ? button.getBoundingClientRect().bottom + 4 : 0;
+                                  })(),
+                                  left: (() => {
+                                    const button = dropdownButtonRef.current;
+                                    return button ? button.getBoundingClientRect().left : 0;
+                                  })(),
+                                  width: (() => {
+                                    const button = dropdownButtonRef.current;
+                                    return button ? button.getBoundingClientRect().width : "auto";
+                                  })(),
                                   zIndex: 999999,
                                 }}
                               >
@@ -644,17 +661,18 @@ export default function Home(): ReactElement {
                                   className={styles.dropdownMenu}
                                   style={{
                                     position: "fixed",
-                                    top: gridDropdownButtonRef.current?.getBoundingClientRect()
-                                      .bottom
-                                      ? gridDropdownButtonRef.current.getBoundingClientRect()
-                                          .bottom + 4
-                                      : 0,
-                                    left:
-                                      gridDropdownButtonRef.current?.getBoundingClientRect()
-                                        .left || 0,
-                                    width:
-                                      gridDropdownButtonRef.current?.getBoundingClientRect()
-                                        .width || "auto",
+                                    top: (() => {
+                                      const button = gridDropdownButtonRef.current;
+                                      return button ? button.getBoundingClientRect().bottom + 4 : 0;
+                                    })(),
+                                    left: (() => {
+                                      const button = gridDropdownButtonRef.current;
+                                      return button ? button.getBoundingClientRect().left : 0;
+                                    })(),
+                                    width: (() => {
+                                      const button = gridDropdownButtonRef.current;
+                                      return button ? button.getBoundingClientRect().width : "auto";
+                                    })(),
                                     zIndex: 999999,
                                   }}
                                 >
