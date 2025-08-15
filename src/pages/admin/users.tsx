@@ -6,8 +6,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserProfile, isSupabaseConfigured } from "@/lib/supabase";
-import Logo from "@/components/ui/Logo";
-import LogoutButton from "@/components/ui/LogoutButton";
+import Navbar from "@/components/ui/Navbar";
 import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 import styles from "@/styles/Admin.module.css";
 
@@ -215,7 +214,7 @@ export default function AdminUsers() {
   if (!isAuthenticated || user?.role !== "admin") {
     return (
       <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
+        <Navbar showAdminButton={false} showLogoutButton={false} />
         <div className={styles.error}>
           <h1>Access Denied</h1>
           <p>You need admin privileges to access this page.</p>
@@ -232,10 +231,7 @@ export default function AdminUsers() {
       </Head>
 
       <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
-        <div className={styles.logoutContainer}>
-          <LogoutButton variant="minimal" />
-        </div>
+        <Navbar showAdminButton={false} showLogoutButton={true} />
 
         <div className={styles.header}>
           <h1>User Management</h1>

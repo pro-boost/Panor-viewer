@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
-import Logo from "@/components/ui/Logo";
+import Navbar from "@/components/ui/Navbar";
 import styles from "@/styles/Auth.module.css";
 import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
@@ -151,7 +151,7 @@ export default function Login() {
       </Head>
 
       <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
+        <Navbar showAdminButton={false} showLogoutButton={false} />
 
         <div className={styles.card}>
           <div className={styles.header}>

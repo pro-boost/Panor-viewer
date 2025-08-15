@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
-import Logo from "@/components/ui/Logo";
+import Navbar from "@/components/ui/Navbar";
 import styles from "@/styles/Auth.module.css";
 
 interface SetupStatus {
@@ -71,7 +71,7 @@ export default function Setup() {
 
     if (!hasUpperCase || !hasLowerCase || !hasNumbers) {
       setError(
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       );
       return false;
     }
@@ -103,7 +103,7 @@ export default function Setup() {
 
       if (response.ok) {
         setSuccess(
-          "Authentication configured successfully! Redirecting to login...",
+          "Authentication configured successfully! Redirecting to login..."
         );
         setTimeout(() => {
           router.push("/auth/login");
@@ -162,7 +162,7 @@ export default function Setup() {
         </Head>
 
         <div className={styles.container}>
-          <Logo variant="default" position="absolute" />
+          <Navbar showAdminButton={false} showLogoutButton={false} />
 
           <div className={styles.card}>
             <div className={styles.header}>
@@ -201,7 +201,7 @@ export default function Setup() {
       </Head>
 
       <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
+        <Navbar showAdminButton={false} showLogoutButton={false} />
 
         <div className={styles.card}>
           <div className={styles.header}>
