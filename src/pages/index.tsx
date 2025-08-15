@@ -175,6 +175,13 @@ export default function Home(): ReactElement {
     return filtered;
   }, [projects, searchTerm, sortBy, sortOrder]);
 
+  // Auto-reset to 1 column when there's only one project
+  useEffect(() => {
+    if (filteredProjects.length === 1 && gridColumns !== 1) {
+      setGridColumns(1);
+    }
+  }, [filteredProjects.length, gridColumns]);
+
   // Determine available grid column options based on screen size and project count
   const getAvailableGridOptions = useMemo(() => {
     const projectCount = filteredProjects.length;
