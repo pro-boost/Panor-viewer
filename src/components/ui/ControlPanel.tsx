@@ -9,8 +9,9 @@ import {
   FloorSelectorPanel,
   PerformanceMonitorPanel,
   POIManagementPanelWithModal,
+  HotspotPanel,
 } from "./panels";
-import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon } from "./icons";
+import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon, HotspotIcon } from "./icons";
 import { POIData } from "@/types/poi";
 import { usePanelState } from "../../hooks/usePanelState";
 
@@ -21,6 +22,10 @@ interface PerformanceStats {
 }
 
 interface ControlPanelProps {
+  // Hotspot Control props
+  maxHotspots?: number;
+  onMaxHotspotsChange?: (value: number) => void;
+
   // Floor Selector props
   scenes?: SceneData[];
   currentScene?: SceneData | null;
@@ -43,6 +48,8 @@ interface ControlPanelProps {
 }
 
 export default function ControlPanel({
+  maxHotspots,
+  onMaxHotspotsChange,
   scenes = [],
   currentScene,
   onFloorChange,
@@ -139,6 +146,24 @@ export default function ControlPanel({
             performanceStats={performanceStats}
             totalScenes={totalScenes}
             onOptimize={onOptimize}
+            onPanelClose={closePanels}
+          />
+        </ControlButton>
+      )}
+
+      {/* Hotspot Control Panel */}
+      {maxHotspots !== undefined && onMaxHotspotsChange && (
+        <ControlButton
+          id="hotspots"
+          expandedPanel={expandedPanel}
+          onToggle={handlePanelToggle}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          icon={<HotspotIcon />}
+        >
+          <HotspotPanel
+            maxHotspots={maxHotspots}
+            onMaxHotspotsChange={onMaxHotspotsChange}
             onPanelClose={closePanels}
           />
         </ControlButton>

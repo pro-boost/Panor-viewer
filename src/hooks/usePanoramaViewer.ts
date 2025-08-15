@@ -28,6 +28,7 @@ export type PanoramaAction =
   | { type: "SET_ROTATION_ANGLE"; payload: number }
   | { type: "SET_CURRENT_VIEW_PARAMS"; payload: ViewParams | null }
   | { type: "SET_PERFORMANCE_STATS"; payload: PerformanceStats }
+  | { type: "SET_MAX_HOTSPOTS"; payload: number }
   | { type: "RESET_STATE" };
 
 // State reducer function
@@ -60,6 +61,8 @@ function panoramaReducer(
       return { ...state, currentViewParams: action.payload };
     case "SET_PERFORMANCE_STATS":
       return { ...state, performanceStats: action.payload };
+    case "SET_MAX_HOTSPOTS":
+      return { ...state, maxHotspots: action.payload };
     case "RESET_STATE":
       return {
         isLoading: true,
@@ -78,6 +81,7 @@ function panoramaReducer(
           memoryUsage: "0 MB",
           avgLoadTime: 0,
         },
+        maxHotspots: 40,
       };
     default:
       return state;
@@ -97,6 +101,7 @@ export interface PanoramaViewerState {
   rotationAngle: number;
   currentViewParams: ViewParams | null;
   performanceStats: PerformanceStats;
+  maxHotspots: number;
 }
 
 export interface PanoramaViewerRefs {
@@ -121,6 +126,7 @@ export interface PanoramaViewerActions {
   setRotationAngle: (angle: number) => void;
   setCurrentViewParams: (params: ViewParams | null) => void;
   setPerformanceStats: (stats: PerformanceStats) => void;
+  setMaxHotspots: (maxHotspots: number) => void;
   resetState: () => void;
 }
 
@@ -134,7 +140,18 @@ export interface UsePanoramaViewerReturn {
 export function usePanoramaViewer(): UsePanoramaViewerReturn {
   const router = useRouter();
 
-  // Initial state
+  // Initial state with localStorage persistence for maxHotspots
+  const getInitialMaxHotspots = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('panorama-max-hotspots');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        return parsed >= 1 && parsed <= 40 ? parsed : 40;
+      }
+    }
+    return 40;
+  };
+
   const initialState: PanoramaViewerState = {
     isLoading: true,
     error: null,
@@ -152,6 +169,7 @@ export function usePanoramaViewer(): UsePanoramaViewerReturn {
       memoryUsage: "0 MB",
       avgLoadTime: 0,
     },
+    maxHotspots: getInitialMaxHotspots(),
   };
 
   // Use reducer for state management
@@ -202,6 +220,15 @@ export function usePanoramaViewer(): UsePanoramaViewerReturn {
     }, []),
     setPerformanceStats: useCallback((stats: PerformanceStats) => {
       dispatch({ type: "SET_PERFORMANCE_STATS", payload: stats });
+    }, []),
+    setMaxHotspots: useCallback((maxHotspots: number) => {
+      // Validate range
+      const validMax = Math.max(1, Math.min(40, maxHotspots));
+      dispatch({ type: "SET_MAX_HOTSPOTS", payload: validMax });
+      // Persist to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('panorama-max-hotspots', validMax.toString());
+      }
     }, []),
     resetState: useCallback(() => {
       dispatch({ type: "RESET_STATE" });

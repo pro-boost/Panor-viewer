@@ -94,12 +94,24 @@ export function createRipple(
   }, 600);
 }
 
-// Calculate distance between two positions
+// Calculate distance between two positions (2D)
 export function calculateDistance(
   pos1: Position | PanoPosition,
   pos2: Position | PanoPosition,
 ): number {
   return Math.sqrt(Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2));
+}
+
+// Calculate 3D distance between two scene positions for hotspot sorting
+export function calculate3DDistance(
+  pos1: { x: number; y: number; z: number },
+  pos2: { x: number; y: number; z: number },
+): number {
+  return Math.sqrt(
+    Math.pow(pos1.x - pos2.x, 2) +
+    Math.pow(pos1.y - pos2.y, 2) +
+    Math.pow(pos1.z - pos2.z, 2)
+  );
 }
 
 // Format floor label

@@ -94,6 +94,7 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
     refs: panoramaViewer.refs,
     actions: panoramaViewer.actions,
     hotspotsVisible: panoramaViewer.state.hotspotsVisible,
+    maxHotspots: panoramaViewer.state.maxHotspots,
   });
 
   // Initialize performance manager

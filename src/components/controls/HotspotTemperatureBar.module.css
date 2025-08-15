@@ -1,0 +1,147 @@
+/* Temperature Bar Container */
+.temperatureContainer {
+  position: relative;
+  background: transparent;
+  border-radius: 12px;
+  padding: 12px 8px;
+  transition: all 0.3s ease;
+  width: 100%;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.temperatureContainer:hover {
+  /* No special hover effects needed in panel context */
+}
+
+
+
+/* Temperature Bar */
+.temperatureBar {
+  position: relative;
+  width: 20px;
+  height: 120px;
+  border-radius: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.temperatureBar:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+.barBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to top,
+    #4A90E2 0%,    /* Cool blue */
+    #7ED321 25%,   /* Green */
+    #F5A623 75%,   /* Orange */
+    #D0021B 100%   /* Hot red */
+  );
+  opacity: 0.3;
+  border-radius: 8px;
+}
+
+.barFill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #4A90E2;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  box-shadow: 
+    0 0 10px rgba(74, 144, 226, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+
+
+
+
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .temperatureContainer {
+    top: 120px;
+    right: 10px;
+    width: 50px;
+    min-height: 160px;
+    padding: 8px 6px;
+  }
+  
+  .temperatureBar {
+    width: 16px;
+    height: 100px;
+  }
+  
+  .counter {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  
+  .presetButton {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  
+  .valueIndicator {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+  
+  .marking {
+    font-size: 7px;
+  }
+}
+
+/* Animation for smooth value changes */
+@keyframes temperatureRise {
+  0% {
+    transform: scaleY(0.8);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scaleY(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.barFill {
+  animation: temperatureRise 0.3s ease-out;
+}
+
+/* Glow effect for active state */
+.temperatureContainer:hover .barFill {
+  box-shadow: 
+    0 0 15px rgba(74, 144, 226, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Accessibility */
+.temperatureBar:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.presetButton:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 1px;
+}
