@@ -353,8 +353,12 @@ export default function AdminUsers() {
                         disabled={userItem.loading || userItem.id === user?.id} // Prevent self-role change
                         className={styles.roleSelect}
                       >
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <option className={styles.selectOption} value="user">
+                          User
+                        </option>
+                        <option className={styles.selectOption} value="admin">
+                          Admin
+                        </option>
                       </select>
                     </div>
                     <div
@@ -383,15 +387,6 @@ export default function AdminUsers() {
                       {new Date(userItem.created_at).toLocaleDateString()}
                     </div>
                     <div className={styles.actions}>
-                      {!userItem.approved && (
-                        <button
-                          onClick={() => handleApproveUser(userItem.id)}
-                          disabled={userItem.loading}
-                          className={`${styles.button} ${styles.small} ${styles.approve}`}
-                        >
-                          Approve
-                        </button>
-                      )}
                       <button
                         onClick={() => handleDeleteUser(userItem.id)}
                         disabled={userItem.loading || userItem.id === user?.id} // Prevent self-deletion

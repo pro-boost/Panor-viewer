@@ -542,12 +542,25 @@ text-align: center;
 }
 
 .projectList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: var(--spacing-2xl);
   width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
+  margin: 0;
+  /* Default to 1 column */
+  grid-template-columns: 1fr;
+}
+
+/* Grid column variations */
+.projectList.gridCols1 {
+  grid-template-columns: 1fr;
+}
+
+.projectList.gridCols2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.projectList.gridCols3 {
+  grid-template-columns: repeat(3, 1fr);
 }
 
 /* Search and Filter Styles */
@@ -726,6 +739,16 @@ background: var(--glass-bg-hover); color: var(--primary-light);
 
 .dropdownItem:last-child {
   border-radius: 0 0 8px 8px;
+}
+
+.activeDropdownItem {
+  background: var(--primary-dark);
+  color: var(--primary-light);
+}
+
+.activeDropdownItem:hover {
+  background: var(--primary-dark);
+  color: var(--primary-light);
 }
 
 

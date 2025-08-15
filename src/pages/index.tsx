@@ -63,6 +63,52 @@ export default function Home(): ReactElement {
   const [sortOrder, setSortOrder] = useState<string>("asc"); // asc, desc
   const [showSortDropdown, setShowSortDropdown] = useState<boolean>(false);
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
+  const gridDropdownButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Grid column selector state
+  const [gridColumns, setGridColumns] = useState<number>(3);
+  const [screenSize, setScreenSize] = useState<"small" | "medium" | "large">(
+    "large"
+  );
+  const [showGridDropdown, setShowGridDropdown] = useState<boolean>(false);
+
+  // Screen size detection
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      if (width < 768) {
+        setScreenSize("small");
+        setGridColumns(1); // Force 1 column on small screens
+      } else if (width < 1024) {
+        setScreenSize("medium");
+        // Adjust grid columns if current selection is not available
+        if (gridColumns > 2) setGridColumns(2);
+      } else {
+        setScreenSize("large");
+      }
+    };
+
+    // Set initial screen size
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [gridColumns]);
+
+  // Load grid preference from localStorage
+  useEffect(() => {
+    const savedGridColumns = localStorage.getItem("panorama-grid-columns");
+    if (savedGridColumns) {
+      const columns = parseInt(savedGridColumns, 10);
+      if ([1, 2, 3].includes(columns)) {
+        setGridColumns(columns);
+      }
+    }
+  }, []);
+
+  // Save grid preference to localStorage
+  useEffect(() => {
+    localStorage.setItem("panorama-grid-columns", gridColumns.toString());
+  }, [gridColumns]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -71,20 +117,21 @@ export default function Home(): ReactElement {
       // Check if click is outside both the dropdown button and the portal dropdown menu
       if (
         !target.closest(`.${styles.customDropdown}`) &&
-        !target.closest('#portal-root')
+        !target.closest("#portal-root")
       ) {
         setShowSortDropdown(false);
+        setShowGridDropdown(false);
       }
     };
 
-    if (showSortDropdown) {
+    if (showSortDropdown || showGridDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showSortDropdown]);
+  }, [showSortDropdown, showGridDropdown]);
 
   // Filtered and sorted projects
   const filteredProjects = useMemo(() => {
@@ -127,6 +174,45 @@ export default function Home(): ReactElement {
 
     return filtered;
   }, [projects, searchTerm, sortBy, sortOrder]);
+
+  // Determine available grid column options based on screen size and project count
+  const getAvailableGridOptions = useMemo(() => {
+    const projectCount = filteredProjects.length;
+
+    // Project count rules
+    if (projectCount === 1) {
+      return [1]; // Force 1 col for single project
+    }
+
+    // Screen size rules
+    let availableOptions: number[] = [];
+    if (screenSize === "small") {
+      return []; // No selector on small screens (always 1 col)
+    } else if (screenSize === "medium") {
+      availableOptions = [2, 1];
+    } else {
+      // large
+      availableOptions = [3, 2, 1];
+    }
+
+    // No project count restrictions - allow all grid options based on screen size
+    return availableOptions;
+  }, [filteredProjects.length, screenSize]);
+
+  // Check if grid selector should be shown
+  const shouldShowGridSelector = useMemo(() => {
+    return getAvailableGridOptions.length > 1;
+  }, [getAvailableGridOptions]);
+
+  // Ensure current grid selection is valid
+  useEffect(() => {
+    if (
+      shouldShowGridSelector &&
+      !getAvailableGridOptions.includes(gridColumns)
+    ) {
+      setGridColumns(getAvailableGridOptions[0] || 1);
+    }
+  }, [getAvailableGridOptions, gridColumns, shouldShowGridSelector]);
 
   const loadProjects = async () => {
     try {
@@ -465,14 +551,22 @@ export default function Home(): ReactElement {
                           </button>
                           {showSortDropdown && (
                             <Portal>
-                              <div 
+                              <div
                                 className={styles.dropdownMenu}
                                 style={{
-                                  position: 'fixed',
-                                  top: dropdownButtonRef.current?.getBoundingClientRect().bottom ? dropdownButtonRef.current.getBoundingClientRect().bottom + 4 : 0,
-                                  left: dropdownButtonRef.current?.getBoundingClientRect().left || 0,
-                                  width: dropdownButtonRef.current?.getBoundingClientRect().width || 'auto',
-                                  zIndex: 999999
+                                  position: "fixed",
+                                  top: dropdownButtonRef.current?.getBoundingClientRect()
+                                    .bottom
+                                    ? dropdownButtonRef.current.getBoundingClientRect()
+                                        .bottom + 4
+                                    : 0,
+                                  left:
+                                    dropdownButtonRef.current?.getBoundingClientRect()
+                                      .left || 0,
+                                  width:
+                                    dropdownButtonRef.current?.getBoundingClientRect()
+                                      .width || "auto",
+                                  zIndex: 999999,
                                 }}
                               >
                                 {["name", "size", "createdAt", "updatedAt"].map(
@@ -505,6 +599,72 @@ export default function Home(): ReactElement {
                         </div>
                       </div>
 
+                      {/* Grid Column Selector */}
+                      {shouldShowGridSelector && (
+                        <div className={styles.filterGroup}>
+                          <div className={styles.customDropdown}>
+                            <button
+                              ref={gridDropdownButtonRef}
+                              className={`${styles.filterSelect} ${styles.dropdownButton}`}
+                              onClick={() =>
+                                setShowGridDropdown(!showGridDropdown)
+                              }
+                            >
+                              <span>
+                                {gridColumns === 1
+                                  ? "1 Column"
+                                  : gridColumns === 2
+                                    ? "2 Columns"
+                                    : "3 Columns"}
+                              </span>
+                            </button>
+                            {showGridDropdown && (
+                              <Portal>
+                                <div
+                                  className={styles.dropdownMenu}
+                                  style={{
+                                    position: "fixed",
+                                    top: gridDropdownButtonRef.current?.getBoundingClientRect()
+                                      .bottom
+                                      ? gridDropdownButtonRef.current.getBoundingClientRect()
+                                          .bottom + 4
+                                      : 0,
+                                    left:
+                                      gridDropdownButtonRef.current?.getBoundingClientRect()
+                                        .left || 0,
+                                    width:
+                                      gridDropdownButtonRef.current?.getBoundingClientRect()
+                                        .width || "auto",
+                                    zIndex: 999999,
+                                  }}
+                                >
+                                  {getAvailableGridOptions.map((option) => (
+                                    <button
+                                      key={option}
+                                      onClick={() => {
+                                        setGridColumns(option);
+                                        setShowGridDropdown(false);
+                                      }}
+                                      className={`${styles.dropdownItem} ${
+                                        gridColumns === option
+                                          ? styles.activeDropdownItem
+                                          : ""
+                                      }`}
+                                    >
+                                      {option === 1
+                                        ? "1 Column"
+                                        : option === 2
+                                          ? "2 Columns"
+                                          : "3 Columns"}
+                                    </button>
+                                  ))}
+                                </div>
+                              </Portal>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Clear Button */}
                       <button
                         onClick={() => {
@@ -519,7 +679,9 @@ export default function Home(): ReactElement {
                     </div>
                   </div>
                 </div>
-                <div className={styles.projectList}>
+                <div
+                  className={`${styles.projectList} ${styles[`gridCols${gridColumns}`]}`}
+                >
                   {filteredProjects.length === 0 ? (
                     <div className={styles.noProjectsMessage}>
                       {searchTerm ? (
