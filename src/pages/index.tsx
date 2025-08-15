@@ -504,9 +504,7 @@ export default function Home(): ReactElement {
                 <div className={styles.projectsHeader}>
                   <h2 className={styles.projectsTitle}>
                     You have{" "}
-                    {filteredProjects.length === projects.length
-                      ? `${projects.length} project${projects.length !== 1 ? "s" : ""}`
-                      : `${filteredProjects.length} of ${projects.length} project${projects.length !== 1 ? "s" : ""}`}
+                    {`${projects.length} project${projects.length !== 1 ? "s" : ""}`}
                   </h2>
                   <p className={styles.projectsSubtitle}>
                     Click on any project to start exploring
