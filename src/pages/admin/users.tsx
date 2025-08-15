@@ -7,6 +7,7 @@ import Head from "next/head";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserProfile, isSupabaseConfigured } from "@/lib/supabase";
 import Logo from "@/components/ui/Logo";
+import LogoutButton from "@/components/ui/LogoutButton";
 import styles from "@/styles/Admin.module.css";
 
 interface UserWithActions extends UserProfile {
@@ -239,6 +240,9 @@ export default function AdminUsers() {
 
       <div className={styles.container}>
         <Logo variant="default" position="absolute" />
+        <div className={styles.logoutContainer}>
+          <LogoutButton variant="minimal" />
+        </div>
 
         <div className={styles.header}>
           <h1>User Management</h1>
