@@ -49,7 +49,7 @@
   backdrop-filter: blur(10px);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  padding: var(--spacing-lg) var(--spacing-xl);
+
   border-radius: var(--radius-xl);
   transition: var(--transition-base);
 }

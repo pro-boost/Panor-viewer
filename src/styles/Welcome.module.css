@@ -27,7 +27,7 @@
   top: var(--spacing-2xl);
   left: var(--spacing-2xl);
   z-index: var(--z-logo);
-  padding: var(--spacing-lg) var(--spacing-xl);
+
   background: var(--bg-overlay-medium);
   border-radius: var(--radius-2xl);
   border: 1px solid var(--border-light);

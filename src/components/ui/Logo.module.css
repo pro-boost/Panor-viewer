@@ -44,14 +44,11 @@
     left: 16px;
   }
 
-  .default,
-  .enhanced {
-    padding: 8px 12px;
-  }
+
 
   .default .logoImage,
   .enhanced .logoImage {
-    height: 40px;
+    height: 50px;
   }
 
   .large .logoImage {
@@ -69,15 +66,11 @@
     left: 12px;
   }
 
-  .default,
-  .enhanced,
-  .small {
-    padding: 6px 10px;
-  }
+
 
   .default .logoImage,
   .enhanced .logoImage {
-    height: 35px;
+    height: 45px;
   }
 
   .large .logoImage {
