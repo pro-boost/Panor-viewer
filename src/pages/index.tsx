@@ -553,9 +553,10 @@ export default function Home(): ReactElement {
                           <button
                             ref={dropdownButtonRef}
                             className={`${styles.filterSelect} ${styles.dropdownButton}`}
-                            onClick={() =>
-                              setShowSortDropdown(!showSortDropdown)
-                            }
+                            onClick={() => {
+                              setShowSortDropdown(!showSortDropdown);
+                              setShowGridDropdown(false);
+                            }}
                           >
                             <span>
                               {sortBy
@@ -598,7 +599,11 @@ export default function Home(): ReactElement {
                                         }
                                         setShowSortDropdown(false);
                                       }}
-                                      className={styles.dropdownItem}
+                                      className={`${styles.dropdownItem} ${
+                                        sortBy === field
+                                          ? styles.activeDropdownItem
+                                          : ""
+                                      }`}
                                     >
                                       {field.charAt(0).toUpperCase() +
                                         field.slice(1).replace("At", "")}
@@ -620,9 +625,10 @@ export default function Home(): ReactElement {
                             <button
                               ref={gridDropdownButtonRef}
                               className={`${styles.filterSelect} ${styles.dropdownButton}`}
-                              onClick={() =>
-                                setShowGridDropdown(!showGridDropdown)
-                              }
+                              onClick={() => {
+                                setShowGridDropdown(!showGridDropdown);
+                                setShowSortDropdown(false);
+                              }}
                             >
                               <span>
                                 {gridColumns === 1
