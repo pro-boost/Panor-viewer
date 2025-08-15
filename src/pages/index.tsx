@@ -257,7 +257,23 @@ export default function Home(): ReactElement {
               {hasProjects && (
                 <button
                   className={styles.projectsIndicator}
-                  onClick={() => setShowProjects(!showProjects)}
+                  onClick={() => {
+                    const newShowProjects = !showProjects;
+                    setShowProjects(newShowProjects);
+                    
+                    // Scroll to projects section when showing projects
+                    if (newShowProjects) {
+                      setTimeout(() => {
+                        const projectsSection = document.querySelector(`.${styles.projectsSection}`);
+                        if (projectsSection) {
+                          projectsSection.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                          });
+                        }
+                      }, 100); // Small delay to ensure the section is rendered
+                    }
+                  }}
                 >
                   <div className={styles.indicatorIcon}>
                     <span className={styles.projectCount}>
