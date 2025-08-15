@@ -7,9 +7,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: var(--spacing-2xl);
-  /* Add top padding to account for Navbar */
-  padding-top: 0;
+  padding: 0;
   position: relative;
   color: var(--text-primary);
   background-image: url("/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg");
@@ -44,43 +42,46 @@
 /* Logout Container and Admin Link styles moved to Navbar.module.css */
 
 .content {
+  flex: 1;
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--spacing-3xl) var(--spacing-2xl);
+  padding: var(--content-padding-desktop);
   position: relative;
   z-index: 1;
 }
 
 /* Specific styles for authentication loading and access denied states */
 .authLoadingContent {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 200px;
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--spacing-3xl) var(--spacing-2xl);
+  padding: var(--content-padding-desktop);
   position: relative;
   z-index: 1;
+  min-height: calc(100vh - 100px);
 }
 
 .accessDeniedContent {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 200px;
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
-  padding: var(--spacing-3xl) var(--spacing-2xl);
+  padding: var(--content-padding-desktop);
   position: relative;
   z-index: 1;
+  min-height: calc(100vh - 100px);
 }
 
 /* Ensure loading states are properly centered */
@@ -1499,6 +1500,34 @@
   .summaryText {
     font-size: var(--font-xs);
     line-height: 1.3;
+  }
+}
+
+/* ===================================
+   RESPONSIVE PADDING
+   =================================== */
+
+@media (max-width: 768px) {
+  .content {
+    padding: var(--content-padding-tablet);
+  }
+  
+  .authLoadingContent,
+  .accessDeniedContent {
+    padding: var(--content-padding-tablet);
+    min-height: calc(100vh - 80px);
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: var(--content-padding-mobile);
+  }
+  
+  .authLoadingContent,
+  .accessDeniedContent {
+    padding: var(--content-padding-mobile);
+    min-height: calc(100vh - 60px);
   }
 }
 

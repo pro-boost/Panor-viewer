@@ -18,8 +18,11 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: var(--content-padding-desktop);
   min-height: calc(100vh - 100px); /* Account for navbar height */
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .logoutContainer {
@@ -734,7 +737,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: 0;
   }
 
   .header h1 {
@@ -803,5 +806,17 @@
   .alertAction {
     align-self: stretch;
     text-align: center;
+  }
+  
+  .contentWrapper {
+    padding: var(--content-padding-tablet);
+    min-height: calc(100vh - 80px);
+  }
+}
+
+@media (max-width: 480px) {
+  .contentWrapper {
+    padding: var(--content-padding-mobile);
+    min-height: calc(100vh - 60px);
   }
 }

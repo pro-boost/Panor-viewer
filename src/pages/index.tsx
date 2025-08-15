@@ -234,7 +234,7 @@ export default function Home(): ReactElement {
             {/* Hero Section */}
             <div className={styles.heroSection}>
               <h1 className={styles.title}>
-                Welcome to Advanced Panorama Viewer
+                Welcome to Advanced <br /> Panorama Viewer
               </h1>
               <p className={styles.subtitle}>
                 Experience immersive 360° panoramic tours of your spaces
@@ -339,10 +339,14 @@ export default function Home(): ReactElement {
                           <div className={styles.projectHeaderLeft}>
                             <div className={styles.projectIcon}>🏢</div>
                             <div>
-                              <h3 className={styles.projectName}>{project.name}</h3>
+                              <h3 className={styles.projectName}>
+                                {project.name}
+                              </h3>
                               <div className={styles.projectInfo}>
                                 Updated{" "}
-                                {new Date(project.updatedAt).toLocaleDateString()}
+                                {new Date(
+                                  project.updatedAt
+                                ).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
@@ -419,8 +423,7 @@ export default function Home(): ReactElement {
                             </button>
                           </div>
                         </div>
-                        <div className={styles.projectMeta}>
-                        </div>
+                        <div className={styles.projectMeta}></div>
                         <div className={styles.projectStats}>
                           <div className={styles.statItem}>
                             <span className={styles.statValue}>
