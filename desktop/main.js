@@ -14,10 +14,12 @@ const forceProduction = process.argv.includes("--force-production");
 const isDev = !app.isPackaged && !forceProduction;
 const { ServerManager } = require("./server");
 const { setupFileProtocol } = require("./file-server");
+const { getLoadingManager } = require("./loading-manager");
 // Test project copying functionality removed - no longer auto-copies test projects
 
 let mainWindow;
 let serverManager;
+let loadingManager;
 
 // Enable GPU acceleration with modern settings for Electron 32
 app.commandLine.appendSwitch("enable-gpu-rasterization");
@@ -37,9 +39,23 @@ app.commandLine.appendSwitch("max_old_space_size", "4096");
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
+  // Close loading dialog if second instance is attempted
+  if (loadingManager && loadingManager.isShowing()) {
+    loadingManager.forceClose().catch(console.error);
+  }
   app.quit();
 } else {
-  app.on("second-instance", () => {
+  app.on("second-instance", async () => {
+    // Close loading dialog and focus main window if second instance is attempted
+    if (loadingManager && loadingManager.isShowing()) {
+      console.log("[MAIN] Closing loading dialog due to second instance");
+      try {
+        await loadingManager.forceClose();
+      } catch (error) {
+        console.error("[MAIN] Error closing loading dialog on second instance:", error);
+      }
+    }
+    
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
@@ -92,21 +108,58 @@ async function createWindow() {
     console.log("App packaged:", app.isPackaged);
     console.log("Force production:", forceProduction);
 
+    // Show loading dialog immediately
+    loadingManager = getLoadingManager();
+    loadingManager.show();
+    loadingManager.updateProgress(15, "Initializing Application", "Setting up the environment...");
+    
+    // Add global safety timeout to force close loading dialog after maximum time
+    const globalLoadingTimeout = setTimeout(() => {
+      if (loadingManager && loadingManager.isShowing()) {
+        console.warn("[MAIN] Global timeout reached, force closing loading dialog");
+        try {
+          loadingManager.updateProgress(100, "Timeout", "Force closing loading dialog");
+          setTimeout(() => {
+            loadingManager.forceClose();
+          }, 500);
+        } catch (error) {
+          console.error("[MAIN] Error in global timeout:", error);
+          if (loadingManager) {
+            loadingManager.forceClose();
+          }
+        }
+      }
+    }, 15000); // 15 seconds maximum
+    
+    // Clear global timeout when window is ready
+    const clearGlobalTimeout = () => {
+      if (globalLoadingTimeout) {
+        clearTimeout(globalLoadingTimeout);
+        console.log("[MAIN] Cleared global loading timeout");
+      }
+    };
+
     // For development, dynamically find the Next.js dev server port
     if (isDev) {
+      loadingManager.updateProgress(30, "Development Mode", "Connecting to development server...");
       serverUrl = await findDevServerPort();
       console.log("Using development server:", serverUrl);
+      loadingManager.updateProgress(60, "Connected to Development Server", "Preparing application interface...");
     } else {
       try {
+        loadingManager.updateProgress(25, "Starting Server", "Initializing production server...");
         console.log("Initializing production server...");
         console.log("User data path:", app.getPath("userData"));
         console.log("App path:", app.getAppPath());
         console.log("Resource path:", process.resourcesPath || "Not available");
 
         // Initialize server manager for production
+        loadingManager.updateProgress(35, "Creating Server Manager", "Setting up server configuration...");
         serverManager = new ServerManager(app.getPath("userData"));
         console.log("ServerManager created, starting server...");
 
+        loadingManager.updateProgress(45, "Fetching Credentials", "Connecting to authentication server...");
+        
         // Add timeout for server startup
         const serverStartPromise = serverManager.start();
         const timeoutPromise = new Promise((_, reject) => {
@@ -116,8 +169,10 @@ async function createWindow() {
           );
         });
 
+        loadingManager.updateProgress(70, "Starting Internal Server", "Launching application server...");
         serverUrl = await Promise.race([serverStartPromise, timeoutPromise]);
         console.log(`Production server running at: ${serverUrl}`);
+        loadingManager.updateProgress(85, "Server Ready", "Application server is running successfully");
       } catch (serverError) {
         console.error("Failed to start production server:", serverError);
         serverStartupError = serverError;
@@ -129,6 +184,7 @@ async function createWindow() {
     console.log(`Final server URL: ${serverUrl}`);
 
     // Recreate menu with the correct server URL
+    loadingManager.updateProgress(90, "Preparing Interface", "Creating application menu and interface...");
     await createMenu();
 
     mainWindow = new BrowserWindow({
@@ -162,6 +218,30 @@ async function createWindow() {
     // Show window immediately if there was a server startup error
     if (serverStartupError) {
       console.log("Showing window immediately due to server startup error");
+      clearGlobalTimeout(); // Clear the global timeout
+      loadingManager.updateProgress(100, "Error Occurred", "Server startup failed, showing error page...");
+      
+      // Hide loading dialog after a brief delay
+      setTimeout(() => {
+        try {
+          loadingManager.hide();
+          
+          // Add safety check for error case
+          setTimeout(() => {
+            if (loadingManager && loadingManager.isShowing()) {
+              console.warn("[MAIN] Loading dialog still showing after error, force closing...");
+              loadingManager.forceClose();
+            }
+          }, 2000);
+          
+        } catch (error) {
+          console.error("[MAIN] Error hiding loading dialog in error case:", error);
+          if (loadingManager) {
+            loadingManager.forceClose();
+          }
+        }
+      }, 1000); // Slightly increased delay for error case
+      
       mainWindow.show();
       mainWindow.focus();
 
@@ -181,11 +261,22 @@ async function createWindow() {
       });
     } else {
       // Load the app normally
+      loadingManager.updateProgress(95, "Loading Application", "Connecting to application interface...");
       console.log("Loading URL:", serverUrl);
       try {
         await mainWindow.loadURL(serverUrl);
       } catch (loadError) {
         console.error("Failed to load URL:", loadError);
+        loadingManager.updateProgress(100, "Load Error", "Failed to load application, showing window anyway...");
+        
+        // Hide loading dialog immediately on error
+        try {
+          await loadingManager.hide();
+        } catch (hideError) {
+          console.error("[ERROR] Failed to hide loading dialog on load error:", hideError);
+          await loadingManager.forceClose();
+        }
+        
         // Show window anyway with error message
         mainWindow.show();
         mainWindow.focus();
@@ -210,25 +301,89 @@ async function createWindow() {
       }
     );
 
-    mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow.webContents.on("did-finish-load", async () => {
       console.log("Page loaded successfully");
-      // Show window after loading for smooth startup
-      if (!mainWindow.isVisible()) {
-        mainWindow.show();
-        mainWindow.focus();
+      
+      // Synchronized window transition - hide loading dialog first, then show main window
+      if (loadingManager && loadingManager.isShowing()) {
+        console.log("[MAIN] Starting synchronized window transition");
+        clearGlobalTimeout(); // Clear the global timeout
+        
+        try {
+          // Wait for loading dialog to close completely before showing main window
+          await loadingManager.hide();
+          console.log("[MAIN] Loading dialog closed, showing main window");
+          
+          // Show main window only after loading dialog is completely closed
+          if (!mainWindow.isVisible()) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+          
+        } catch (error) {
+          console.error("[MAIN] Error in synchronized transition:", error);
+          // Force close loading dialog and show main window as fallback
+          if (loadingManager) {
+            await loadingManager.forceClose();
+          }
+          if (!mainWindow.isVisible()) {
+            mainWindow.show();
+            mainWindow.focus();
+          }
+        }
+      } else {
+        // No loading dialog, show main window immediately
+        if (!mainWindow.isVisible()) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
       }
     });
 
     // Reduced timeout - force show window after 1 second if not visible
-    setTimeout(() => {
+    setTimeout(async () => {
       if (mainWindow && !mainWindow.isVisible()) {
         console.log("Force showing window after timeout");
-        mainWindow.show();
-        mainWindow.focus();
+        
+        // Synchronized timeout transition - hide loading dialog first
+        if (loadingManager && loadingManager.isShowing()) {
+          console.log("[MAIN] Force hiding loading dialog due to timeout");
+          clearGlobalTimeout(); // Clear the global timeout
+          
+          try {
+            // Wait for loading dialog to close before showing main window
+            await loadingManager.hide();
+            console.log("[MAIN] Loading dialog closed by timeout, showing main window");
+          } catch (error) {
+            console.error("[MAIN] Error in timeout hide:", error);
+            // Force close as fallback
+            if (loadingManager) {
+              await loadingManager.forceClose();
+            }
+          }
+        }
+        
+        // Show main window only after loading dialog is handled
+        if (!mainWindow.isVisible()) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
       }
     }, 1000);
 
-    mainWindow.on("closed", () => {
+    mainWindow.on("closed", async () => {
+      console.log("[MAIN] Main window closed");
+      
+      // Ensure loading dialog is closed when main window closes
+      if (loadingManager && loadingManager.isShowing()) {
+        console.log("[MAIN] Closing loading dialog due to main window close");
+        try {
+          await loadingManager.forceClose();
+        } catch (error) {
+          console.error("[MAIN] Error closing loading dialog on main window close:", error);
+        }
+      }
+      
       mainWindow = null;
     });
 
@@ -239,6 +394,17 @@ async function createWindow() {
     });
   } catch (error) {
     console.error("Failed to create window:", error);
+    
+    // Hide loading dialog immediately on error
+    if (loadingManager && loadingManager.isShowing()) {
+      loadingManager.updateProgress(100, "Error", "Failed to create application window");
+      try {
+        await loadingManager.forceClose();
+      } catch (closeError) {
+        console.error("[ERROR] Failed to close loading dialog on window creation error:", closeError);
+      }
+    }
+    
     app.quit();
   }
 }
@@ -676,10 +842,33 @@ ipcMain.handle("update-menu-admin-status", async (event, adminStatus) => {
 
 app.whenReady().then(async () => {
   console.log("App is ready, creating window...");
-  createWindow().catch((error) => {
+  
+  // Handle system shutdown gracefully
+  process.on('SIGTERM', async () => {
+    console.log('[SHUTDOWN] SIGTERM received, closing loading dialog');
+    if (loadingManager && loadingManager.isShowing()) {
+      await loadingManager.forceClose().catch(console.error);
+    }
+    process.exit(0);
+  });
+  
+  process.on('SIGINT', async () => {
+    console.log('[SHUTDOWN] SIGINT received, closing loading dialog');
+    if (loadingManager && loadingManager.isShowing()) {
+      await loadingManager.forceClose().catch(console.error);
+    }
+    process.exit(0);
+  });
+  
+  createWindow().catch(async (error) => {
     console.error("Failed to start application:", error);
+    // Ensure loading dialog is closed on startup failure
+    if (loadingManager && loadingManager.isShowing()) {
+      await loadingManager.forceClose().catch(console.error);
+    }
     app.quit();
   });
+  
   await createMenu();
   setupMenuRefresh();
   // Test menu update on startup
@@ -690,12 +879,34 @@ app.whenReady().then(async () => {
   }, 3000);
 });
 
-app.on("window-all-closed", () => {
-  if (serverManager) {
-    serverManager.stop();
-  }
-  if (process.platform !== "darwin") {
-    app.quit();
+app.on("window-all-closed", async () => {
+  console.log("[SHUTDOWN] All windows closed, starting cleanup sequence");
+  
+  // Optimized shutdown sequence: loading dialog first, then server, then quit
+  try {
+    // 1. Close loading dialog immediately to prevent visual overlap
+    if (loadingManager && loadingManager.isShowing()) {
+      console.log("[SHUTDOWN] Closing loading dialog");
+      await loadingManager.forceClose();
+    }
+    
+    // 2. Stop server manager
+    if (serverManager) {
+      console.log("[SHUTDOWN] Stopping server manager");
+      serverManager.stop();
+    }
+    
+    // 3. Quit application (except on macOS)
+    if (process.platform !== "darwin") {
+      console.log("[SHUTDOWN] Quitting application");
+      app.quit();
+    }
+  } catch (error) {
+    console.error("[SHUTDOWN] Error during cleanup:", error);
+    // Force quit even if cleanup fails
+    if (process.platform !== "darwin") {
+      app.quit();
+    }
   }
 });
 
@@ -705,9 +916,38 @@ app.on("activate", () => {
   }
 });
 
-// Cleanup on quit
-app.on("before-quit", () => {
-  if (serverManager) {
-    serverManager.stop();
+// Cleanup on quit - optimized sequence
+app.on("before-quit", async (event) => {
+  console.log("[SHUTDOWN] Before quit event triggered");
+  
+  // Prevent default quit to allow async cleanup
+  event.preventDefault();
+  
+  try {
+    // 1. Close loading dialog first to prevent visual overlap during shutdown
+    if (loadingManager && loadingManager.isShowing()) {
+      console.log("[SHUTDOWN] Force closing loading dialog before quit");
+      await loadingManager.forceClose();
+    }
+    
+    // 2. Stop server manager
+    if (serverManager) {
+      console.log("[SHUTDOWN] Stopping server manager before quit");
+      serverManager.stop();
+    }
+    
+    // 3. Close main window if it exists
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      console.log("[SHUTDOWN] Closing main window");
+      mainWindow.close();
+    }
+    
+    console.log("[SHUTDOWN] Cleanup complete, quitting application");
+    
+  } catch (error) {
+    console.error("[SHUTDOWN] Error during before-quit cleanup:", error);
+  } finally {
+    // Always quit after cleanup attempt
+    app.exit(0);
   }
 });
