@@ -11,15 +11,16 @@ interface NavbarProps {
   className?: string;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ 
-  showAdminButton = true, 
-  showLogoutButton = true, 
-  className = "" 
+const Navbar: React.FC<NavbarProps> = ({
+  showAdminButton = true,
+  showLogoutButton = true,
+  className = "",
 }) => {
   const { user } = useAuth();
 
   // Don't render user menu if both buttons are hidden
-  const shouldShowUserMenu = (showAdminButton && user?.role === "admin") || showLogoutButton;
+  const shouldShowUserMenu =
+    (showAdminButton && user?.role === "admin") || showLogoutButton;
 
   return (
     <nav className={`${styles.navbar} ${className}`}>

@@ -23,7 +23,7 @@ export default function AdminUsers() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "pending">("pending");
   const [supabaseConfigured, setSupabaseConfigured] = useState<boolean | null>(
-    null,
+    null
   );
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function AdminUsers() {
 
       if (!data.configured) {
         setError(
-          "External authentication is not configured. Please check your environment variables.",
+          "External authentication is not configured. Please check your environment variables."
         );
         setLoading(false);
         return;
@@ -90,7 +90,7 @@ export default function AdminUsers() {
     try {
       // Set loading state for this user
       setPendingUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
       const response = await fetch("/api/admin/users", {
@@ -117,11 +117,11 @@ export default function AdminUsers() {
 
   const handleUpdateRole = async (
     userId: string,
-    newRole: "admin" | "user",
+    newRole: "admin" | "user"
   ) => {
     try {
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
       const response = await fetch("/api/admin/users", {
@@ -148,7 +148,7 @@ export default function AdminUsers() {
   const handleUpdateStatus = async (userId: string, approved: boolean) => {
     try {
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
       const response = await fetch("/api/admin/users", {
@@ -175,7 +175,7 @@ export default function AdminUsers() {
   const handleDeleteUser = async (userId: string) => {
     if (
       !confirm(
-        "Are you sure you want to delete this user? This action cannot be undone.",
+        "Are you sure you want to delete this user? This action cannot be undone."
       )
     ) {
       return;
@@ -183,7 +183,7 @@ export default function AdminUsers() {
 
     try {
       setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u)),
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
       const response = await fetch("/api/admin/users", {
@@ -234,7 +234,7 @@ export default function AdminUsers() {
 
       <div className={styles.container}>
         <Navbar showAdminButton={false} showLogoutButton={true} />
-        
+
         <div className={styles.contentWrapper}>
           <div className={styles.header}>
             <h1>User Management</h1>
@@ -262,7 +262,10 @@ export default function AdminUsers() {
           {error && (
             <div className={styles.error}>
               {error}
-              <button onClick={() => setError("")} className={styles.closeError}>
+              <button
+                onClick={() => setError("")}
+                className={styles.closeError}
+              >
                 ×
               </button>
             </div>
@@ -284,121 +287,123 @@ export default function AdminUsers() {
           </div>
 
           <div className={styles.content}>
-          {activeTab === "pending" && (
-            <div className={styles.section}>
-              <h2>Users Pending Approval</h2>
-              {pendingUsers.length === 0 ? (
-                <div className={styles.emptyState}>
-                  <p>No users pending approval</p>
-                </div>
-              ) : (
-                <div className={styles.userGrid}>
-                  {pendingUsers.map((user) => (
-                    <div key={user.id} className={styles.userCard}>
-                      <div className={styles.userInfo}>
-                        <h3>{user.email}</h3>
-                        <p className={styles.role}>Role: {user.role}</p>
-                        <p className={styles.date}>
-                          Registered:{" "}
-                          {new Date(user.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className={styles.actions}>
-                        <button
-                          onClick={() => handleApproveUser(user.id)}
-                          disabled={user.loading}
-                          className={`${styles.button} ${styles.approve}`}
-                        >
-                          {user.loading ? "Approving..." : "Approve"}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          disabled={user.loading}
-                          className={`${styles.button} ${styles.danger}`}
-                        >
-                          {user.loading ? "Deleting..." : "Reject"}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "all" && (
-            <div className={styles.userTable}>
-              <div className={styles.tableHeader}>
-                <div>Email</div>
-                <div>Role</div>
-                <div>Status</div>
-                <div>Registered</div>
-                <div>Actions</div>
-              </div>
-              {users.map((userItem) => (
-                <div key={userItem.id} className={styles.tableRow}>
-                  <div className={styles.username}>{userItem.email}</div>
-                  <div className={styles.role}>
-                    <select
-                      value={userItem.role}
-                      onChange={(e) =>
-                        handleUpdateRole(
-                          userItem.id,
-                          e.target.value as "admin" | "user",
-                        )
-                      }
-                      disabled={userItem.loading || userItem.id === user?.id} // Prevent self-role change
-                      className={styles.roleSelect}
-                    >
-                      <option value="user">User</option>
-                      <option value="admin">Admin</option>
-                    </select>
+            {activeTab === "pending" && (
+              <div className={styles.section}>
+                <h2>Users Pending Approval</h2>
+                {pendingUsers.length === 0 ? (
+                  <div className={styles.emptyState}>
+                    <p>No users pending approval</p>
                   </div>
-                  <div
-                    className={`${styles.status} ${userItem.approved ? styles.approved : styles.pending}`}
-                  >
-                    <div className={styles.selectWrapper}>
+                ) : (
+                  <div className={styles.userGrid}>
+                    {pendingUsers.map((user) => (
+                      <div key={user.id} className={styles.userCard}>
+                        <div className={styles.userInfo}>
+                          <h3>{user.email}</h3>
+                          <p className={styles.role}>Role: {user.role}</p>
+                          <p className={styles.date}>
+                            Registered:{" "}
+                            {new Date(user.created_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className={styles.actions}>
+                          <button
+                            onClick={() => handleApproveUser(user.id)}
+                            disabled={user.loading}
+                            className={`${styles.button} ${styles.approve}`}
+                          >
+                            {user.loading ? "Approving..." : "Approve"}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(user.id)}
+                            disabled={user.loading}
+                            className={`${styles.button} ${styles.danger}`}
+                          >
+                            {user.loading ? "Deleting..." : "Reject"}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === "all" && (
+              <div className={styles.userTable}>
+                <div className={styles.tableHeader}>
+                  <div>Email</div>
+                  <div>Role</div>
+                  <div>Status</div>
+                  <div>Registered</div>
+                  <div>Actions</div>
+                </div>
+                {users.map((userItem) => (
+                  <div key={userItem.id} className={styles.tableRow}>
+                    <div className={styles.username}>{userItem.email}</div>
+                    <div className={styles.role}>
                       <select
-                        value={userItem.approved ? "approved" : "pending"}
+                        value={userItem.role}
                         onChange={(e) =>
-                          handleUpdateStatus(
+                          handleUpdateRole(
                             userItem.id,
-                            e.target.value === "approved",
+                            e.target.value as "admin" | "user"
                           )
                         }
-                        disabled={userItem.loading || userItem.id === user?.id} // Prevent self-status change
-                        className={styles.statusSelect}
+                        disabled={userItem.loading || userItem.id === user?.id} // Prevent self-role change
+                        className={styles.roleSelect}
                       >
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
                       </select>
                     </div>
-                  </div>
-                  <div className={styles.date}>
-                    {new Date(userItem.created_at).toLocaleDateString()}
-                  </div>
-                  <div className={styles.actions}>
-                    {!userItem.approved && (
-                      <button
-                        onClick={() => handleApproveUser(userItem.id)}
-                        disabled={userItem.loading}
-                        className={`${styles.button} ${styles.small} ${styles.approve}`}
-                      >
-                        Approve
-                      </button>
-                    )}
-                    <button
-                      onClick={() => handleDeleteUser(userItem.id)}
-                      disabled={userItem.loading || userItem.id === user?.id} // Prevent self-deletion
-                      className={`${styles.button} ${styles.small} ${styles.danger}`}
+                    <div
+                      className={`${styles.status} ${userItem.approved ? styles.approved : styles.pending}`}
                     >
-                      {userItem.loading ? "..." : "Delete"}
-                    </button>
+                      <div className={styles.selectWrapper}>
+                        <select
+                          value={userItem.approved ? "approved" : "pending"}
+                          onChange={(e) =>
+                            handleUpdateStatus(
+                              userItem.id,
+                              e.target.value === "approved"
+                            )
+                          }
+                          disabled={
+                            userItem.loading || userItem.id === user?.id
+                          } // Prevent self-status change
+                          className={styles.statusSelect}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="approved">Approved</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className={styles.date}>
+                      {new Date(userItem.created_at).toLocaleDateString()}
+                    </div>
+                    <div className={styles.actions}>
+                      {!userItem.approved && (
+                        <button
+                          onClick={() => handleApproveUser(userItem.id)}
+                          disabled={userItem.loading}
+                          className={`${styles.button} ${styles.small} ${styles.approve}`}
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        onClick={() => handleDeleteUser(userItem.id)}
+                        disabled={userItem.loading || userItem.id === user?.id} // Prevent self-deletion
+                        className={`${styles.button} ${styles.small} ${styles.danger}`}
+                      >
+                        {userItem.loading ? "..." : "Delete"}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.footer}>

@@ -269,8 +269,11 @@ export default function Upload() {
     allErrors.push(...projectNameErrors);
 
     // Check for duplicate project names (only if basic validation passes and name has changed in edit mode)
-    if (projectNameErrors.length === 0 && newProjectName.trim() && 
-        (!projectManager.isEditMode || projectManager.hasProjectNameChanged())) {
+    if (
+      projectNameErrors.length === 0 &&
+      newProjectName.trim() &&
+      (!projectManager.isEditMode || projectManager.hasProjectNameChanged())
+    ) {
       try {
         const checkResponse = await fetch("/api/projects", {
           method: "POST",
@@ -397,8 +400,11 @@ export default function Upload() {
     allErrors.push(...projectNameErrors);
 
     // Check for duplicate project name if project name is valid and name has changed in edit mode
-    if (projectName.trim() && projectNameErrors.length === 0 && 
-        (!projectManager.isEditMode || projectManager.hasProjectNameChanged())) {
+    if (
+      projectName.trim() &&
+      projectNameErrors.length === 0 &&
+      (!projectManager.isEditMode || projectManager.hasProjectNameChanged())
+    ) {
       try {
         const response = await fetch("/api/projects", {
           method: "POST",
@@ -464,8 +470,11 @@ export default function Upload() {
     allErrors.push(...projectNameErrors);
 
     // Check for duplicate project name if project name is valid and name has changed in edit mode
-    if (projectName.trim() && projectNameErrors.length === 0 && 
-        (!projectManager.isEditMode || projectManager.hasProjectNameChanged())) {
+    if (
+      projectName.trim() &&
+      projectNameErrors.length === 0 &&
+      (!projectManager.isEditMode || projectManager.hasProjectNameChanged())
+    ) {
       try {
         const response = await fetch("/api/projects", {
           method: "POST",

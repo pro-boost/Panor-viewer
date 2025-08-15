@@ -260,15 +260,17 @@ export default function Home(): ReactElement {
                   onClick={() => {
                     const newShowProjects = !showProjects;
                     setShowProjects(newShowProjects);
-                    
+
                     // Scroll to projects section when showing projects
                     if (newShowProjects) {
                       setTimeout(() => {
-                        const projectsSection = document.querySelector(`.${styles.projectsSection}`);
+                        const projectsSection = document.querySelector(
+                          `.${styles.projectsSection}`
+                        );
                         if (projectsSection) {
                           projectsSection.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
+                            behavior: "smooth",
+                            block: "start",
                           });
                         }
                       }, 100); // Small delay to ensure the section is rendered
