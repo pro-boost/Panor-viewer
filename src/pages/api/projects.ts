@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import { CacheManager } from "@/utils/cacheManager";
 
 const readdir = promisify(fs.readdir);
 const stat = promisify(fs.stat);
@@ -197,6 +198,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const { method } = req;
+  const cacheManager = CacheManager.getInstance();
 
   try {
     switch (method) {
@@ -274,6 +276,9 @@ export default async function handler(
         ensureDirectoryExists(newProjectPath);
         ensureDirectoryExists(path.join(newProjectPath, "images"));
         ensureDirectoryExists(path.join(newProjectPath, "data"));
+
+        // Clear any residual cache for this project name to prevent showing old images
+        cacheManager.clearProjectCache(sanitizedName);
 
         const newProject = await getProjectInfo(sanitizedName);
 
@@ -414,6 +419,9 @@ export default async function handler(
         }
 
         await deleteProjectRecursively(projectToDelete);
+
+        // Clear cache for the deleted project
+        cacheManager.clearProjectCache(projectId);
 
         res.status(200).json({ message: "Project deleted successfully" });
         break;

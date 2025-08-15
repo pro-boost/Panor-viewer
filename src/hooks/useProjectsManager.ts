@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useNavigation } from "./useNavigation";
+import { CacheManager } from "@/utils/cacheManager";
 
 interface Project {
   id: string;
@@ -64,6 +65,10 @@ export function useProjectsManager() {
       }
 
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
+
+      // Clear cache for the deleted project
+      const cacheManager = CacheManager.getInstance();
+      cacheManager.clearProjectCache(projectId);
 
       // If we deleted the current project, go to home
       if (currentProject === projectId) {
