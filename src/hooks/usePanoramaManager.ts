@@ -30,7 +30,19 @@ export function usePanoramaManager({
       refs,
       actions,
       hotspotsVisible: state.hotspotsVisible,
+      maxHotspots: state.maxHotspots,
     });
+
+  // Effect to recreate hotspots when maxHotspots changes
+  useEffect(() => {
+    if (state.currentScene && refs.scenesRef.current[state.currentScene]) {
+      const currentSceneInfo = refs.scenesRef.current[state.currentScene];
+      if (currentSceneInfo && currentSceneInfo.scene) {
+        console.log(`Recreating hotspots for scene ${state.currentScene} with maxHotspots: ${state.maxHotspots}`);
+        createHotspotsForScene(currentSceneInfo);
+      }
+    }
+  }, [state.maxHotspots, state.currentScene, createHotspotsForScene, refs.scenesRef]);
 
   const {
     calculateSceneDistance,

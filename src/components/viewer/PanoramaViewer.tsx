@@ -11,6 +11,8 @@ import TapHint from "./TapHint";
 import PanoramaContainer from "./PanoramaContainer";
 import HotspotRenderer, { HotspotRendererRef } from "./HotspotRenderer";
 import POIComponent, { POIComponentRef } from "../poi/POIComponent";
+
+
 import { usePanoramaManager } from "@/hooks/usePanoramaManager";
 import { useCacheRefresh } from "@/hooks/useCacheRefresh";
 import { ToastContainer } from "react-toastify";
@@ -92,6 +94,7 @@ export default function PanoramaViewer({
   const {
     state,
     refs,
+    actions,
     navigateToScene,
     optimizePerformance,
     handlePanoClick,
@@ -219,6 +222,11 @@ export default function PanoramaViewer({
       <TapHint show={state.showTapHint} />
 
       <ControlPanel
+        maxHotspots={state.maxHotspots}
+        onMaxHotspotsChange={actions.setMaxHotspots}
+        hotspotsVisible={state.hotspotsVisible}
+        setHotspotsVisible={actions.setHotspotsVisible}
+        hotspotTimeoutRef={refs.hotspotTimeoutRef}
         scenes={state.config?.scenes || []}
         currentScene={
           state.currentScene && refs.scenesRef.current[state.currentScene]
@@ -240,7 +248,7 @@ export default function PanoramaViewer({
               poiComponentRef.current?.editPOI(poi);
             }, 1500);
           } else {
-            // Already in the correct scene, edit immediately
+            // Already in the current scene, edit immediately
             poiComponentRef.current?.editPOI(poi);
           }
         }}
@@ -269,7 +277,7 @@ export default function PanoramaViewer({
                     fetchPOISceneCounts();
                   }, 1500);
                 } else {
-                  // Already in the correct scene, delete immediately
+                  // Already in the current scene, delete immediately
                   poiComponentRef.current?.deletePOI(actualPoiId);
                   fetchPOISceneCounts();
                 }

@@ -9,8 +9,9 @@ import {
   FloorSelectorPanel,
   PerformanceMonitorPanel,
   POIManagementPanelWithModal,
+  HotspotPanel,
 } from "./panels";
-import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon } from "./icons";
+import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon, HotspotIcon } from "./icons";
 import { POIData } from "@/types/poi";
 import { usePanelState } from "../../hooks/usePanelState";
 
@@ -21,6 +22,13 @@ interface PerformanceStats {
 }
 
 interface ControlPanelProps {
+  // Hotspot Control props
+  maxHotspots?: number;
+  onMaxHotspotsChange?: (value: number) => void;
+  hotspotsVisible?: boolean;
+  setHotspotsVisible?: (visible: boolean) => void;
+  hotspotTimeoutRef?: React.MutableRefObject<NodeJS.Timeout | null>;
+
   // Floor Selector props
   scenes?: SceneData[];
   currentScene?: SceneData | null;
@@ -43,6 +51,11 @@ interface ControlPanelProps {
 }
 
 export default function ControlPanel({
+  maxHotspots,
+  onMaxHotspotsChange,
+  hotspotsVisible,
+  setHotspotsVisible,
+  hotspotTimeoutRef,
   scenes = [],
   currentScene,
   onFloorChange,
@@ -140,6 +153,27 @@ export default function ControlPanel({
             totalScenes={totalScenes}
             onOptimize={onOptimize}
             onPanelClose={closePanels}
+          />
+        </ControlButton>
+      )}
+
+      {/* Hotspot Control Panel */}
+      {maxHotspots !== undefined && onMaxHotspotsChange && hotspotsVisible !== undefined && setHotspotsVisible && hotspotTimeoutRef && (
+        <ControlButton
+          id="hotspots"
+          expandedPanel={expandedPanel}
+          onToggle={handlePanelToggle}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          icon={<HotspotIcon />}
+        >
+          <HotspotPanel
+            maxHotspots={maxHotspots}
+            onMaxHotspotsChange={onMaxHotspotsChange}
+            onPanelClose={closePanels}
+            hotspotsVisible={hotspotsVisible}
+            setHotspotsVisible={setHotspotsVisible}
+            hotspotTimeoutRef={hotspotTimeoutRef}
           />
         </ControlButton>
       )}

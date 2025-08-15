@@ -5,3 +5,4 @@ export {
   POIManagementPanel,
   POIManagementPanelWithModal,
 } from "./POIManagementPanel";
+export { HotspotPanel } from "./HotspotPanel";

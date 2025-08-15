@@ -1,17 +1,20 @@
 import { useCallback } from "react";
 import { SceneInfo as SceneInfoType, LinkHotspot } from "@/types/scenes";
 import { PanoramaViewerRefs, PanoramaViewerActions } from "./usePanoramaViewer";
+import { calculate3DDistance } from "@/utils/panoramaUtils";
 
 export interface UseHotspotManagerProps {
   refs: PanoramaViewerRefs;
   actions: PanoramaViewerActions;
   hotspotsVisible: boolean;
+  maxHotspots: number;
 }
 
 export function useHotspotManager({
   refs,
   actions,
   hotspotsVisible,
+  maxHotspots,
 }: UseHotspotManagerProps) {
   // Clear hotspots for a scene
   const clearHotspotsForScene = useCallback(
@@ -52,7 +55,7 @@ export function useHotspotManager({
     [],
   );
 
-  // Create hotspots for a scene
+  // Create hotspots for a scene with distance-based filtering
   const createHotspotsForScene = useCallback(
     (sceneInfo: SceneInfoType): void => {
       if (!sceneInfo?.scene) {
@@ -77,48 +80,80 @@ export function useHotspotManager({
         // Clear any existing hotspots first
         clearHotspotsForScene(sceneInfo);
 
-        // Create new hotspots
-        sceneInfo.data.linkHotspots.forEach(
-          (hotspotData: LinkHotspot, index: number) => {
-            try {
-              if (
-                typeof hotspotData.yaw !== "number" ||
-                typeof hotspotData.pitch !== "number"
-              ) {
-                console.warn(
-                  `Invalid hotspot data at index ${index}:`,
-                  hotspotData,
-                );
-                return;
-              }
+        // Get current scene position for distance calculation
+        const currentPosition = sceneInfo.data.position;
+        if (!currentPosition) {
+          console.warn("Current scene position not available for distance calculation");
+          return;
+        }
 
-              const element = document.createElement("div");
-              element.setAttribute("data-hotspot-index", index.toString());
-              element.setAttribute(
-                "data-target-scene",
-                hotspotData.target || "unknown",
-              );
-
-              hotspotContainer.createHotspot(element, {
-                yaw: hotspotData.yaw,
-                pitch: hotspotData.pitch,
-              });
-
-              sceneInfo.hotspotElements.push(element);
-            } catch (hotspotErr) {
-              console.error(`Failed to create hotspot ${index}:`, hotspotErr);
+        // Create hotspot data with distances and sort by distance
+        const hotspotsWithDistance = sceneInfo.data.linkHotspots
+          .map((hotspotData: LinkHotspot, originalIndex: number) => {
+            // Find target scene position from refs
+            const targetScene = refs.scenesRef.current[hotspotData.target];
+            let distance = 0;
+            
+            if (targetScene?.data?.position) {
+              distance = calculate3DDistance(currentPosition, targetScene.data.position);
+            } else {
+              // Fallback: use hotspot distance if available, otherwise set high value
+              distance = hotspotData.distance || 999;
             }
-          },
-        );
+
+            return {
+              ...hotspotData,
+              originalIndex,
+              calculatedDistance: distance,
+            };
+          })
+          .sort((a, b) => a.calculatedDistance - b.calculatedDistance)
+          .slice(0, maxHotspots); // Limit to maxHotspots
+
+        // Create hotspots from the filtered and sorted list
+        hotspotsWithDistance.forEach((hotspotData, index) => {
+          try {
+            if (
+              typeof hotspotData.yaw !== "number" ||
+              typeof hotspotData.pitch !== "number"
+            ) {
+              console.warn(
+                `Invalid hotspot data at index ${index}:`,
+                hotspotData,
+              );
+              return;
+            }
+
+            const element = document.createElement("div");
+            element.setAttribute("data-hotspot-index", hotspotData.originalIndex.toString());
+            element.setAttribute(
+              "data-target-scene",
+              hotspotData.target || "unknown",
+            );
+            element.setAttribute(
+              "data-distance",
+              hotspotData.calculatedDistance.toFixed(2),
+            );
+
+            hotspotContainer.createHotspot(element, {
+              yaw: hotspotData.yaw,
+              pitch: hotspotData.pitch,
+            });
+
+            sceneInfo.hotspotElements.push(element);
+          } catch (hotspotErr) {
+            console.error(`Failed to create hotspot ${index}:`, hotspotErr);
+          }
+        });
 
         console.log(
-          `Created ${sceneInfo.hotspotElements.length} hotspots for scene ${sceneInfo.data.id}`,
+          `Created ${sceneInfo.hotspotElements.length}/${sceneInfo.data.linkHotspots.length} hotspots for scene ${sceneInfo.data.id} (limited by maxHotspots: ${maxHotspots})`,
         );
       } catch (err) {
         console.error("Error creating hotspots:", err);
       }
     },
-    [clearHotspotsForScene],
+    [clearHotspotsForScene, maxHotspots, refs.scenesRef],
   );
 
   // Toggle hotspots with improved error handling

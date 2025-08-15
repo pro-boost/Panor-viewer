@@ -3,4 +3,5 @@ export {
   FloorsIcon,
   PerformanceIcon,
   POIIcon,
+  HotspotIcon,
 } from "./ControlPanelIcons";
