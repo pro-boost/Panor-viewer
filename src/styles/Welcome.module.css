@@ -563,6 +563,10 @@ text-align: center;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   align-items: flex-end;
+  /* FIX: Add isolation to create new stacking context */
+  isolation: isolate;
+  position: relative;
+  z-index: 100;
 }
 
 .searchContainer {
@@ -676,7 +680,8 @@ text-align: center;
 .customDropdown {
   position: relative;
   display: inline-block;
-  z-index: 50000;
+  /* FIX: Reduce z-index to work within isolated context */
+  z-index: 200;
 }
 
 .dropdownButton {
@@ -695,7 +700,7 @@ text-align: center;
 }
 
 .dropdownMenu {
-position: absolute; top: 100%; left: 0; right: 0; z-index: 99999; background: rgba(15, 23, 42, 0.95); border: 1px solid var(--glass-border); border-radius: var(--radius-md); backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-top: var(--spacing-xs); max-height: 300px; overflow-y: auto; animation: slideDown 0.2s ease-out;
+position: absolute; top: 100%; left: 0; right: 0; z-index: 300; background: rgba(15, 23, 42, 0.95); border: 1px solid var(--glass-border); border-radius: var(--radius-md); backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); margin-top: var(--spacing-xs); max-height: 300px; overflow-y: auto; animation: slideDown 0.2s ease-out;
 }
 
 .dropdownItem {

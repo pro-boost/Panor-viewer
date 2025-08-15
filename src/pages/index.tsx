@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ReactElement, useState, useEffect, useMemo } from "react";
+import { ReactElement, useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/Welcome.module.css";
 import { FileURLManager } from "@/utils/fileHelpers";
@@ -10,6 +10,7 @@ import Navbar from "@/components/ui/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
+import Portal from "@/components/ui/Portal";
 
 // ProjectManager moved to PanoramaViewer component
 
@@ -61,12 +62,17 @@ export default function Home(): ReactElement {
   const [sortBy, setSortBy] = useState<string>(""); // name, size, created, updated
   const [sortOrder, setSortOrder] = useState<string>("asc"); // asc, desc
   const [showSortDropdown, setShowSortDropdown] = useState<boolean>(false);
+  const dropdownButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      if (!target.closest(`.${styles.customDropdown}`)) {
+      // Check if click is outside both the dropdown button and the portal dropdown menu
+      if (
+        !target.closest(`.${styles.customDropdown}`) &&
+        !target.closest('#portal-root')
+      ) {
         setShowSortDropdown(false);
       }
     };
@@ -445,6 +451,7 @@ export default function Home(): ReactElement {
                       <div className={styles.filterGroup}>
                         <div className={styles.customDropdown}>
                           <button
+                            ref={dropdownButtonRef}
                             className={`${styles.filterSelect} ${styles.dropdownButton}`}
                             onClick={() =>
                               setShowSortDropdown(!showSortDropdown)
@@ -457,32 +464,43 @@ export default function Home(): ReactElement {
                             </span>
                           </button>
                           {showSortDropdown && (
-                            <div className={styles.dropdownMenu}>
-                              {["name", "size", "createdAt", "updatedAt"].map(
-                                (field) => (
-                                  <button
-                                    key={field}
-                                    onClick={() => {
-                                      if (sortBy === field) {
-                                        setSortOrder(
-                                          sortOrder === "asc" ? "desc" : "asc"
-                                        );
-                                      } else {
-                                        setSortBy(field);
-                                        setSortOrder("asc");
-                                      }
-                                      setShowSortDropdown(false);
-                                    }}
-                                    className={styles.dropdownItem}
-                                  >
-                                    {field.charAt(0).toUpperCase() +
-                                      field.slice(1).replace("At", "")}
-                                    {sortBy === field &&
-                                      (sortOrder === "asc" ? " ↑" : " ↓")}
-                                  </button>
-                                )
-                              )}
-                            </div>
+                            <Portal>
+                              <div 
+                                className={styles.dropdownMenu}
+                                style={{
+                                  position: 'fixed',
+                                  top: dropdownButtonRef.current?.getBoundingClientRect().bottom ? dropdownButtonRef.current.getBoundingClientRect().bottom + 4 : 0,
+                                  left: dropdownButtonRef.current?.getBoundingClientRect().left || 0,
+                                  width: dropdownButtonRef.current?.getBoundingClientRect().width || 'auto',
+                                  zIndex: 999999
+                                }}
+                              >
+                                {["name", "size", "createdAt", "updatedAt"].map(
+                                  (field) => (
+                                    <button
+                                      key={field}
+                                      onClick={() => {
+                                        if (sortBy === field) {
+                                          setSortOrder(
+                                            sortOrder === "asc" ? "desc" : "asc"
+                                          );
+                                        } else {
+                                          setSortBy(field);
+                                          setSortOrder("asc");
+                                        }
+                                        setShowSortDropdown(false);
+                                      }}
+                                      className={styles.dropdownItem}
+                                    >
+                                      {field.charAt(0).toUpperCase() +
+                                        field.slice(1).replace("At", "")}
+                                      {sortBy === field &&
+                                        (sortOrder === "asc" ? " ↑" : " ↓")}
+                                    </button>
+                                  )
+                                )}
+                              </div>
+                            </Portal>
                           )}
                         </div>
                       </div>
