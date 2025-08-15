@@ -110,7 +110,7 @@ export default function POIManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState("");
   const [showDetails, setShowDetails] = useState<{ [key: string]: boolean }>(
-    {},
+    {}
   );
   const [deletingPOI, setDeletingPOI] = useState<string | null>(null);
   const [useIndividualFiles, setUseIndividualFiles] = useState(false);
@@ -168,7 +168,7 @@ export default function POIManagement() {
         try {
           // Try loading from individual files first
           const individualResponse = await fetch(
-            `/api/poi/load-individual?projectId=${encodeURIComponent(project.id)}&useIndividual=${useIndividualFiles}`,
+            `/api/poi/load-individual?projectId=${encodeURIComponent(project.id)}&useIndividual=${useIndividualFiles}`
           );
 
           if (individualResponse.ok) {
@@ -185,7 +185,7 @@ export default function POIManagement() {
           } else {
             // Fallback to main file
             const poisResponse = await fetch(
-              `/api/poi/load?projectId=${encodeURIComponent(project.id)}`,
+              `/api/poi/load?projectId=${encodeURIComponent(project.id)}`
             );
             if (poisResponse.ok) {
               const poisData = await poisResponse.json();
@@ -207,10 +207,10 @@ export default function POIManagement() {
 
       const totalPOIs = allProjectPOIs.reduce(
         (sum, project) => sum + project.pois.length,
-        0,
+        0
       );
       setMessage(
-        `Loaded ${totalPOIs} POIs from ${allProjectPOIs.length} projects`,
+        `Loaded ${totalPOIs} POIs from ${allProjectPOIs.length} projects`
       );
     } catch (error) {
       console.error("Failed to load projects and POIs:", error);
@@ -223,7 +223,7 @@ export default function POIManagement() {
   const handleDeletePOI = async (
     projectId: string,
     poiId: string,
-    poiName: string,
+    poiName: string
   ) => {
     setPOIToDelete({ projectId, poiId, poiName });
     setShowDeleteConfirm(true);
@@ -291,7 +291,7 @@ export default function POIManagement() {
 
   const handleFileManagerMessage = (
     type: "success" | "error",
-    message: string,
+    message: string
   ) => {
     setFileManagerMessage({ type, text: message });
     setTimeout(() => setFileManagerMessage(null), 5000);
@@ -303,11 +303,11 @@ export default function POIManagement() {
 
   const handleExportAllPOIs = async (
     projectId: string,
-    projectName: string,
+    projectName: string
   ) => {
     try {
       const response = await fetch(
-        `/api/poi/export-all?projectId=${encodeURIComponent(projectId)}`,
+        `/api/poi/export-all?projectId=${encodeURIComponent(projectId)}`
       );
 
       if (!response.ok) {
@@ -353,7 +353,7 @@ export default function POIManagement() {
           (poi) =>
             poi.name.toLowerCase().includes(searchLower) ||
             poi.description.toLowerCase().includes(searchLower) ||
-            poi.type.toLowerCase().includes(searchLower),
+            poi.type.toLowerCase().includes(searchLower)
         );
         return {
           ...project,
@@ -366,7 +366,7 @@ export default function POIManagement() {
 
   const totalPOIs = filteredProjectPOIs.reduce(
     (sum, project) => sum + project.pois.length,
-    0,
+    0
   );
 
   const formatDate = (dateString: string) => {
@@ -581,7 +581,7 @@ export default function POIManagement() {
                       hasExistingPOIs={projectPOIs.some(
                         (project) =>
                           project.projectId === selectedProject &&
-                          project.pois.length > 0,
+                          project.pois.length > 0
                       )}
                     />
                   )}
@@ -615,7 +615,7 @@ export default function POIManagement() {
                           e.stopPropagation();
                           handleExportAllPOIs(
                             project.projectId,
-                            project.projectName,
+                            project.projectName
                           );
                         }}
                         className={styles.backLink}
@@ -676,7 +676,7 @@ export default function POIManagement() {
                             hasExistingPOIs={projectPOIs.some(
                               (p) =>
                                 p.projectId === selectedProject &&
-                                p.pois.length > 0,
+                                p.pois.length > 0
                             )}
                           />
                         </div>
@@ -718,7 +718,7 @@ export default function POIManagement() {
                                 handleDeletePOI(
                                   project.projectId,
                                   poi.id,
-                                  poi.name,
+                                  poi.name
                                 )
                               }
                               disabled={deletingPOI === poi.id}
@@ -753,29 +753,6 @@ export default function POIManagement() {
             </div>
           </div>
         )}
-
-        {/* Instructions */}
-
-        <div className={styles.instructions}>
-          <h3 className={styles.instructionsTitle}>Instructions:</h3>
-          <ol className={styles.instructionsList}>
-            <li>
-              Select your pano-poses.csv file containing panorama position data
-            </li>
-            <li>Select one or more panorama images (JPG or PNG format)</li>
-            <li>
-              (Optional) Select a POI file (JSON format) to add points of
-              interest to your panoramas
-            </li>
-            <li>
-              Click &quot;Upload and Generate&quot; to upload files and
-              automatically generate the configuration
-            </li>
-            <li>
-              Once complete, return to the main viewer to see your panoramas
-            </li>
-          </ol>
-        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
