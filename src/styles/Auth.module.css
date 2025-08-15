@@ -6,9 +6,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  /* Add top padding to account for Navbar */
-  padding-top: 0;
+  padding: 0;
   font-family: Arial, Helvetica, sans-serif;
   position: relative;
   flex-direction: column;
@@ -466,7 +464,8 @@
 /* Responsive Design */
 @media (max-width: 480px) {
   .container {
-    padding: 16px;
+    padding: 0;
+    padding-top: 0;
   }
 
   .card {
