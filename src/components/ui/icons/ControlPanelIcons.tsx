@@ -119,49 +119,13 @@ export function HotspotIcon({
     <svg
       width={width}
       height={height}
-      viewBox="0 0 24 24"
+      viewBox="0 0 100 100"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle
-        cx="12"
-        cy="12"
-        r="10"
-        stroke={color}
-        strokeWidth="2"
-        fill="none"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r="3"
-        stroke={color}
-        strokeWidth="2"
-        fill="none"
-      />
       <path
-        d="M12 2V6"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M12 18V22"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M22 12H18"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M6 12H2"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
+        d="M50,0C22.4,0,0,22.4,0,50s22.4,50,50,50s50-22.4,50-50S77.6,0,50,0z M50,30L70,70L50,60L30,70z"
+        fill={color}
       />
     </svg>
   );
