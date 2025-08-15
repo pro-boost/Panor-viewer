@@ -12,6 +12,8 @@
   /* Center content accounting for scrollbar */
   padding-left: calc(100vw - 100%);
   padding-left: calc((100vw - 100%) / 2);
+  /* Add top padding to account for Navbar */
+  padding-top: 0;
   background: linear-gradient(
     180deg,
     rgba(0, 0, 0, 0.3) 0%,

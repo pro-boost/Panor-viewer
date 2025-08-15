@@ -215,9 +215,11 @@ export default function AdminUsers() {
     return (
       <div className={styles.container}>
         <Navbar showAdminButton={false} showLogoutButton={false} />
-        <div className={styles.error}>
-          <h1>Access Denied</h1>
-          <p>You need admin privileges to access this page.</p>
+        <div className={styles.contentWrapper}>
+          <div className={styles.error}>
+            <h1>Access Denied</h1>
+            <p>You need admin privileges to access this page.</p>
+          </div>
         </div>
       </div>
     );
@@ -232,55 +234,56 @@ export default function AdminUsers() {
 
       <div className={styles.container}>
         <Navbar showAdminButton={false} showLogoutButton={true} />
+        
+        <div className={styles.contentWrapper}>
+          <div className={styles.header}>
+            <h1>User Management</h1>
+            <p>Manage user accounts, approvals, and permissions</p>
+          </div>
 
-        <div className={styles.header}>
-          <h1>User Management</h1>
-          <p>Manage user accounts, approvals, and permissions</p>
-        </div>
-
-        {pendingUsers.length > 0 && (
-          <div className={styles.alertBanner}>
-            <div className={styles.alertContent}>
-              <span className={styles.alertIcon}>⚠️</span>
-              <div className={styles.alertText}>
-                <strong>Action Required:</strong> {pendingUsers.length} user
-                {pendingUsers.length > 1 ? "s" : ""} waiting for approval
+          {pendingUsers.length > 0 && (
+            <div className={styles.alertBanner}>
+              <div className={styles.alertContent}>
+                <span className={styles.alertIcon}>⚠️</span>
+                <div className={styles.alertText}>
+                  <strong>Action Required:</strong> {pendingUsers.length} user
+                  {pendingUsers.length > 1 ? "s" : ""} waiting for approval
+                </div>
+                <button
+                  className={styles.alertAction}
+                  onClick={() => setActiveTab("pending")}
+                >
+                  Review Now
+                </button>
               </div>
-              <button
-                className={styles.alertAction}
-                onClick={() => setActiveTab("pending")}
-              >
-                Review Now
+            </div>
+          )}
+
+          {error && (
+            <div className={styles.error}>
+              {error}
+              <button onClick={() => setError("")} className={styles.closeError}>
+                ×
               </button>
             </div>
-          </div>
-        )}
+          )}
 
-        {error && (
-          <div className={styles.error}>
-            {error}
-            <button onClick={() => setError("")} className={styles.closeError}>
-              ×
+          <div className={styles.tabs}>
+            <button
+              className={`${styles.tab} ${activeTab === "pending" ? styles.active : ""}`}
+              onClick={() => setActiveTab("pending")}
+            >
+              Pending Approval ({pendingUsers.length})
+            </button>
+            <button
+              className={`${styles.tab} ${activeTab === "all" ? styles.active : ""}`}
+              onClick={() => setActiveTab("all")}
+            >
+              All Users ({users.length})
             </button>
           </div>
-        )}
 
-        <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${activeTab === "pending" ? styles.active : ""}`}
-            onClick={() => setActiveTab("pending")}
-          >
-            Pending Approval ({pendingUsers.length})
-          </button>
-          <button
-            className={`${styles.tab} ${activeTab === "all" ? styles.active : ""}`}
-            onClick={() => setActiveTab("all")}
-          >
-            All Users ({users.length})
-          </button>
-        </div>
-
-        <div className={styles.content}>
+          <div className={styles.content}>
           {activeTab === "pending" && (
             <div className={styles.section}>
               <h2>Users Pending Approval</h2>
@@ -396,18 +399,19 @@ export default function AdminUsers() {
               ))}
             </div>
           )}
-        </div>
+          </div>
 
-        <div className={styles.footer}>
-          <button
-            onClick={() => router.push("/")}
-            className={styles.backButton}
-          >
-            Back to Dashboard
-          </button>
-          <button onClick={loadUsers} className={styles.refreshButton}>
-            Refresh
-          </button>
+          <div className={styles.footer}>
+            <button
+              onClick={() => router.push("/")}
+              className={styles.backButton}
+            >
+              Back to Dashboard
+            </button>
+            <button onClick={loadUsers} className={styles.refreshButton}>
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
     </>

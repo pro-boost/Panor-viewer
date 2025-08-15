@@ -1,15 +1,14 @@
 /* Shared Navbar Component Styles */
 
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  width: 100%;
   z-index: var(--z-logo, 1000);
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-xl, 24px) var(--spacing-2xl, 32px);
+  margin-bottom: var(--spacing-lg, 20px);
   background: transparent;
   pointer-events: none; /* Allow clicks to pass through empty areas */
 }

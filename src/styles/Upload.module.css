@@ -4,9 +4,10 @@
 .container {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   padding: var(--spacing-2xl);
+  /* Add top padding to account for Navbar */
+  padding-top: 0;
   position: relative;
   color: var(--text-primary);
   background-image: url("/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg");
