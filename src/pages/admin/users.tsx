@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserProfile, isSupabaseConfigured } from "@/lib/supabase";
 import Logo from "@/components/ui/Logo";
 import LogoutButton from "@/components/ui/LogoutButton";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 import styles from "@/styles/Admin.module.css";
 
 interface UserWithActions extends UserProfile {
@@ -208,15 +209,7 @@ export default function AdminUsers() {
   };
 
   if (authLoading || loading || supabaseConfigured === null) {
-    return (
-      <div className={styles.container}>
-        <Logo variant="default" position="absolute" />
-        <div className={styles.loading}>
-          <div className={styles.spinner}></div>
-          <p>Loading users...</p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Loading Users" />;
   }
 
   if (!isAuthenticated || user?.role !== "admin") {

@@ -4,6 +4,7 @@ import Head from "next/head";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import styles from "@/styles/Auth.module.css";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
 interface AuthStatus {
   authenticated: boolean;
@@ -122,14 +123,7 @@ export default function Login() {
   };
 
   if (checkingAuth) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.authLoadingContent}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Checking authentication...</p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Checking Authentication" />;
   }
 
   if (!authStatus?.configured) {

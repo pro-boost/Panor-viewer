@@ -7,6 +7,7 @@ import Link from "next/link";
 import styles from "@/styles/Welcome.module.css";
 import Logo from "@/components/ui/Logo";
 import { FileURLManager } from "@/utils/fileHelpers";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 // ProjectManager moved to PanoramaViewer component
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
@@ -15,12 +16,9 @@ const PanoramaViewer = dynamic(
   {
     ssr: false,
     loading: (): ReactElement => (
-      <div id="loading">
-        <div className="loader"></div>
-        <div>Loading panoramas...</div>
-      </div>
+      <PageLoadingComponent headerText="Loading Panoramas" />
     ),
-  },
+  }
 );
 
 interface ConfigData {
@@ -54,7 +52,7 @@ export default function ProjectViewer(): ReactElement {
           `/api/projects/${encodeURIComponent(projectId)}/config`,
           {
             cache: "no-store",
-          },
+          }
         );
 
         if (!configResponse.ok) {
@@ -79,7 +77,7 @@ export default function ProjectViewer(): ReactElement {
         // Check if actual image files exist by testing the first few scenes
         const testScenes = configData.scenes.slice(
           0,
-          Math.min(3, configData.scenes.length),
+          Math.min(3, configData.scenes.length)
         );
         let imageExists = false;
 
@@ -88,12 +86,12 @@ export default function ProjectViewer(): ReactElement {
             const imageResponse = await fetch(
               FileURLManager.getPanoramaImageURL(
                 projectId,
-                `${scene.id}-pano.jpg`,
+                `${scene.id}-pano.jpg`
               ),
               {
                 method: "HEAD",
                 cache: "no-store",
-              },
+              }
             );
             if (imageResponse.ok) {
               imageExists = true;
@@ -122,16 +120,7 @@ export default function ProjectViewer(): ReactElement {
   }, [projectId]);
 
   if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <h1 className={styles.title}>Loading Project</h1>
-          <p className={styles.description}>
-            Please wait while we load your project...
-          </p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Loading Project" />;
   }
 
   if (error) {
@@ -167,10 +156,10 @@ export default function ProjectViewer(): ReactElement {
   // If panoramas exist, show the viewer with project context
   if (hasPanoramas && config) {
     return (
-      <PanoramaViewer 
-        projectId={projectId as string} 
-        initialSceneId={typeof scene === 'string' ? scene : undefined}
-        initialPOIId={typeof poi === 'string' ? poi : undefined}
+      <PanoramaViewer
+        projectId={projectId as string}
+        initialSceneId={typeof scene === "string" ? scene : undefined}
+        initialPOIId={typeof poi === "string" ? poi : undefined}
       />
     );
   }
@@ -183,7 +172,6 @@ export default function ProjectViewer(): ReactElement {
         <p className={styles.description}>Unable to load project data.</p>
 
         <Link href="/" className={styles.uploadButton}>
-          <span className={styles.uploadIcon}>🏠</span>
           Back to Home
         </Link>
       </div>

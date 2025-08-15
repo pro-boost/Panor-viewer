@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactElement } from "react";
+import PageLoadingComponent from "../ui/PageLoadingComponent";
 import styles from "./LoadingScreen.module.css";
 
 interface LoadingScreenProps {
@@ -76,10 +77,5 @@ export default function LoadingScreen({
     );
   }
 
-  return (
-    <div className={styles.container}>
-      <div className={styles.loader}></div>
-      <div className={styles.text}>Loading panoramas...</div>
-    </div>
-  );
+  return <PageLoadingComponent headerText="Loading Panoramas" />;
 }

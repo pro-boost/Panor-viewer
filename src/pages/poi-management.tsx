@@ -8,6 +8,7 @@ import { POIData } from "@/types/poi";
 import POIFileManager, { exportPOI } from "@/components/poi/POIFileManager";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
 import { useAuth } from "@/contexts/AuthContext";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
 interface Project {
   id: string;
@@ -392,14 +393,7 @@ export default function POIManagement() {
 
   // Show loading state while checking authentication
   if (authLoading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.authLoadingContent}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Checking authentication...</p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Checking Authentication" />;
   }
 
   // Show access denied if not authenticated
@@ -568,14 +562,7 @@ export default function POIManagement() {
         {/* POI List */}
         <div className={styles.poiListContainer}>
           {isLoading ? (
-            <div className={styles.form}>
-              <div className={styles.formGroup}>
-                <div className={styles.loadingState}>
-                  <div className={styles.loadingTitle}>Loading</div>
-                  <div className={styles.label}>Loading POI data...</div>
-                </div>
-              </div>
-            </div>
+            <PageLoadingComponent headerText="Loading POI Data" />
           ) : filteredProjectPOIs.length === 0 ? (
             <div className={styles.form}>
               <div className={styles.formGroup}>

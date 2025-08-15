@@ -7,6 +7,7 @@ import Link from "next/link";
 import styles from "@/styles/Welcome.module.css";
 import { FileURLManager } from "@/utils/fileHelpers";
 import Logo from "@/components/ui/Logo";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
 const PanoramaViewer = dynamic(
@@ -14,10 +15,7 @@ const PanoramaViewer = dynamic(
   {
     ssr: false,
     loading: (): ReactElement => (
-      <div id="loading">
-        <div className="loader"></div>
-        <div>Loading panorama...</div>
-      </div>
+      <PageLoadingComponent headerText="Loading Panorama" />
     ),
   },
 );
@@ -126,17 +124,7 @@ export default function SceneViewer(): ReactElement {
   }, [projectId, sceneId]);
 
   if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <h1 className={styles.title}>Loading Scene</h1>
-          <p className={styles.description}>
-            Loading scene &quot;{sceneId}&quot; from project &quot;{projectId}
-            &quot;...
-          </p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Loading Scene" />;
   }
 
   if (error) {

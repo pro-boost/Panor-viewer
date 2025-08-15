@@ -10,6 +10,7 @@ import Logo from "@/components/ui/Logo";
 import LogoutButton from "@/components/ui/LogoutButton";
 import { useAuth } from "@/contexts/AuthContext";
 import ConfirmationModal from "@/components/ui/ConfirmationModal";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
 // ProjectManager moved to PanoramaViewer component
 
@@ -19,10 +20,7 @@ const PanoramaViewer = dynamic(
   {
     ssr: false,
     loading: (): ReactElement => (
-      <div id="loading">
-        <div className="loader"></div>
-        <div>Loading panoramas...</div>
-      </div>
+      <PageLoadingComponent headerText="Loading Panoramas" />
     ),
   }
 );
@@ -208,31 +206,16 @@ export default function Home(): ReactElement {
 
   // Show loading while checking authentication or loading data
   if (authLoading || loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <h1 className={styles.title}>Loading...</h1>
-          <p className={styles.description}>
-            {authLoading
-              ? "Checking authentication..."
-              : "Checking for projects and panoramas..."}
-          </p>
-        </div>
-      </div>
-    );
+    const headerText = authLoading
+      ? "Checking Authentication"
+      : "Loading Projects";
+    return <PageLoadingComponent headerText={headerText} />;
   }
 
   // If not authenticated after loading is complete, the AuthContext will handle redirecting
   // We don't show access denied here to prevent flash, let AuthContext handle the redirect
   if (!isAuthenticated) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.content}>
-          <div className={styles.loadingSpinner}></div>
-          <p className={styles.description}>Redirecting to login...</p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Redirecting to Login" />;
   }
 
   // Show content based on state

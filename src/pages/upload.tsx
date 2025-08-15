@@ -9,6 +9,7 @@ import { useProjectManager } from "@/hooks/useProjectManager";
 import { useValidation } from "@/hooks/useValidation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUploadCacheRefresh } from "@/hooks/useCacheRefresh";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
 export default function Upload() {
   // Initialize authentication
@@ -691,14 +692,7 @@ export default function Upload() {
 
   // Show loading state while checking authentication
   if (authLoading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.authLoadingContent}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Checking authentication...</p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Checking Authentication" />;
   }
 
   // Show access denied if not authenticated
