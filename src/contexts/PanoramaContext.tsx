@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, ReactNode } from "react";
+import React, { createContext, useContext, ReactNode, useEffect } from "react";
 import {
   usePanoramaViewer,
   UsePanoramaViewerReturn,
@@ -136,6 +136,17 @@ export function PanoramaProvider({ children, config }: PanoramaProviderProps) {
     toggleHotspots: hotspotManager.toggleHotspots,
     initializeViewer,
   });
+
+  // Effect to recreate hotspots when maxHotspots changes for the current scene
+  useEffect(() => {
+    if (panoramaViewer.state.currentScene && panoramaViewer.refs.scenesRef.current[panoramaViewer.state.currentScene]) {
+      const currentSceneInfo = panoramaViewer.refs.scenesRef.current[panoramaViewer.state.currentScene];
+      if (currentSceneInfo.scene && panoramaViewer.state.hotspotsVisible) {
+        // Recreate hotspots for the current scene with the new maxHotspots limit
+        hotspotManager.createHotspotsForScene(currentSceneInfo);
+      }
+    }
+  }, [panoramaViewer.state.maxHotspots, panoramaViewer.state.currentScene, panoramaViewer.state.hotspotsVisible, hotspotManager]);
 
   // Context value
   const contextValue: PanoramaContextValue = {

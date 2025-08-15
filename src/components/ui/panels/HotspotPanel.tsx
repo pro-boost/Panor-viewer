@@ -8,12 +8,18 @@ interface HotspotPanelProps {
   maxHotspots: number;
   onMaxHotspotsChange: (value: number) => void;
   onPanelClose: () => void;
+  hotspotsVisible: boolean;
+  setHotspotsVisible: (visible: boolean) => void;
+  hotspotTimeoutRef: React.MutableRefObject<NodeJS.Timeout | null>;
 }
 
 export function HotspotPanel({
   maxHotspots,
   onMaxHotspotsChange,
   onPanelClose,
+  hotspotsVisible,
+  setHotspotsVisible,
+  hotspotTimeoutRef,
 }: HotspotPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
@@ -34,12 +40,25 @@ export function HotspotPanel({
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(true);
+    
+    // Force hotspots to be visible during drag and clear any auto-hide timeout
+    setHotspotsVisible(true);
+    if (hotspotTimeoutRef.current) {
+      clearTimeout(hotspotTimeoutRef.current);
+      hotspotTimeoutRef.current = null;
+    }
+    
     const newValue = calculateValue(event.clientX);
     onMaxHotspotsChange(newValue);
   };
 
   const handleMouseMove = (event: MouseEvent) => {
     if (isDragging) {
+      // Keep hotspots visible during drag
+      if (!hotspotsVisible) {
+        setHotspotsVisible(true);
+      }
+      
       const newValue = calculateValue(event.clientX);
       onMaxHotspotsChange(newValue);
     }
@@ -47,6 +66,14 @@ export function HotspotPanel({
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    
+    // Restore normal hotspot auto-hide behavior after drag ends
+    if (hotspotTimeoutRef.current) {
+      clearTimeout(hotspotTimeoutRef.current);
+    }
+    hotspotTimeoutRef.current = setTimeout(() => {
+      setHotspotsVisible(false);
+    }, 5000); // Auto-hide after 5 seconds
   };
 
   // Add document-level event listeners for smooth dragging
@@ -72,10 +99,10 @@ export function HotspotPanel({
   }, [isDragging, maxHotspots]);
 
   const getTemperatureColor = (percentage: number): string => {
-    if (percentage <= 25) return "#4A90E2"; // Cool blue
-    if (percentage <= 50) return "#7ED321"; // Green
-    if (percentage <= 75) return "#F5A623"; // Orange
-    return "#D0021B"; // Hot red
+    if (percentage <= 25) return "#4CAF50"; // Green (excellent)
+    if (percentage <= 50) return "#8BC34A"; // Light green (good)
+    if (percentage <= 75) return "#FF9800"; // Orange (fair)
+    return "#F44336"; // Red (poor)
   };
 
   const currentColor = getTemperatureColor(percentage);
@@ -137,7 +164,7 @@ export function HotspotPanel({
             />
           </svg>
         </div>
-        <span className={styles.text}>Hotspot Limit</span>
+        <span className={styles.text}>Hotspot Density</span>
       </div>
       <div className={styles.content}>
         <div className={styles.stats}>
@@ -169,7 +196,7 @@ export function HotspotPanel({
               style={{
                 width: `${percentage}%`,
                 height: '100%',
-                background: `linear-gradient(90deg, #4A90E2 0%, #7ED321 33%, #F5A623 66%, #D0021B 100%)`,
+                background: `linear-gradient(90deg, #4CAF50 0%, #8BC34A 33%, #FF9800 66%, #F44336 100%)`,
                 borderRadius: '4px',
                 position: 'relative',
                 transition: isDragging ? 'none' : 'width 0.2s ease'
@@ -207,8 +234,8 @@ export function HotspotPanel({
             style={{
               flex: 1,
               padding: '6px 12px',
-              backgroundColor: maxHotspots === 5 ? '#4A90E2' : 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
+              backgroundColor: maxHotspots === 5 ? 'white' : 'rgba(255, 255, 255, 0.1)',
+              color: maxHotspots === 5 ? 'black' : 'white',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: '4px',
               fontSize: '12px',
@@ -235,8 +262,8 @@ export function HotspotPanel({
             style={{
               flex: 1,
               padding: '6px 12px',
-              backgroundColor: maxHotspots === 20 ? '#7ED321' : 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
+              backgroundColor: maxHotspots === 20 ? 'white' : 'rgba(255, 255, 255, 0.1)',
+              color: maxHotspots === 20 ? 'black' : 'white',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: '4px',
               fontSize: '12px',
@@ -263,8 +290,8 @@ export function HotspotPanel({
             style={{
               flex: 1,
               padding: '6px 12px',
-              backgroundColor: maxHotspots === 40 ? '#D0021B' : 'rgba(255, 255, 255, 0.1)',
-              color: 'white',
+              backgroundColor: maxHotspots === 40 ? 'white' : 'rgba(255, 255, 255, 0.1)',
+              color: maxHotspots === 40 ? 'black' : 'white',
               border: '1px solid rgba(255, 255, 255, 0.2)',
               borderRadius: '4px',
               fontSize: '12px',

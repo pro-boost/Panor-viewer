@@ -25,6 +25,9 @@ interface ControlPanelProps {
   // Hotspot Control props
   maxHotspots?: number;
   onMaxHotspotsChange?: (value: number) => void;
+  hotspotsVisible?: boolean;
+  setHotspotsVisible?: (visible: boolean) => void;
+  hotspotTimeoutRef?: React.MutableRefObject<NodeJS.Timeout | null>;
 
   // Floor Selector props
   scenes?: SceneData[];
@@ -50,6 +53,9 @@ interface ControlPanelProps {
 export default function ControlPanel({
   maxHotspots,
   onMaxHotspotsChange,
+  hotspotsVisible,
+  setHotspotsVisible,
+  hotspotTimeoutRef,
   scenes = [],
   currentScene,
   onFloorChange,
@@ -152,7 +158,7 @@ export default function ControlPanel({
       )}
 
       {/* Hotspot Control Panel */}
-      {maxHotspots !== undefined && onMaxHotspotsChange && (
+      {maxHotspots !== undefined && onMaxHotspotsChange && hotspotsVisible !== undefined && setHotspotsVisible && hotspotTimeoutRef && (
         <ControlButton
           id="hotspots"
           expandedPanel={expandedPanel}
@@ -165,6 +171,9 @@ export default function ControlPanel({
             maxHotspots={maxHotspots}
             onMaxHotspotsChange={onMaxHotspotsChange}
             onPanelClose={closePanels}
+            hotspotsVisible={hotspotsVisible}
+            setHotspotsVisible={setHotspotsVisible}
+            hotspotTimeoutRef={hotspotTimeoutRef}
           />
         </ControlButton>
       )}

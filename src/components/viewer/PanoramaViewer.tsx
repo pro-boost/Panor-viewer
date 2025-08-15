@@ -224,6 +224,9 @@ export default function PanoramaViewer({
       <ControlPanel
         maxHotspots={state.maxHotspots}
         onMaxHotspotsChange={actions.setMaxHotspots}
+        hotspotsVisible={state.hotspotsVisible}
+        setHotspotsVisible={actions.setHotspotsVisible}
+        hotspotTimeoutRef={refs.hotspotTimeoutRef}
         scenes={state.config?.scenes || []}
         currentScene={
           state.currentScene && refs.scenesRef.current[state.currentScene]
