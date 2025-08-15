@@ -712,7 +712,7 @@ position: absolute; top: 100%; left: 0; right: 0; z-index: 300; background: rgba
   color: white;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.1s ease;
   font-size: var(--font-sm);
 }
 
