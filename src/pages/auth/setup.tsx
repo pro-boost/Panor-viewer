@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import Link from "next/link";
 import Navbar from "@/components/ui/Navbar";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 import styles from "@/styles/Auth.module.css";
 
 interface SetupStatus {
@@ -139,12 +140,7 @@ export default function Setup() {
   };
 
   if (checkingStatus) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Checking setup status...</p>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Checking setup status..." />;
   }
 
   const passwordStrength = getPasswordStrength();
@@ -164,25 +160,29 @@ export default function Setup() {
         <div className={styles.container}>
           <Navbar showAdminButton={false} showLogoutButton={false} />
 
-          <div className={styles.card}>
-            <div className={styles.header}>
-              <h1>System Ready</h1>
-              <p>Your panorama viewer is fully configured and ready to use.</p>
-            </div>
-
-            <div className={styles.info}>
-              <div className={styles.statusCard}>
-                <h3>🔐 Authentication Status</h3>
-                <p>✓ Admin accounts configured</p>
-                <p>✓ Security settings active</p>
-                <p>✓ User management available</p>
+          <div className={styles.cardContainer}>
+            <div className={styles.card}>
+              <div className={styles.header}>
+                <h1>System Ready</h1>
+                <p>
+                  Your panorama viewer is fully configured and ready to use.
+                </p>
               </div>
-            </div>
 
-            <div className={styles.actions}>
-              <Link href="/auth/login" className={styles.button}>
-                Sign In to Continue
-              </Link>
+              <div className={styles.info}>
+                <div className={styles.statusCard}>
+                  <h3>🔐 Authentication Status</h3>
+                  <p>✓ Admin accounts configured</p>
+                  <p>✓ Security settings active</p>
+                  <p>✓ User management available</p>
+                </div>
+              </div>
+
+              <div className={styles.actions}>
+                <Link href="/auth/login" className={styles.button}>
+                  Sign In to Continue
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -203,131 +203,137 @@ export default function Setup() {
       <div className={styles.container}>
         <Navbar showAdminButton={false} showLogoutButton={false} />
 
-        <div className={styles.card}>
-          <div className={styles.header}>
-            <h1>Set Up Authentication</h1>
-            <p>Create an admin account to secure your panorama viewer</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className={styles.form}>
-            {error && <div className={styles.error}>{error}</div>}
-
-            {success && <div className={styles.success}>{success}</div>}
-
-            <div className={styles.field}>
-              <label htmlFor="email">Admin Email</label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value.toLowerCase().trim())}
-                required
-                disabled={loading}
-                autoComplete="email"
-                placeholder="Enter admin email address"
-              />
+        <div className={styles.cardContainer}>
+          <div className={styles.card}>
+            <div className={styles.header}>
+              <h1>Set Up Authentication</h1>
+              <p>Create an admin account to secure your panorama viewer</p>
             </div>
 
-            <div className={styles.field}>
-              <label htmlFor="password">Password</label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="new-password"
-                placeholder="Enter a strong password (min. 8 characters)"
-                minLength={8}
-              />
-              {password && (
-                <div className={styles.passwordStrength}>
-                  <div
-                    className={styles.strengthBar}
-                    style={{
-                      width: `${(passwordStrength.strength / 6) * 100}%`,
-                      backgroundColor: passwordStrength.color,
-                    }}
-                  ></div>
-                  <span style={{ color: passwordStrength.color }}>
-                    {passwordStrength.label}
-                  </span>
-                </div>
-              )}
-            </div>
+            <form onSubmit={handleSubmit} className={styles.form}>
+              {error && <div className={styles.error}>{error}</div>}
 
-            <div className={styles.field}>
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={loading}
-                autoComplete="new-password"
-                placeholder="Confirm your password"
-              />
-              {confirmPassword && password !== confirmPassword && (
-                <div className={styles.fieldError}>Passwords do not match</div>
-              )}
-            </div>
+              {success && <div className={styles.success}>{success}</div>}
 
-            <div className={styles.requirements}>
-              <h4>Password Requirements:</h4>
-              <ul>
-                <li className={password.length >= 8 ? styles.met : ""}>
-                  At least 8 characters
-                </li>
-                <li className={/[A-Z]/.test(password) ? styles.met : ""}>
-                  One uppercase letter
-                </li>
-                <li className={/[a-z]/.test(password) ? styles.met : ""}>
-                  One lowercase letter
-                </li>
-                <li className={/\d/.test(password) ? styles.met : ""}>
-                  One number
-                </li>
-                <li
-                  className={
-                    /[!@#$%^&*(),.?":{}|<>]/.test(password) ? styles.met : ""
+              <div className={styles.field}>
+                <label htmlFor="email">Admin Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    setEmail(e.target.value.toLowerCase().trim())
                   }
-                >
-                  One special character (recommended)
-                </li>
-              </ul>
+                  required
+                  disabled={loading}
+                  autoComplete="email"
+                  placeholder="Enter admin email address"
+                />
+              </div>
+
+              <div className={styles.field}>
+                <label htmlFor="password">Password</label>
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="new-password"
+                  placeholder="Enter a strong password (min. 8 characters)"
+                  minLength={8}
+                />
+                {password && (
+                  <div className={styles.passwordStrength}>
+                    <div
+                      className={styles.strengthBar}
+                      style={{
+                        width: `${(passwordStrength.strength / 6) * 100}%`,
+                        backgroundColor: passwordStrength.color,
+                      }}
+                    ></div>
+                    <span style={{ color: passwordStrength.color }}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.field}>
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  autoComplete="new-password"
+                  placeholder="Confirm your password"
+                />
+                {confirmPassword && password !== confirmPassword && (
+                  <div className={styles.fieldError}>
+                    Passwords do not match
+                  </div>
+                )}
+              </div>
+
+              <div className={styles.requirements}>
+                <h4>Password Requirements:</h4>
+                <ul>
+                  <li className={password.length >= 8 ? styles.met : ""}>
+                    At least 8 characters
+                  </li>
+                  <li className={/[A-Z]/.test(password) ? styles.met : ""}>
+                    One uppercase letter
+                  </li>
+                  <li className={/[a-z]/.test(password) ? styles.met : ""}>
+                    One lowercase letter
+                  </li>
+                  <li className={/\d/.test(password) ? styles.met : ""}>
+                    One number
+                  </li>
+                  <li
+                    className={
+                      /[!@#$%^&*(),.?":{}|<>]/.test(password) ? styles.met : ""
+                    }
+                  >
+                    One special character (recommended)
+                  </li>
+                </ul>
+              </div>
+
+              <button
+                type="submit"
+                disabled={
+                  loading ||
+                  !email ||
+                  !password ||
+                  !confirmPassword ||
+                  password !== confirmPassword
+                }
+                className={styles.submitButton}
+              >
+                {loading ? (
+                  <>
+                    <div className={styles.spinner}></div>
+                    Setting up...
+                  </>
+                ) : (
+                  "Create Admin Account"
+                )}
+              </button>
+            </form>
+
+            <div className={styles.footer}>
+              <p>
+                Already configured?{" "}
+                <Link href="/auth/login" className={styles.link}>
+                  Sign In
+                </Link>
+              </p>
             </div>
-
-            <button
-              type="submit"
-              disabled={
-                loading ||
-                !email ||
-                !password ||
-                !confirmPassword ||
-                password !== confirmPassword
-              }
-              className={styles.submitButton}
-            >
-              {loading ? (
-                <>
-                  <div className={styles.spinner}></div>
-                  Setting up...
-                </>
-              ) : (
-                "Create Admin Account"
-              )}
-            </button>
-          </form>
-
-          <div className={styles.footer}>
-            <p>
-              Already configured?{" "}
-              <Link href="/auth/login" className={styles.link}>
-                Sign In
-              </Link>
-            </p>
           </div>
         </div>
       </div>
