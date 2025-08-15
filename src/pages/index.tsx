@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ReactElement, useState, useEffect } from "react";
+import { ReactElement, useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import styles from "@/styles/Welcome.module.css";
 import { FileURLManager } from "@/utils/fileHelpers";
@@ -55,6 +55,72 @@ export default function Home(): ReactElement {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Search and filter state
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>(""); // name, size, created, updated
+  const [sortOrder, setSortOrder] = useState<string>("asc"); // asc, desc
+  const [showSortDropdown, setShowSortDropdown] = useState<boolean>(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest(`.${styles.customDropdown}`)) {
+        setShowSortDropdown(false);
+      }
+    };
+
+    if (showSortDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showSortDropdown]);
+
+  // Filtered and sorted projects
+  const filteredProjects = useMemo(() => {
+    let filtered = projects.filter((project) => {
+      // Search filter
+      const matchesSearch = project.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+      return matchesSearch;
+    });
+
+    // Sort projects only if a sort option is selected
+    if (sortBy) {
+      filtered.sort((a, b) => {
+        let comparison = 0;
+
+        switch (sortBy) {
+          case "name":
+            comparison = a.name.localeCompare(b.name);
+            break;
+          case "size":
+            comparison = a.sceneCount - b.sceneCount;
+            break;
+          case "createdAt":
+            comparison =
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+            break;
+          case "updatedAt":
+            comparison =
+              new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+            break;
+          default:
+            return 0;
+        }
+
+        return sortOrder === "asc" ? comparison : -comparison;
+      });
+    }
+
+    return filtered;
+  }, [projects, searchTerm, sortBy, sortOrder]);
 
   const loadProjects = async () => {
     try {
@@ -312,110 +378,214 @@ export default function Home(): ReactElement {
             {hasProjects && showProjects && (
               <div className={styles.projectsSection}>
                 <div className={styles.projectsHeader}>
-                  <h2 className={styles.projectsTitle}>Your Projects</h2>
+                  <h2 className={styles.projectsTitle}>
+                    You have{" "}
+                    {filteredProjects.length === projects.length
+                      ? `${projects.length} project${projects.length !== 1 ? "s" : ""}`
+                      : `${filteredProjects.length} of ${projects.length} project${projects.length !== 1 ? "s" : ""}`}
+                  </h2>
                   <p className={styles.projectsSubtitle}>
                     Click on any project to start exploring
                   </p>
-                </div>
-                <div className={styles.projectList}>
-                  {projects.map((project) => (
-                    <div
-                      key={project.id}
-                      className={styles.projectCard}
-                      onClick={() => handleProjectSelect(project.id)}
-                    >
-                      <div className={styles.projectThumbnail}>
-                        {project.firstSceneId ? (
-                          <img
-                            src={FileURLManager.getPanoramaImageURL(
-                              project.id,
-                              `${project.firstSceneId}-pano.jpg`
-                            )}
-                            alt={`${project.name} thumbnail`}
-                            className={styles.projectThumbnailImage}
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              target.style.display = "none";
-                              const placeholder =
-                                target.nextElementSibling as HTMLElement;
-                              if (placeholder)
-                                placeholder.style.display = "flex";
-                            }}
-                          />
-                        ) : null}
-                        <div
-                          className={styles.projectThumbnailPlaceholder}
-                          style={{
-                            display: project.firstSceneId ? "none" : "flex",
-                          }}
+
+                  {/* Search and Filter Controls */}
+                  <div className={styles.searchFilterContainer}>
+                    {/* Search Bar */}
+                    <div className={styles.searchContainer}>
+                      <div className={styles.searchInputWrapper}>
+                        <svg
+                          className={styles.searchIcon}
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
                         >
-                          🏢
+                          <path
+                            d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <input
+                          type="text"
+                          placeholder="Search projects..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className={styles.searchInput}
+                        />
+                        {searchTerm && (
+                          <button
+                            onClick={() => setSearchTerm("")}
+                            className={styles.clearSearchButton}
+                          >
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                            >
+                              <path
+                                d="M18 6L6 18M6 6L18 18"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Filter Controls */}
+                    <div className={styles.filterContainer}>
+                      {/* Sort Dropdown */}
+                      <div className={styles.filterGroup}>
+                        <div className={styles.customDropdown}>
+                          <button
+                            className={`${styles.filterSelect} ${styles.dropdownButton}`}
+                            onClick={() =>
+                              setShowSortDropdown(!showSortDropdown)
+                            }
+                          >
+                            <span>
+                              {sortBy
+                                ? `${sortBy.charAt(0).toUpperCase() + sortBy.slice(1).replace("At", "")} ${sortOrder === "asc" ? "↑" : "↓"}`
+                                : "Sort by"}
+                            </span>
+                          </button>
+                          {showSortDropdown && (
+                            <div className={styles.dropdownMenu}>
+                              {["name", "size", "createdAt", "updatedAt"].map(
+                                (field) => (
+                                  <button
+                                    key={field}
+                                    onClick={() => {
+                                      if (sortBy === field) {
+                                        setSortOrder(
+                                          sortOrder === "asc" ? "desc" : "asc"
+                                        );
+                                      } else {
+                                        setSortBy(field);
+                                        setSortOrder("asc");
+                                      }
+                                      setShowSortDropdown(false);
+                                    }}
+                                    className={styles.dropdownItem}
+                                  >
+                                    {field.charAt(0).toUpperCase() +
+                                      field.slice(1).replace("At", "")}
+                                    {sortBy === field &&
+                                      (sortOrder === "asc" ? " ↑" : " ↓")}
+                                  </button>
+                                )
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className={styles.projectContent}>
-                        <div className={styles.projectCardHeader}>
-                          <div className={styles.projectHeaderLeft}>
-                            <div className={styles.projectIcon}>🏢</div>
-                            <div>
-                              <h3 className={styles.projectName}>
-                                {project.name}
-                              </h3>
-                              <div className={styles.projectInfo}>
-                                Updated{" "}
-                                {new Date(
-                                  project.updatedAt
-                                ).toLocaleDateString()}
+
+                      {/* Clear Button */}
+                      <button
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSortBy("");
+                          setSortOrder("asc");
+                        }}
+                        className={styles.clearFiltersButton}
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div className={styles.projectList}>
+                  {filteredProjects.length === 0 ? (
+                    <div className={styles.noProjectsMessage}>
+                      {searchTerm ? (
+                        <>
+                          <div className={styles.noProjectsIcon}></div>
+                          <h3>No projects found</h3>
+                          <p>Try adjusting your search or filter criteria</p>
+                          <button
+                            onClick={() => {
+                              setSearchTerm("");
+                              setSortBy("name");
+                              setSortOrder("asc");
+                            }}
+                            className={styles.clearFiltersButton}
+                          >
+                            Clear all filters
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <h3>No projects yet</h3>
+                          <p>
+                            Upload your first panorama project to get started
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    filteredProjects.map((project) => (
+                      <div
+                        key={project.id}
+                        className={styles.projectCard}
+                        onClick={() => handleProjectSelect(project.id)}
+                      >
+                        <div className={styles.projectThumbnail}>
+                          {project.firstSceneId ? (
+                            <img
+                              src={FileURLManager.getPanoramaImageURL(
+                                project.id,
+                                `${project.firstSceneId}-pano.jpg`
+                              )}
+                              alt={`${project.name} thumbnail`}
+                              className={styles.projectThumbnailImage}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = "none";
+                                const placeholder =
+                                  target.nextElementSibling as HTMLElement;
+                                if (placeholder)
+                                  placeholder.style.display = "flex";
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className={styles.projectThumbnailPlaceholder}
+                            style={{
+                              display: project.firstSceneId ? "none" : "flex",
+                            }}
+                          ></div>
+                        </div>
+                        <div className={styles.projectContent}>
+                          <div className={styles.projectCardHeader}>
+                            <div className={styles.projectHeaderLeft}>
+                              <div>
+                                <h3 className={styles.projectName}>
+                                  {project.name}
+                                </h3>
+                                <div className={styles.projectInfo}>
+                                  Updated{" "}
+                                  {new Date(
+                                    project.updatedAt
+                                  ).toLocaleDateString()}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className={styles.projectActions}>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.location.href = `/upload?project=${encodeURIComponent(project.id)}`;
-                              }}
-                              className={styles.editButton}
-                              title="Edit project"
-                            >
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
+                            <div className={styles.projectActions}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  window.location.href = `/upload?project=${encodeURIComponent(project.id)}`;
+                                }}
+                                className={styles.editButton}
+                                title="Edit project"
                               >
-                                <path
-                                  d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                                <path
-                                  d="M18.5 2.50023C18.8978 2.1024 19.4374 1.87891 20 1.87891C20.5626 1.87891 21.1022 2.1024 21.5 2.50023C21.8978 2.89805 22.1213 3.43762 22.1213 4.00023C22.1213 4.56284 21.8978 5.1024 21.5 5.50023L12 15.0002L8 16.0002L9 12.0002L18.5 2.50023Z"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setProjectToDelete(project);
-                                setShowDeleteConfirm(true);
-                              }}
-                              disabled={deleting === project.id}
-                              className={`${styles.deleteButton} ${
-                                deleting === project.id ? styles.deleting : ""
-                              }`}
-                              title="Delete project"
-                            >
-                              {deleting === project.id ? (
-                                <div className={styles.deletingSpinner}>
-                                  ...
-                                </div>
-                              ) : (
                                 <svg
                                   width="12"
                                   height="12"
@@ -423,48 +593,88 @@ export default function Home(): ReactElement {
                                   fill="none"
                                 >
                                   <path
-                                    d="M3 6H5H21"
+                                    d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"
                                     stroke="currentColor"
                                     strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   />
                                   <path
-                                    d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
+                                    d="M18.5 2.50023C18.8978 2.1024 19.4374 1.87891 20 1.87891C20.5626 1.87891 21.1022 2.1024 21.5 2.50023C21.8978 2.89805 22.1213 3.43762 22.1213 4.00023C22.1213 4.56284 21.8978 5.1024 21.5 5.50023L12 15.0002L8 16.0002L9 12.0002L18.5 2.50023Z"
                                     stroke="currentColor"
                                     strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
                                   />
                                 </svg>
-                              )}
-                            </button>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setProjectToDelete(project);
+                                  setShowDeleteConfirm(true);
+                                }}
+                                disabled={deleting === project.id}
+                                className={`${styles.deleteButton} ${
+                                  deleting === project.id ? styles.deleting : ""
+                                }`}
+                                title="Delete project"
+                              >
+                                {deleting === project.id ? (
+                                  <div className={styles.deletingSpinner}>
+                                    ...
+                                  </div>
+                                ) : (
+                                  <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="M3 6H5H21"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    <path
+                                      d="M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6H19Z"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <div className={styles.projectMeta}></div>
-                        <div className={styles.projectStats}>
-                          <div className={styles.statItem}>
-                            <span className={styles.statValue}>
-                              {project.sceneCount}
-                            </span>
-                            <span className={styles.statLabel}>Scenes</span>
-                          </div>
-                          <div className={styles.statItem}>
-                            <span className={styles.statValue}>
-                              {project.poiCount}
-                            </span>
-                            <span className={styles.statLabel}>POIs</span>
-                          </div>
-                          <div className={styles.statItem}>
-                            <span className={styles.statValue}>
-                              {project.floorCount || 1}
-                            </span>
-                            <span className={styles.statLabel}>Floors</span>
+                          <div className={styles.projectMeta}></div>
+                          <div className={styles.projectStats}>
+                            <div className={styles.statItem}>
+                              <span className={styles.statValue}>
+                                {project.sceneCount}
+                              </span>
+                              <span className={styles.statLabel}>Scenes</span>
+                            </div>
+                            <div className={styles.statItem}>
+                              <span className={styles.statValue}>
+                                {project.poiCount}
+                              </span>
+                              <span className={styles.statLabel}>POIs</span>
+                            </div>
+                            <div className={styles.statItem}>
+                              <span className={styles.statValue}>
+                                {project.floorCount || 1}
+                              </span>
+                              <span className={styles.statLabel}>Floors</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </div>
             )}
