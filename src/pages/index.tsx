@@ -202,6 +202,11 @@ export default function Home(): ReactElement {
   const getAvailableGridOptions = useMemo(() => {
     const projectCount = filteredProjects.length;
 
+    // No options if no projects
+    if (projectCount === 0) {
+      return [];
+    }
+
     // Project count rules
     if (projectCount === 1) {
       return [1]; // Force 1 col for single project
@@ -219,20 +224,17 @@ export default function Home(): ReactElement {
     }
 
     // Apply project count restrictions
-    if (projectCount === 1) {
-      return [1]; // Only 1 column for single project
-    }
     if (projectCount === 2) {
-      availableOptions = availableOptions.filter(option => option <= 2);
+      availableOptions = availableOptions.filter((option) => option <= 2);
     }
-    
+
     return availableOptions;
   }, [filteredProjects.length, screenSize]);
 
   // Check if grid selector should be shown
   const shouldShowGridSelector = useMemo(() => {
-    return getAvailableGridOptions.length > 1;
-  }, [getAvailableGridOptions]);
+    return filteredProjects.length > 0 && getAvailableGridOptions.length > 1;
+  }, [getAvailableGridOptions, filteredProjects.length]);
 
   // Ensure current grid selection is valid
   useEffect(() => {
@@ -588,15 +590,22 @@ export default function Home(): ReactElement {
                                   position: "fixed",
                                   top: (() => {
                                     const button = dropdownButtonRef.current;
-                                    return button ? button.getBoundingClientRect().bottom + 4 : 0;
+                                    return button
+                                      ? button.getBoundingClientRect().bottom +
+                                          4
+                                      : 0;
                                   })(),
                                   left: (() => {
                                     const button = dropdownButtonRef.current;
-                                    return button ? button.getBoundingClientRect().left : 0;
+                                    return button
+                                      ? button.getBoundingClientRect().left
+                                      : 0;
                                   })(),
                                   width: (() => {
                                     const button = dropdownButtonRef.current;
-                                    return button ? button.getBoundingClientRect().width : "auto";
+                                    return button
+                                      ? button.getBoundingClientRect().width
+                                      : "auto";
                                   })(),
                                   zIndex: 999999,
                                 }}
@@ -662,16 +671,26 @@ export default function Home(): ReactElement {
                                   style={{
                                     position: "fixed",
                                     top: (() => {
-                                      const button = gridDropdownButtonRef.current;
-                                      return button ? button.getBoundingClientRect().bottom + 4 : 0;
+                                      const button =
+                                        gridDropdownButtonRef.current;
+                                      return button
+                                        ? button.getBoundingClientRect()
+                                            .bottom + 4
+                                        : 0;
                                     })(),
                                     left: (() => {
-                                      const button = gridDropdownButtonRef.current;
-                                      return button ? button.getBoundingClientRect().left : 0;
+                                      const button =
+                                        gridDropdownButtonRef.current;
+                                      return button
+                                        ? button.getBoundingClientRect().left
+                                        : 0;
                                     })(),
                                     width: (() => {
-                                      const button = gridDropdownButtonRef.current;
-                                      return button ? button.getBoundingClientRect().width : "auto";
+                                      const button =
+                                        gridDropdownButtonRef.current;
+                                      return button
+                                        ? button.getBoundingClientRect().width
+                                        : "auto";
                                     })(),
                                     zIndex: 999999,
                                   }}
@@ -727,16 +746,6 @@ export default function Home(): ReactElement {
                           <div className={styles.noProjectsIcon}></div>
                           <h3>No projects found</h3>
                           <p>Try adjusting your search or filter criteria</p>
-                          <button
-                            onClick={() => {
-                              setSearchTerm("");
-                              setSortBy("name");
-                              setSortOrder("asc");
-                            }}
-                            className={styles.clearFiltersButton}
-                          >
-                            Clear all filters
-                          </button>
                         </>
                       ) : (
                         <>
