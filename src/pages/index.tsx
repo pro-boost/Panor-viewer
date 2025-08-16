@@ -67,6 +67,7 @@ export default function Home(): ReactElement {
 
   // Grid column selector state
   const [gridColumns, setGridColumns] = useState<number>(3);
+  const [preferredGridColumns, setPreferredGridColumns] = useState<number>(3); // Remember user's preferred setting
   const [screenSize, setScreenSize] = useState<"small" | "medium" | "large">(
     "large"
   );
@@ -101,14 +102,15 @@ export default function Home(): ReactElement {
       const columns = parseInt(savedGridColumns, 10);
       if ([1, 2, 3].includes(columns)) {
         setGridColumns(columns);
+        setPreferredGridColumns(columns); // Also set as preferred
       }
     }
   }, []);
 
   // Save grid preference to localStorage
   useEffect(() => {
-    localStorage.setItem("panorama-grid-columns", gridColumns.toString());
-  }, [gridColumns]);
+    localStorage.setItem("panorama-grid-columns", preferredGridColumns.toString());
+  }, [preferredGridColumns]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -191,12 +193,34 @@ export default function Home(): ReactElement {
     return filtered;
   }, [projects, searchTerm, sortBy, sortOrder]);
 
-  // Auto-reset to 1 column when there's only one project
+  // Smart grid column management based on filtered results
   useEffect(() => {
     if (filteredProjects.length === 1 && gridColumns !== 1) {
+      // Only force 1 column when there's exactly 1 project, but don't update preferred setting
       setGridColumns(1);
+    } else if (filteredProjects.length > 1 && gridColumns === 1 && preferredGridColumns > 1) {
+      // Restore preferred grid setting when search results allow it
+      const availableOptions = [];
+      if (screenSize === "large") {
+        if (filteredProjects.length >= 3) availableOptions.push(3);
+        if (filteredProjects.length >= 2) availableOptions.push(2);
+        availableOptions.push(1);
+      } else if (screenSize === "medium") {
+        if (filteredProjects.length >= 2) availableOptions.push(2);
+        availableOptions.push(1);
+      } else {
+        availableOptions.push(1);
+      }
+      
+      // Restore preferred setting if it's available for current results
+      if (availableOptions.includes(preferredGridColumns)) {
+        setGridColumns(preferredGridColumns);
+      } else {
+        // Use the highest available option
+        setGridColumns(Math.max(...availableOptions));
+      }
     }
-  }, [filteredProjects.length, gridColumns]);
+  }, [filteredProjects.length, gridColumns, preferredGridColumns, screenSize]);
 
   // Determine available grid column options based on screen size and project count
   const getAvailableGridOptions = useMemo(() => {
@@ -698,6 +722,7 @@ export default function Home(): ReactElement {
                                       key={option}
                                       onClick={() => {
                                         setGridColumns(option);
+                                        setPreferredGridColumns(option); // Remember user's preference
                                         setShowGridDropdown(false);
                                       }}
                                       className={`${styles.dropdownItem} ${
