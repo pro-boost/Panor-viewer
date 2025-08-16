@@ -28,9 +28,15 @@ export default function AdminUsers() {
     null
   );
   const [showRoleDropdown, setShowRoleDropdown] = useState<string | null>(null);
-  const [showStatusDropdown, setShowStatusDropdown] = useState<string | null>(null);
-  const roleDropdownRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
-  const statusDropdownRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const [showStatusDropdown, setShowStatusDropdown] = useState<string | null>(
+    null
+  );
+  const roleDropdownRefs = useRef<{ [key: string]: HTMLButtonElement | null }>(
+    {}
+  );
+  const statusDropdownRefs = useRef<{
+    [key: string]: HTMLButtonElement | null;
+  }>({});
 
   useEffect(() => {
     if (!authLoading && router.isReady) {
@@ -47,30 +53,36 @@ export default function AdminUsers() {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
-      
+
       if (showRoleDropdown) {
-        const isClickInsideDropdown = target.closest(`.${welcomeStyles.dropdownMenu}`) || 
-          Object.values(roleDropdownRefs.current).some(ref => ref?.contains(target));
-        
+        const isClickInsideDropdown =
+          target.closest(`.${welcomeStyles.dropdownMenu}`) ||
+          Object.values(roleDropdownRefs.current).some((ref) =>
+            ref?.contains(target)
+          );
+
         if (!isClickInsideDropdown) {
           setShowRoleDropdown(null);
         }
       }
-      
+
       // Check if click is outside status dropdown
       if (showStatusDropdown) {
-        const isClickInsideDropdown = target.closest(`.${welcomeStyles.dropdownMenu}`) || 
-          Object.values(statusDropdownRefs.current).some(ref => ref?.contains(target));
-        
+        const isClickInsideDropdown =
+          target.closest(`.${welcomeStyles.dropdownMenu}`) ||
+          Object.values(statusDropdownRefs.current).some((ref) =>
+            ref?.contains(target)
+          );
+
         if (!isClickInsideDropdown) {
           setShowStatusDropdown(null);
         }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showRoleDropdown, showStatusDropdown]);
 
@@ -449,51 +461,60 @@ export default function AdminUsers() {
                 {users.map((userItem) => (
                   <div key={userItem.id} className={styles.tableRow}>
                     <div className={styles.username}>{userItem.email}</div>
-                    <div className={styles.role} style={{ position: "relative" }}>
+                    <div
+                      className={styles.role}
+                      style={{ position: "relative" }}
+                    >
                       <button
                         ref={(el) => {
                           roleDropdownRefs.current[userItem.id] = el;
                         }}
                         onClick={() => {
                           setShowRoleDropdown(
-                            showRoleDropdown === userItem.id ? null : userItem.id
+                            showRoleDropdown === userItem.id
+                              ? null
+                              : userItem.id
                           );
                           setShowStatusDropdown(null);
                         }}
                         disabled={userItem.loading || userItem.id === user?.id}
                         className={`${styles.roleSelect} ${styles.selectWrapper}`}
                       >
-                        {userItem.role.charAt(0).toUpperCase() + userItem.role.slice(1)}
+                        {userItem.role.charAt(0).toUpperCase() +
+                          userItem.role.slice(1)}
                       </button>
                       {showRoleDropdown === userItem.id && (
-                          <div
-                            className={welcomeStyles.dropdownMenu}
-                            style={{
-                              position: "absolute",
-                              top: "100%",
-                              left: 0,
-                              width: "100%",
-                              zIndex: 999999,
-                              marginTop: "4px",
-                            }}
-                          >
-                            {["user", "admin"].map((role) => (
-                              <button
-                                key={role}
-                                onClick={() => {
-                                  handleUpdateRole(userItem.id, role as "admin" | "user");
-                                  setShowRoleDropdown(null);
-                                }}
-                                className={`${welcomeStyles.dropdownItem} ${
-                                  userItem.role === role
-                                    ? welcomeStyles.activeDropdownItem
-                                    : ""
-                                }`}
-                              >
-                                {role.charAt(0).toUpperCase() + role.slice(1)}
-                              </button>
-                            ))}
-                          </div>
+                        <div
+                          className={welcomeStyles.dropdownMenu}
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            width: "100%",
+                            zIndex: 999999,
+                            marginTop: "4px",
+                          }}
+                        >
+                          {["user", "admin"].map((role) => (
+                            <button
+                              key={role}
+                              onClick={() => {
+                                handleUpdateRole(
+                                  userItem.id,
+                                  role as "admin" | "user"
+                                );
+                                setShowRoleDropdown(null);
+                              }}
+                              className={`${welcomeStyles.dropdownItem} ${
+                                userItem.role === role
+                                  ? welcomeStyles.activeDropdownItem
+                                  : ""
+                              }`}
+                            >
+                              {role.charAt(0).toUpperCase() + role.slice(1)}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div
@@ -505,45 +526,51 @@ export default function AdminUsers() {
                           statusDropdownRefs.current[userItem.id] = el;
                         }}
                         onClick={() => {
-                           setShowStatusDropdown(
-                             showStatusDropdown === userItem.id ? null : userItem.id
-                           );
-                           setShowRoleDropdown(null);
-                         }}
+                          setShowStatusDropdown(
+                            showStatusDropdown === userItem.id
+                              ? null
+                              : userItem.id
+                          );
+                          setShowRoleDropdown(null);
+                        }}
                         disabled={userItem.loading || userItem.id === user?.id}
                         className={`${styles.statusSelect} ${styles.selectWrapper}`}
                       >
                         {userItem.approved ? "Approved" : "Pending"}
                       </button>
                       {showStatusDropdown === userItem.id && (
-                          <div
-                            className={welcomeStyles.dropdownMenu}
-                            style={{
-                               position: "absolute",
-                               top: "100%",
-                               left: 0,
-                               width: "100%",
-                               zIndex: 999999,
-                               marginTop: "4px",
-                             }}
-                          >
-                            {["pending", "approved"].map((status) => (
-                              <button
-                                key={status}
-                                onClick={() => {
-                                  handleUpdateStatus(userItem.id, status === "approved");
-                                  setShowStatusDropdown(null);
-                                }}
-                                className={`${welcomeStyles.dropdownItem} ${
-                                  (userItem.approved ? "approved" : "pending") === status
-                                    ? welcomeStyles.activeDropdownItem
-                                    : ""
-                                }`}
-                              >
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
-                              </button>
-                            ))}
-                          </div>
+                        <div
+                          className={welcomeStyles.dropdownMenu}
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            width: "100%",
+                            zIndex: 999999,
+                            marginTop: "4px",
+                          }}
+                        >
+                          {["pending", "approved"].map((status) => (
+                            <button
+                              key={status}
+                              onClick={() => {
+                                handleUpdateStatus(
+                                  userItem.id,
+                                  status === "approved"
+                                );
+                                setShowStatusDropdown(null);
+                              }}
+                              className={`${welcomeStyles.dropdownItem} ${
+                                (userItem.approved ? "approved" : "pending") ===
+                                status
+                                  ? welcomeStyles.activeDropdownItem
+                                  : ""
+                              }`}
+                            >
+                              {status.charAt(0).toUpperCase() + status.slice(1)}
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </div>
                     <div className={styles.date}>

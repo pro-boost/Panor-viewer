@@ -528,9 +528,7 @@ export default function POIManagement() {
 
         {/* POI List */}
         <div className={styles.poiListContainer}>
-          {isLoading ? (
-            <PageLoadingComponent headerText="Loading POI Data" />
-          ) : filteredProjectPOIs.length === 0 ? (
+          {filteredProjectPOIs.length === 0 ? (
             <div className={styles.form}>
               <div className={styles.formGroup}>
                 <div className={styles.emptyState}>
