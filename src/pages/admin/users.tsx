@@ -49,7 +49,7 @@ export default function AdminUsers() {
       const target = event.target as Element;
       
       if (showRoleDropdown) {
-        const isClickInsideDropdown = target.closest('.dropdownMenu') || 
+        const isClickInsideDropdown = target.closest(`.${welcomeStyles.dropdownMenu}`) || 
           Object.values(roleDropdownRefs.current).some(ref => ref?.contains(target));
         
         if (!isClickInsideDropdown) {
@@ -59,7 +59,7 @@ export default function AdminUsers() {
       
       // Check if click is outside status dropdown
       if (showStatusDropdown) {
-        const isClickInsideDropdown = target.closest('.dropdownMenu') || 
+        const isClickInsideDropdown = target.closest(`.${welcomeStyles.dropdownMenu}`) || 
           Object.values(statusDropdownRefs.current).some(ref => ref?.contains(target));
         
         if (!isClickInsideDropdown) {
@@ -125,8 +125,11 @@ export default function AdminUsers() {
 
   const handleApproveUser = async (userId: string) => {
     try {
-      // Set loading state for this user
+      // Set loading state for this user in both arrays
       setPendingUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+      );
+      setUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
@@ -144,11 +147,25 @@ export default function AdminUsers() {
         // Reload users to reflect changes
         await loadUsers();
       } else {
-        setError("Failed to approve user");
+        setError(data.error || "Failed to approve user");
+        // Reset loading state on error
+        setPendingUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
       }
     } catch (error) {
       console.error("Error approving user:", error);
       setError("Failed to approve user");
+      // Reset loading state on error
+      setPendingUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
     }
   };
 
@@ -157,7 +174,11 @@ export default function AdminUsers() {
     newRole: "admin" | "user"
   ) => {
     try {
+      // Set loading state for both users and pendingUsers arrays
       setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+      );
+      setPendingUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
@@ -175,16 +196,34 @@ export default function AdminUsers() {
         await loadUsers();
       } else {
         setError(data.error || "Failed to update user role");
+        // Reset loading state on error
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
+        setPendingUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
       }
     } catch (error) {
       console.error("Error updating user role:", error);
       setError("Failed to update user role");
+      // Reset loading state on error
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
+      setPendingUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
     }
   };
 
   const handleUpdateStatus = async (userId: string, approved: boolean) => {
     try {
+      // Set loading state for both users and pendingUsers arrays
       setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+      );
+      setPendingUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
@@ -202,10 +241,24 @@ export default function AdminUsers() {
         await loadUsers();
       } else {
         setError(data.error || "Failed to update user status");
+        // Reset loading state on error
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
+        setPendingUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
       }
     } catch (error) {
       console.error("Error updating user status:", error);
       setError("Failed to update user status");
+      // Reset loading state on error
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
+      setPendingUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
     }
   };
 
@@ -219,7 +272,11 @@ export default function AdminUsers() {
     }
 
     try {
+      // Set loading state for both users and pendingUsers arrays
       setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
+      );
+      setPendingUsers((prev) =>
         prev.map((u) => (u.id === userId ? { ...u, loading: true } : u))
       );
 
@@ -237,10 +294,24 @@ export default function AdminUsers() {
         await loadUsers();
       } else {
         setError(data.error || "Failed to delete user");
+        // Reset loading state on error
+        setUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
+        setPendingUsers((prev) =>
+          prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+        );
       }
     } catch (error) {
       console.error("Error deleting user:", error);
       setError("Failed to delete user");
+      // Reset loading state on error
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
+      setPendingUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, loading: false } : u))
+      );
     }
   };
 

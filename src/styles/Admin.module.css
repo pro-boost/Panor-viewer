@@ -409,7 +409,7 @@
 .userTable {
   background: var(--glass-bg-hover);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(10px);
