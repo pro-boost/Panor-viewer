@@ -40,7 +40,7 @@ export default function POIFileManager({
   const handleExportPOI = async (poiId: string, poiName: string) => {
     try {
       const response = await fetch(
-        `/api/poi/export-single?projectId=${encodeURIComponent(projectId)}&poiId=${encodeURIComponent(poiId)}`,
+        `/api/poi/export-single?projectId=${encodeURIComponent(projectId)}&poiId=${encodeURIComponent(poiId)}`
       );
 
       if (!response.ok) {
@@ -74,7 +74,7 @@ export default function POIFileManager({
     } catch (error) {
       console.error("Export error:", error);
       onError?.(
-        error instanceof Error ? error.message : "Failed to export POI",
+        error instanceof Error ? error.message : "Failed to export POI"
       );
     }
   };
@@ -111,16 +111,16 @@ export default function POIFileManager({
       // Show comprehensive success message
       const { imported, updated, skipped, errors } = result.result || {};
       let message = result.message || "POIs processed successfully";
-      
+
       if (errors && errors.length > 0) {
-        message += `\n\nWarnings:\n${errors.join('\n')}`;
+        message += `\n\nWarnings:\n${errors.join("\n")}`;
       }
-      
+
       onSuccess?.(message);
     } catch (error) {
       console.error("Import error:", error);
       onError?.(
-        error instanceof Error ? error.message : "Failed to import POIs",
+        error instanceof Error ? error.message : "Failed to import POIs"
       );
     } finally {
       setIsImporting(false);
@@ -155,7 +155,7 @@ export default function POIFileManager({
     } catch (error) {
       console.error("Import error:", error);
       onError?.(
-        error instanceof Error ? error.message : "Failed to import POIs",
+        error instanceof Error ? error.message : "Failed to import POIs"
       );
     } finally {
       setIsImporting(false);
@@ -211,11 +211,6 @@ export default function POIFileManager({
 
   return (
     <div className={styles.poiFileManager}>
-      <div className={styles.section}>
-        <h3>POI File Management</h3>
-        <p>Import and export individual POI files with their attachments.</p>
-      </div>
-
       {/* Import Section */}
       <div className={styles.section}>
         <h4>Import POI</h4>
@@ -287,26 +282,6 @@ export default function POIFileManager({
         </div>
       </div>
 
-      {/* Export Instructions */}
-      <div className={styles.section}>
-        <h4>Export POI</h4>
-        <p>
-          To export a POI, use the export button in the POI management table or
-          the POI context menu in the viewer.
-        </p>
-        <div className={styles.exportInfo}>
-          <h5>Export Formats:</h5>
-          <ul>
-            <li>
-              <strong>JSON:</strong> For iframe POIs (lightweight)
-            </li>
-            <li>
-              <strong>ZIP:</strong> For file POIs with attachments
-            </li>
-          </ul>
-        </div>
-      </div>
-
       <ConfirmationModal
         isOpen={showOverwriteConfirm}
         title="POI Already Exists"
@@ -325,11 +300,11 @@ export default function POIFileManager({
 export const exportPOI = async (
   projectId: string,
   poiId: string,
-  poiName: string,
+  poiName: string
 ) => {
   try {
     const response = await fetch(
-      `/api/poi/export-single?projectId=${encodeURIComponent(projectId)}&poiId=${encodeURIComponent(poiId)}`,
+      `/api/poi/export-single?projectId=${encodeURIComponent(projectId)}&poiId=${encodeURIComponent(poiId)}`
     );
 
     if (!response.ok) {

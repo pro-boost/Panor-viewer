@@ -11,17 +11,17 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
+   body, html {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
 
         .loading-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #ffffff;
             background: #ffffff;
             border-radius: 16px;
             padding: 48px 40px;
@@ -31,6 +31,12 @@
             max-width: 480px;
             border: 1px solid rgba(0, 0, 0, 0.06);
             position: relative;
+            overflow: hidden;
+                width: 100%;
+    height: 100%;
+    max-width: none; /* remove max-width */
+    min-width: 0;    /* remove min-width */
+    border-radius: 0; /* optional: remove rounded corners */
         }
 
         .app-logo {
