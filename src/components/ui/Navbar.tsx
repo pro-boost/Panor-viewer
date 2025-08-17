@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePendingUsersCount } from "@/hooks/usePendingUsersCount";
 import Logo from "./Logo";
 import LogoutButton from "./LogoutButton";
 import styles from "./Navbar.module.css";
@@ -17,6 +18,7 @@ const Navbar: React.FC<NavbarProps> = ({
   className = "",
 }) => {
   const { user } = useAuth();
+  const { pendingCount } = usePendingUsersCount();
 
   // Don't render user menu if both buttons are hidden
   const shouldShowUserMenu =
@@ -59,6 +61,11 @@ const Navbar: React.FC<NavbarProps> = ({
               </svg>
               <span className={styles.adminText}>Admin</span>
               <span className={styles.adminTextHover}>Manage Users</span>
+              {pendingCount > 0 && (
+                <span className={styles.pendingIndicator}>
+                  {pendingCount}
+                </span>
+              )}
             </Link>
           )}
           {showLogoutButton && <LogoutButton variant="minimal" />}
