@@ -31,7 +31,7 @@ export interface Hotspot {
   rotation: number;
   target: string;
   distance: number;
-  type: 'navigation' | 'info';
+  type: "navigation" | "info";
   title?: string;
   text?: string;
 }
@@ -51,7 +51,7 @@ export interface Scene {
 }
 
 export interface ViewerSettings {
-  mouseViewMode: 'drag' | 'qtvr';
+  mouseViewMode: "drag" | "qtvr";
   autorotateEnabled: boolean;
   fullscreenButton: boolean;
   viewControlButtons: boolean;
@@ -59,7 +59,12 @@ export interface ViewerSettings {
 
 export interface ViewerConfig {
   cameraToGroundOffset: number;
-  coordinateMode: 'standard' | 'inverted_x' | 'inverted_y' | 'swapped_xy' | 'navvis';
+  coordinateMode:
+    | "standard"
+    | "inverted_x"
+    | "inverted_y"
+    | "swapped_xy"
+    | "navvis";
   yawOffset: number;
   pitchOffset: number;
 }
@@ -88,7 +93,7 @@ export interface PanoramaData {
 
 // Environment configuration
 export interface EnvironmentConfig {
-  PANORAMA_CONFIG_MODE: ViewerConfig['coordinateMode'];
+  PANORAMA_CONFIG_MODE: ViewerConfig["coordinateMode"];
   PANORAMA_YAW_OFFSET: number;
   PANORAMA_PITCH_OFFSET: number;
   PANORAMA_CAMERA_OFFSET: number;

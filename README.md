@@ -88,7 +88,16 @@ python3 -m pip install numpy
 
 ### Utilities
 
-- `npm run clean` - Clean build artifacts and generated files
+- `npm run clean` - Remove all build artifacts and temporary files (including standardized tmp directory)
+
+### Desktop Application
+
+- `npm run desktop:build:installer` - Build desktop app installer for current platform
+- `npm run desktop:build:unpack` - Build desktop app (unpacked) for current platform
+- `npm run desktop:dev` - Run desktop app in development mode
+- `npm run clean:electron` - Clear Electron app data and cache
+
+**Cross-Platform Support**: The application now supports building for Windows, macOS, and Linux with automatic platform detection for Node.js bundling and file extraction. See <mcfile name="CROSS_PLATFORM_BUILD.md" path="docs/CROSS_PLATFORM_BUILD.md"></mcfile> for detailed build instructions.
 
 ## 📁 Project Structure
 
@@ -98,20 +107,28 @@ pano-app/
 ├── docs/                  # Documentation
 │   ├── README.md         # Setup instructions
 │   ├── CONFIGURATION.md  # Configuration guide
-│   └── TROUBLESHOOTING.md # Troubleshooting guide
+│   ├── TROUBLESHOOTING.md # Comprehensive troubleshooting
+│   └── FIXES_AND_IMPROVEMENTS.md # Development history
 ├── public/               # Static assets
 │   ├── assets/js/        # Marzipano library
 │   ├── data/             # CSV data files
 │   ├── images/           # Panorama images
 │   └── config.json       # Generated configuration
 ├── scripts/              # Build and utility scripts
-│   └── generate_marzipano_config.py
+│   ├── node/            # Node.js scripts (recommended)
+│   └── generate_marzipano_config.py # Legacy Python script
 ├── src/                  # Source code
 │   ├── components/       # React components
+│   │   ├── poi/         # Point of Interest system
+│   │   ├── viewer/      # Panorama viewer components
+│   │   └── ui/          # UI components
+│   ├── hooks/           # Custom React hooks
+│   ├── contexts/        # React contexts
 │   ├── lib/             # Utility libraries
 │   ├── pages/           # Next.js pages
-│   └── types/           # TypeScript definitions
-├── tests/               # Test files
+│   ├── styles/          # CSS modules
+│   ├── types/           # TypeScript definitions
+│   └── utils/           # Utility functions
 └── package.json         # Dependencies and scripts
 ```
 
@@ -201,10 +218,92 @@ npm run export
 
 ## 🔍 Performance Optimization
 
+The application now includes intelligent performance optimizations that automatically adapt based on dataset size:
+
+### Automatic Optimizations
+
+- **Smart Scene Loading**: Progressive quality based on total scene count
+  - 4-50 scenes: Full quality (4096px max resolution)
+  - 51-100 scenes: Balanced quality (3072px max resolution)
+  - 101-200 scenes: Optimized quality (2048px max resolution)
+  - 200+ scenes: Ultra-light quality (2048px max resolution)
+
+- **Distance-Based Prioritization**: Scenes are loaded/unloaded based on spatial proximity
+- **Memory Management**: Automatic unloading of distant scenes to prevent memory overflow
+- **Adaptive Preloading**: Intelligent preloading limits based on dataset size
+- **Staggered Loading**: Prevents system overwhelming with delayed scene loading
+
+### Performance Monitor
+
+A real-time performance monitor is available in the top-right corner showing:
+
+- Number of loaded scenes vs total scenes
+- Estimated memory usage
+- Average loading times
+- Performance status (Excellent/Good/Fair/Poor)
+- Manual optimization button
+
+### Manual Optimizations
+
 - **Image Optimization**: Use WebP format for panorama images
-- **Lazy Loading**: Implement progressive loading for large scenes
+- **Lazy Loading**: Implemented automatically for large datasets
 - **Caching**: Configure appropriate cache headers
 - **Bundle Analysis**: Use `npm run build` to analyze bundle size
+
+### Performance Tips
+
+- **Large Datasets (200+ scenes)**: Performance is automatically optimized
+- **Navigation**: Move gradually between scenes for best experience
+- **Browser**: Close other tabs if experiencing lag
+- **Hardware**: Ensure graphics drivers are up to date
+
+## 🗺️ MiniMap Features
+
+The interactive minimap includes advanced zoom-based hotspot filtering to reduce visual clutter and improve navigation clarity.
+
+### Zoom-Based Hotspot Filtering
+
+The minimap dynamically adjusts hotspot visibility based on zoom level to prevent overcrowding:
+
+- **100% Zoom**: Only distant hotspots are shown (minimum distance of 6.0 units)
+  - Ideal for overview navigation and identifying major areas
+  - Reduces clutter in dense scene clusters
+
+- **200% Zoom**: More hotspots appear (minimum distance of 3.5 units)
+  - Balanced view showing moderate detail
+  - Good for regional navigation
+
+- **300% Zoom**: Even closer hotspots become visible (minimum distance of 1.0 units)
+  - Detailed view for precise navigation
+  - Shows most scene connections
+
+- **400% Zoom**: Nearly all hotspots are visible (minimum distance of 0.5 units)
+  - Maximum detail view
+  - All scenes and connections visible
+
+### MiniMap Controls
+
+- **Zoom**: Mouse wheel to zoom in/out (50% - 400%)
+- **Pan**: Click and drag to move around the map
+- **Reset**: Double-click to reset zoom and pan
+- **Minimize**: Click the minimize button to collapse the minimap
+
+### Visual Indicators
+
+- **Hotspot Counter**: Shows visible/total hotspots (e.g., "👁 5/12")
+- **Zoom Level**: Displays current zoom percentage
+- **Current Scene**: Red pulsing dot with direction indicator
+- **Other Scenes**: Green dots for navigable scenes
+- **Connection Lines**: Shows links between visible scenes only
+
+### Smart Filtering Algorithm
+
+The filtering system uses intelligent proximity detection:
+
+1. **Distance Calculation**: Uses real 3D coordinates for accurate spacing
+2. **Priority System**: Always shows current scene and nearby important locations
+3. **Smooth Transitions**: Gradual hotspot appearance/disappearance during zoom
+4. **Performance Optimized**: Efficient for projects with hundreds of scenes
 
 ## 🛡️ Security
 
@@ -260,15 +359,141 @@ pip install numpy
 
 ### Performance Issues
 
-- Reduce image file sizes
-- Limit number of concurrent panoramas
+**Symptoms**: Laggy navigation, slow loading, or high memory usage
+
+**Automatic Solutions**:
+
+- Smart loading is enabled automatically for large datasets
+- Use the Performance Monitor (top-right corner) to check status
+- Click "Optimize Performance" button for manual cleanup
+
+**Manual Solutions**:
+
+- Reduce image file sizes (compress to 80-90% quality)
+- Navigate gradually between scenes instead of jumping far distances
+- Close other browser tabs to free up memory
 - Check browser console for errors
+- Update graphics drivers for better WebGL performance
+
+**For Large Datasets (100+ scenes)**:
+
+- Performance optimizations are automatically applied
+- Expect 6-16 scenes loaded simultaneously (adaptive)
+- Monitor shows performance status and memory usage
 
 For more detailed troubleshooting, see [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## POI System
+
+The panorama viewer includes a comprehensive Point of Interest (POI) system that allows users to create, manage, and interact with points of interest within panoramic scenes. The system is **project-specific**, meaning each project maintains its own separate POI data.
+
+### Features
+
+- **Right-click Creation**: Create POIs by right-clicking anywhere on the panorama
+- **Modal Configuration**: Configure POI details through an intuitive modal interface
+- **File Support**: Attach images, videos, PDFs, and other files to POIs
+- **URL Support**: Embed external content via iframe URLs (YouTube, Vimeo, and other URLs automatically converted to embeddable format)
+- **Project-Specific Data**: Each project maintains separate POI data
+- **Data Persistence**: POI data is automatically saved and loaded per project
+- **Interactive Markers**: Visual markers show POI locations on the panorama
+- **Preview System**: Click markers to preview POI content
+
+### Components
+
+- `POIComponent.tsx` - Main POI management component
+- `POIContextMenu.tsx` - Right-click context menu for POI creation
+- `POIModal.tsx` - Modal dialog for POI configuration
+- `POIPreview.tsx` - Preview component for displaying POI content
+- `utils.ts` - Utility functions for coordinate conversion and validation
+
+### Usage
+
+1. **Creating a POI**: Right-click on any location in the panorama to open the context menu, then select "Create POI"
+2. **Configuring POI**: Fill in the POI details in the modal dialog:
+   - Name (required)
+   - Description (optional)
+   - Content type (file upload or URL)
+   - Content (file or URL)
+3. **Viewing POIs**: Click on any POI marker to view its content in a preview modal
+
+### Data Structure
+
+POIs are stored with the following structure:
+
+```typescript
+interface POIData {
+  id: string;
+  panoramaId: string;
+  name: string;
+  description: string;
+  position: { yaw: number; pitch: number };
+  type: "file" | "iframe";
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### API Endpoints
+
+- `GET /api/poi/load?projectId={projectId}&panoramaId={panoramaId}` - Load POIs for a specific project and panorama
+- `POST /api/poi/save` - Save POI data (requires projectId in request body)
+- `POST /api/poi/upload` - Upload POI attachment files (requires projectId in form data)
+
+### Project-Specific Storage
+
+POI data is stored per project in the following structure:
+
+```
+public/
+├── {projectId}/
+│   └── data/
+│       └── poi/
+│           ├── poi-data.json     # POI metadata
+│           └── attachments/      # Uploaded files
+├── toyota/
+│   └── data/
+│       └── poi/
+│           ├── poi-data.json
+│           └── attachments/
+└── parking/
+    └── data/
+        └── poi/
+            ├── poi-data.json
+            └── attachments/
+```
+
+### Coordinate System
+
+POIs use spherical coordinates:
+
+- **Yaw**: Horizontal rotation (-180° to 180°)
+- **Pitch**: Vertical rotation (-90° to 90°)
+
+### Error Handling
+
+The system includes comprehensive error handling for:
+
+- Invalid coordinate ranges
+- File upload failures
+- Network connectivity issues
+- Corrupted data files
+- Missing project directories
+
+### Styling
+
+POI markers use Tailwind CSS classes and can be customized by modifying the component styles.
+
+### Dependencies
+
+- `react-icons/fa` - Font Awesome icons
+- `uuid` - Unique ID generation
+- `react-toastify` - Toast notifications
+- `formidable` - File upload handling
 
 ## 🙏 Acknowledgments
 

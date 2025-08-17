@@ -1,0 +1,196 @@
+"use client";
+
+import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+import { ReactElement, useState, useEffect } from "react";
+import Link from "next/link";
+import styles from "@/styles/Welcome.module.css";
+import { FileURLManager } from "@/utils/fileHelpers";
+import Logo from "@/components/ui/Logo";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
+
+// Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
+const PanoramaViewer = dynamic(
+  () => import("@/components/viewer/PanoramaViewer"),
+  {
+    ssr: false,
+    loading: (): ReactElement => (
+      <PageLoadingComponent headerText="Loading Panorama" />
+    ),
+  },
+);
+
+interface ConfigData {
+  scenes: Array<{ id: string; name: string; [key: string]: any }>;
+  projectId?: string;
+  projectPath?: string;
+}
+
+export default function SceneViewer(): ReactElement {
+  const router = useRouter();
+  const { projectId, sceneId } = router.query;
+  const [hasPanoramas, setHasPanoramas] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [config, setConfig] = useState<ConfigData | null>(null);
+  const [sceneExists, setSceneExists] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (
+      !projectId ||
+      typeof projectId !== "string" ||
+      !sceneId ||
+      typeof sceneId !== "string"
+    ) {
+      return;
+    }
+
+    const checkForScene = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Try to fetch project config
+        const configResponse = await fetch(
+          `/api/projects/${encodeURIComponent(projectId)}/config`,
+          {
+            cache: "no-store",
+          },
+        );
+
+        if (!configResponse.ok) {
+          if (configResponse.status === 404) {
+            setError("Project not found or no configuration available");
+          } else {
+            setError("Failed to load project configuration");
+          }
+          setHasPanoramas(false);
+          return;
+        }
+
+        const configData: ConfigData = await configResponse.json();
+        setConfig(configData);
+
+        if (!configData.scenes || configData.scenes.length === 0) {
+          setError("No panoramas found in this project");
+          setHasPanoramas(false);
+          return;
+        }
+
+        // Check if the specific scene exists
+        const scene = configData.scenes.find((s) => s.id === sceneId);
+        if (!scene) {
+          setError(`Scene "${sceneId}" not found in project "${projectId}"`);
+          setSceneExists(false);
+          setHasPanoramas(false);
+          return;
+        }
+
+        setSceneExists(true);
+
+        // Check if the scene's image file exists
+        try {
+          const imageResponse = await fetch(
+            FileURLManager.getPanoramaImageURL(
+              projectId,
+              `${sceneId}-pano.jpg`,
+            ),
+            {
+              method: "HEAD",
+              cache: "no-store",
+            },
+          );
+
+          if (imageResponse.ok) {
+            setHasPanoramas(true);
+          } else {
+            setError(`Panorama image not found for scene "${sceneId}"`);
+            setHasPanoramas(false);
+          }
+        } catch {
+          setError(`Failed to verify panorama image for scene "${sceneId}"`);
+          setHasPanoramas(false);
+        }
+      } catch (error) {
+        console.error("Error checking for scene:", error);
+        setError("Failed to load scene data");
+        setHasPanoramas(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkForScene();
+  }, [projectId, sceneId]);
+
+  if (loading) {
+    return <PageLoadingComponent headerText="Loading Scene" />;
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <Logo variant="default" position="absolute" />
+
+        <div className={styles.content}>
+          <h1 className={styles.title}>Scene Error</h1>
+          <p className={styles.description}>{error}</p>
+
+          <div
+            style={{
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              marginTop: "24px",
+            }}
+          >
+            <Link href="/" className={styles.uploadButton}>
+              Back to Home
+            </Link>
+
+            {sceneExists && (
+              <Link href={`/${projectId}`} className={styles.uploadButton}>
+                Back to Project
+              </Link>
+            )}
+
+            <Link href="/upload" className={styles.uploadButton}>
+              Upload New Project
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // If panorama exists, show the viewer with project and scene context
+  if (hasPanoramas && config) {
+    return (
+      <div>
+        {/* Logo */}
+        <Logo variant="default" position="absolute" />
+
+        <PanoramaViewer
+          projectId={projectId as string}
+          initialSceneId={sceneId as string}
+        />
+      </div>
+    );
+  }
+
+  // Fallback - should not reach here
+  return (
+    <div className={styles.container}>
+      <div className={styles.content}>
+        <div className={styles.icon}>🤔</div>
+        <h1 className={styles.title}>Something went wrong</h1>
+        <p className={styles.description}>Unable to load scene data.</p>
+
+        <Link href="/" className={styles.uploadButton}>
+          <span className={styles.uploadIcon}>🏠</span>
+          Back to Home
+        </Link>
+      </div>
+    </div>
+  );
+}

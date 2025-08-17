@@ -1,90 +1,1099 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  flex-direction: column;
   position: relative;
-  color: #f7fafc;
+  color: var(--text-primary);
+  width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  /* Prevent layout shift when scrollbar appears */
+  scrollbar-gutter: stable;
+  /* Center content accounting for scrollbar */
+  padding-left: calc((100vw - 100%) / 2);
+  margin: 0 auto;
 }
 
 /* Logo */
 .logoContainer {
   position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 1100;
-  padding: 12px 16px;
+  top: var(--spacing-2xl);
+  left: var(--spacing-2xl);
+  z-index: var(--z-logo);
+
+  background: var(--bg-overlay-medium);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--border-light);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-3xl);
 }
 
+/* User Menu and Admin Link styles moved to Navbar.module.css */
+
 .logo {
-  height: 60px;
+  height: 50px;
   width: auto;
   display: block;
 }
 
+/* Make the content transition more dramatic */
 .content {
-  text-align: center;
-  max-width: 600px;
-  padding: 0 20px;
+  flex: 1;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--content-padding-desktop);
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.icon {
-  font-size: 72px;
-  margin-bottom: 20px;
-  opacity: 0.9;
+/* When projects are shown, change the layout behavior */
+.content.hasProjects {
+  justify-content: flex-start;
+  padding-top: calc((100vh - 600px) / 2);
+}
+
+/* Add a scale effect to hero section */
+.heroSection {
+  margin-bottom: var(--spacing-4xl);
+  flex-shrink: 0;
+  transition: all 0.3s ease-out;
+  transform-origin: center center;
+}
+
+/* When projects are shown, slightly scale down hero */
+.content.hasProjects .heroSection {
+  opacity: 0.95;
 }
 
 .title {
-  font-size: 48px;
-  font-weight: 700;
-  margin-bottom: 20px;
-  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.8));
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 900;
+  margin-bottom: var(--spacing-4xl);
+text-align: center;
+  background: linear-gradient(
+    135deg,
+    #ffffffca 0%,
+    /* Soft white */ #ffffffdd 30%,
+    var(--primary-light) 40%,
+    var(--primary) 50%,
+    var(--primary-light) 60%,
+    #ffffffe3 70%,
+    #ffffffdd 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  background-size: 300% 300%;
+  animation:
+    cosmicShift 8s ease infinite,
+    float 3s ease-in-out infinite;
+
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  text-transform: uppercase;
+
+  filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4))
+    drop-shadow(0 0 60px rgba(66, 153, 225, 0.5))
+    drop-shadow(0 0 100px rgba(99, 179, 237, 0.4));
 }
 
+@keyframes cosmicShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.subtitle,
 .description {
-  font-size: 20px;
-  margin-bottom: 40px;
-  opacity: 0.9;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.subtitle {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  margin-bottom: var(--spacing-xl);
+  color: var(--text-secondary);
+  font-weight: 500;
+  max-width: 600px;
   line-height: 1.6;
 }
 
-.uploadButton {
+.description {
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 700px;
+}
+
+/* Action Buttons - More conventional design */
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2xl);
+
+  justify-content: center;
+  flex-wrap: wrap;
+  transition: all 0.3s ease-out;
+}
+
+/* Add parallax effect to buttons when projects appear */
+.content.hasProjects .actionButtons {
+  transform: translateY(-5px);
+  opacity: 0.9;
+}
+
+.uploadButton,
+.projectsIndicator {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: white;
-  text-decoration: none;
-  padding: 16px 32px;
+  justify-content: center;
+  gap: var(--spacing-md);
   border-radius: 50px;
-  font-size: 18px;
-  font-weight: 600;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  font-size: var(--font-lg);
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden; /* Contain shine effect within button */
+  /* Remove fixed dimensions - let content determine size */
+  min-width: auto;
+  max-width: none;
+  height: auto;
+  box-shadow: var(--shadow-3xl);
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-md) var(--spacing-xl); /* Generous padding */
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+/* Primary button - Create/New Project */
+.uploadButton {
+  background: linear-gradient(
+    135deg,
+    var(--blue-primary) 0%,
+    var(--blue-secondary) 100%
+  );
+  color: var(--white);
+  box-shadow:
+    0 8px 32px var(--blue-light),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .uploadButton:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, var(--blue-secondary) 0%, #1e40af 100%);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 12px 40px var(--blue-medium),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+.uploadButton:active {
+  transform: translateY(-1px) scale(1);
+}
+
+/* Add shine effect on hover */
+.uploadButton::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg) translate(-50%, -50%);
+  transition: all 0.6s;
+  opacity: 0;
+}
+
+.uploadButton:hover::after {
+  opacity: 1;
+  transform: rotate(45deg) translate(50%, 50%);
+}
+
+/* Secondary button - View Projects */
+.projectsIndicator {
+  background: var(--bg-overlay-focus);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  color: var(--white);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    var(--shadow-3xl),
+    inset 0 1px 0 var(--bg-overlay-strong);
+}
+
+.projectsIndicator:hover {
+  background: var(--bg-overlay-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.projectsIndicator:active {
+  transform: translateY(-1px) scale(1);
+}
+
+/* Completely remove automatic plus icon */
+
+/* Indicator icon styling */
+.indicatorIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--bg-overlay-focus);
+  border-radius: 50%;
+  margin-right: -8px; /* Compensate for spacing */
+}
+
+.indicatorIcon svg {
+  color: var(--white);
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.projectCount {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--red-tertiary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  min-width: 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px var(--red-medium);
+  animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.buttonTitle {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* More dramatic project section entrance */
+.projectsSection {
+  width: 100%;
+  max-width: 1000px;
+  transform-origin: top center;
+  margin-bottom: var(--spacing-2xl);
+  margin-top: auto;
+  /* Initial state - hidden */
+  opacity: 0;
+  transform: translateY(40px) scale(0.95);
+  animation: slideIn 0.4s ease-out forwards;
+  animation-delay: 0.1s; /* Slight delay for better sequencing */
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced hide animation */
+.projectsSection.hiding {
+  animation: slideOut 0.3s ease-out forwards;
+}
+
+@keyframes slideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Upload icon styling */
 .uploadIcon {
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  margin-right: var(--spacing-sm);
+  flex-shrink: 0; /* Prevent icon from shrinking */
 }
 
-.supportInfo {
-  margin-top: 40px;
-  font-size: 14px;
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .content {
+    padding: var(--content-padding-tablet);
+  }
+
+  .actionButtons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px; /* Increased to accommodate longer text */
+  }
+
+  .uploadButton,
+  .projectsIndicator {
+    width: 100%;
+    /* Keep responsive sizing */
+    min-width: auto;
+    max-width: none;
+    padding: var(--spacing-md) var(--spacing-lg); /* Slightly reduced padding on mobile */
+  }
+
+  .uploadIcon {
+    font-size: 1.1em;
+  }
+}
+/* Add subtle pulse to view projects button */
+.projectsIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2xl);
+
+  border-radius: 50px;
+  font-size: var(--font-md);
+  font-weight: 600;
+  position: relative;
+  cursor: pointer;
+  background: var(--bg-overlay-medium);
+  border: 1px solid var(--border-medium);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-secondary);
+  min-width: 220px;
+  height: 56px;
+  animation: subtlePulse 3s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+  }
+}
+
+.projectsIndicator:hover {
+  animation: none;
+  background: var(--bg-overlay-hover);
+  border-color: var(--border-hover);
+  transform: scale(1.05);
+  box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+}
+
+.indicatorIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: var(--bg-overlay-strong);
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+}
+
+.indicatorIcon svg {
+  color: var(--text-secondary);
+  width: 16px;
+  height: 16px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+.projectCount {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.projectsIndicator .buttonTitle {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.projectsIndicator .buttonDescription,
+.projectsIndicator .scrollHint {
+  display: none; /* Hide for cleaner look */
+}
+
+/* Alternative with icon - if you want to add an icon to the upload button */
+.uploadButton::before {
+  content: "+";
+  font-size: 20px;
+  font-weight: 300;
+  margin-right: 8px;
+  opacity: 0.8;
+}
+
+/* Project List Section */
+.projectsSection {
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* Fade in project section header */
+.projectsHeader {
+  text-align: center;
+  margin-bottom: var(--spacing-3xl);
+  opacity: 0;
+  animation: fadeInUp 0.3s ease-out forwards;
+  animation-delay: 0.15s;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.projectsTitle {
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 700;
+  margin-top: var(--spacing-4xl);
+  margin-bottom: var(--spacing-lg);
+  color: var(--white);
+}
+
+.projectsSubtitle {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+}
+
+.projectList {
+  display: grid;
+  gap: var(--spacing-2xl);
+  width: 100%;
+  margin: 0;
+  /* Default to 1 column */
+  grid-template-columns: 1fr;
+}
+
+/* Grid column variations */
+.projectList.gridCols1 {
+  grid-template-columns: 1fr;
+}
+
+.projectList.gridCols2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.projectList.gridCols3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Search and Filter Styles */
+.searchFilterContainer {
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-lg);
+  margin: var(--spacing-2xl) 0;
+  padding: var(--spacing-lg);
+  background: var(--bg-overlay-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  align-items: flex-end;
+  /* FIX: Add isolation to create new stacking context */
+  isolation: isolate;
+  position: relative;
+  z-index: 100;
+}
+
+.searchContainer {
+  flex: 1;
+  min-width: 250px;
+}
+
+.searchInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--spacing-md);
+  color: var(--text-tertiary);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.searchInput {
+  width: 100%;
+  height: 44px;
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 40px;
+  background: var(--bg-overlay-medium);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-sm);
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.searchInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.clearSearchButton {
+  position: absolute;
+  right: var(--spacing-sm);
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.clearSearchButton:hover {
+  color: var(--text-secondary);
+  background: var(--bg-overlay-light);
+}
+
+.filterContainer {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 140px;
+}
+
+.filterLabel {
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filterSelect {
+  height: 44px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: #333;
+  border: 1px solid var(--border-medium);
+  border-radius: 8px;
+  color: white;
+  font-size: var(--font-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.filterSelect:hover {
+  background-color: #444;
+  border-color: var(--primary);
+}
+
+.customDropdown {
+  position: relative;
+  display: inline-block;
+  /* FIX: Reduce z-index to work within isolated context */
+  z-index: 200;
+}
+
+.dropdownButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  background: var(--bg-overlay-medium) !important;
+}
+
+.dropdownButton::after {
+  content: '▼';
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+.dropdownMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 300;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  margin-top: var(--spacing-xs);
+  max-height: 300px;
+  overflow-y: auto;
+  animation: slideDown 0.2s ease-out;
+}
+
+.dropdownItem {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: white;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+  font-size: var(--font-sm);
+}
+
+.dropdownItem:hover {
+  background: var(--glass-bg-hover);
+  color: var(--primary-light);
+}
+
+.dropdownItem:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.dropdownItem:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+.activeDropdownItem {
+  background: var(--primary-dark);
+  color: white;
+}
+
+.activeDropdownItem:hover {
+  background: var(--primary-dark);
+  color: white;
+}
+
+
+
+.resultsCount {
+  text-align: center;
+  color: var(--text-tertiary);
+  font-size: var(--font-sm);
+  margin-top: var(--spacing-md);
+  font-weight: 500;
+}
+
+/* No Projects Message */
+.noProjectsMessage {
+  text-align: center;
+  padding: var(--spacing-4xl) var(--spacing-lg);
+  color: var(--text-secondary);
+  /* Center the message like in 1-column grid */
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.noProjectsIcon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto var(--spacing-lg);
   opacity: 0.7;
+  background: var(--text-tertiary);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") no-repeat center;
+  mask-size: contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'/%3E%3C/svg%3E") no-repeat center;
+  -webkit-mask-size: contain;
+}
+
+.noProjectsMessage h3 {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.noProjectsMessage p {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.clearFiltersButton {
+  height: 44px;
+  min-width: 80px;
+  background: var(--bg-overlay-medium);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.clearFiltersButton:hover {
+  background: var(--bg-overlay-light);
+  border-color: var(--border-hover);
+}
+
+.clearFiltersButton:active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.clearFiltersButton:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+/* Stagger animation for project cards */
+.projectCard {
+  background: var(--bg-overlay-medium);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  /* Add stagger animation */
+  opacity: 0;
+  transform: translateY(15px);
+  animation: cardSlideIn 0.3s ease-out forwards;
+}
+
+/* Stagger each card */
+.projectCard:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.projectCard:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.projectCard:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.projectCard:nth-child(4) {
+  animation-delay: 0.35s;
+}
+.projectCard:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+@keyframes cardSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.projectCard:hover {
+  background: var(--bg-overlay-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  border-color: var(--border-strong);
+}
+
+/* Enhanced Panoramic Thumbnail */
+.projectThumbnail {
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.projectThumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(1.1) contrast(1.05);
+}
+
+.projectCard:hover .projectThumbnailImage {
+  transform: scale(1.1);
+}
+
+.projectThumbnailPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  position: relative;
+}
+
+.projectThumbnailPlaceholder::before {
+  content: '';
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.4);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'/%3E%3C/svg%3E") no-repeat center;
+  mask-size: contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'/%3E%3C/svg%3E") no-repeat center;
+  -webkit-mask-size: contain;
+}
+
+.projectContent {
+  flex: 1;
+  padding: var(--spacing-2xl);
+  display: flex;
+  flex-direction: column;
+}
+
+.projectCardHeader {
+  display: flex;
+  align-items: center; /* vertical centering in flexbox */
+  justify-content: space-between;
+  gap: var(--spacing-md);
+}
+
+.projectHeaderLeft {
+  display: flex;
+  flex-direction: column; /* stack items vertically */
+  align-items: flex-start; /* keep them left-aligned */
+  justify-content: center;
+  text-align: left;
+  flex: 1;
+}
+
+.projectIcon {
+  width: 20px;
+  height: 20px;
+  background: var(--text-secondary);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'/%3E%3C/svg%3E") no-repeat center;
+  mask-size: contain;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'/%3E%3C/svg%3E") no-repeat center;
+  -webkit-mask-size: contain;
+  margin-bottom: var(--spacing-xs);
+}
+
+.projectName {
+  font-size: var(--font-xl);
+  font-weight: 700;
+  margin: 0;
+  color: var(--white);
+  line-height: 1.3;
+  margin-bottom: var(--spacing-md);
+}
+
+.projectMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: auto;
+}
+
+.projectInfo {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.projectInfo::before {
+  content: "•";
+  color: var(--blue-primary);
+  font-weight: bold;
+}
+
+.projectStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-2xl);
+  border-top: 1px solid var(--border-light);
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  color: var(--white);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+
+.statLabel {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Project Actions */
+.projectActions {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+  flex-shrink: 0;
+}
+
+.editButton,
+.deleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  background: var(--bg-overlay-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.editButton:hover {
+  background: var(--bg-overlay-hover);
+  border-color: var(--border-strong);
+  color: var(--blue-primary);
+  transform: translateY(-1px);
+}
+
+.deleteButton:hover {
+  background: var(--bg-overlay-hover);
+  border-color: var(--border-strong);
+  color: var(--red-primary);
+  transform: translateY(-1px);
+}
+
+.deleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.deleteButton.deleting {
+  background: var(--red-primary);
+  color: var(--white);
+  border-color: var(--red-primary);
+}
+
+.deletingSpinner {
+  font-size: 12px;
+  animation: spin 1s linear infinite;
 }
 
 /* Loading styles */
@@ -93,7 +1102,6 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
 }
 
 .loadingContent {
@@ -105,15 +1113,95 @@
 }
 
 .loadingSpinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top: 2px solid white;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-strong);
+  border-top: 3px solid white;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .projectList {
+    grid-template-columns: 1fr;
+  }
+  
+  .searchFilterContainer {
+    flex-direction: column;
+    padding: var(--spacing-md);
+    margin: var(--spacing-lg) 0;
+    align-items: stretch;
+  }
+  
+  .searchContainer {
+    min-width: auto;
+  }
+  
+  .filterContainer {
+    flex-direction: row;
+    gap: var(--spacing-md);
+    align-items: flex-end;
+  }
+  
+  .filterGroup {
+    min-width: auto;
+    flex: 1;
+  }
+  
+  .searchInput {
+    font-size: var(--font-md);
+    padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) 42px;
+  }
+  
+  .filterSelect {
+    font-size: var(--font-md);
+    padding: var(--spacing-md);
+  }
+  
+  .clearFiltersButton {
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: var(--content-padding-mobile);
+  }
+  
+  .searchFilterContainer {
+    padding: var(--spacing-sm);
+    margin: var(--spacing-md) 0;
+    gap: var(--spacing-md);
+  }
+  
+  .searchIcon {
+    left: var(--spacing-sm);
+  }
+  
+  .searchInput {
+    padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) 36px;
+  }
+  
+  .clearSearchButton {
+    right: var(--spacing-xs);
+  }
+  
+  .noProjectsMessage {
+    padding: var(--spacing-2xl) var(--spacing-sm);
+  }
+  
+  .noProjectsIcon {
+    font-size: 2.5rem;
+  }
 }

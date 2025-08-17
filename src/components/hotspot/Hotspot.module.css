@@ -1,0 +1,138 @@
+.hotspot {
+  --hotspot-base-size: 80px;
+  --hotspot-bg-color: rgba(255, 255, 255, 0.3);
+  --hotspot-bg-color-hover: rgba(255, 255, 255, 0.9);
+  --distance-bg-color: rgba(0, 0, 0, 0.8);
+  --distance-text-color: white;
+  --zoom-offset-x: 0%;
+  --zoom-offset-y: 0%;
+
+  width: calc(var(--hotspot-base-size) * var(--scale-factor, 1));
+  height: calc(var(--hotspot-base-size) * var(--scale-factor, 1));
+  cursor: pointer;
+  position: relative;
+  opacity: 0;
+  transform: translate(var(--zoom-offset-x), var(--zoom-offset-y)) scale(0.8);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.hotspot.visible {
+  opacity: 1;
+  transform: translate(var(--zoom-offset-x), var(--zoom-offset-y)) scale(1);
+}
+
+.arrow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--hotspot-bg-color);
+  border-radius: 50%;
+  transform: perspective(200px) rotateX(var(--perspective-rotation, 25deg))
+    scaleY(var(--oval-factor, 0.7));
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background 0.2s ease-in-out, mask-image 0.2s ease-in-out;
+}
+
+.hotspot:hover .arrow {
+  background: var(--hotspot-bg-color-hover);
+
+  /* Use a mask to create a cutout boomerang shape on hover */
+  mask-image: url("/assets/svg/boomerang.svg");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-image: url("/assets/svg/boomerang.svg");
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.distance {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--distance-bg-color);
+  color: var(--distance-text-color);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.hotspot.visible:hover .distance {
+  opacity: 1;
+}
+
+/* POI Floating Icon */
+.poiGlow {
+  position: relative;
+}
+
+.poiGlow::before {
+  content: "📍";
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(20px * var(--scale-factor, 1));
+  z-index: 100;
+  animation: poiFloat 2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  pointer-events: none;
+  transition: font-size 0.2s ease-in-out;
+}
+
+.poiGlow:hover::before {
+  animation: poiFloatHover 1.5s ease-in-out infinite;
+  font-size: calc(22px * var(--scale-factor, 1));
+}
+
+@keyframes poiFloat {
+  0% {
+    transform: translateX(-50%) translateY(0px);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateX(-50%) translateY(-5px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes poiFloatHover {
+  0% {
+    transform: translateX(-50%) translateY(-2px);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateX(-50%) translateY(-8px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(-2px);
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 768px) {
+  .hotspot {
+    --hotspot-base-size: 70px;
+  }
+
+  /* Adjust POI icon size on mobile */
+  .poiGlow::before {
+    font-size: calc(18px * var(--scale-factor, 1));
+    top: -12px;
+  }
+
+  .poiGlow:hover::before {
+    font-size: calc(20px * var(--scale-factor, 1));
+  }
+}
