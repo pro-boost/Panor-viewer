@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { SceneData } from '../types/scenes';
+import { useState, useEffect } from "react";
+import { SceneData } from "../types/scenes";
 
 interface UseFloorSelectorProps {
   scenes: SceneData[];
@@ -21,15 +21,15 @@ export function useFloorSelector({
   // Calculate unique floors from scenes
   useEffect(() => {
     if (scenes.length > 0) {
-      const uniqueFloors = [...new Set(scenes.map(s => s.floor))].sort(
-        (a, b) => a - b
+      const uniqueFloors = [...new Set(scenes.map((s) => s.floor))].sort(
+        (a, b) => a - b,
       );
       setFloors(uniqueFloors);
     }
   }, [scenes]);
 
   const getFloorLabel = (floor: number): string => {
-    if (floor === 0) return 'Ground Floor';
+    if (floor === 0) return "Ground Floor";
     if (floor > 0) return `Level ${floor}`;
     return `Basement ${Math.abs(floor)}`;
   };
@@ -37,7 +37,7 @@ export function useFloorSelector({
   const handleFloorClick = (floor: number) => {
     if (!onFloorChange) return;
 
-    const floorScenes = scenes.filter(s => s.floor === floor);
+    const floorScenes = scenes.filter((s) => s.floor === floor);
     if (!floorScenes.length) return;
 
     if (!currentScene) {
@@ -50,7 +50,7 @@ export function useFloorSelector({
     let closest = floorScenes[0];
     let minDist = Infinity;
 
-    floorScenes.forEach(scene => {
+    floorScenes.forEach((scene) => {
       const dx = scene.position.x - currentScene.position.x;
       const dy = scene.position.y - currentScene.position.y;
       const dz = scene.position.z - currentScene.position.z;

@@ -88,8 +88,16 @@ python3 -m pip install numpy
 
 ### Utilities
 
-- `npm run clean` - Clean build artifacts and generated files
-- `npm run cleanup-temp` - Remove accumulated temporary files from uploads
+- `npm run clean` - Remove all build artifacts and temporary files (including standardized tmp directory)
+
+### Desktop Application
+
+- `npm run desktop:build:installer` - Build desktop app installer for current platform
+- `npm run desktop:build:unpack` - Build desktop app (unpacked) for current platform
+- `npm run desktop:dev` - Run desktop app in development mode
+- `npm run clean:electron` - Clear Electron app data and cache
+
+**Cross-Platform Support**: The application now supports building for Windows, macOS, and Linux with automatic platform detection for Node.js bundling and file extraction. See <mcfile name="CROSS_PLATFORM_BUILD.md" path="docs/CROSS_PLATFORM_BUILD.md"></mcfile> for detailed build instructions.
 
 ## 📁 Project Structure
 
@@ -228,6 +236,7 @@ The application now includes intelligent performance optimizations that automati
 ### Performance Monitor
 
 A real-time performance monitor is available in the top-right corner showing:
+
 - Number of loaded scenes vs total scenes
 - Estimated memory usage
 - Average loading times
@@ -353,11 +362,13 @@ pip install numpy
 **Symptoms**: Laggy navigation, slow loading, or high memory usage
 
 **Automatic Solutions**:
+
 - Smart loading is enabled automatically for large datasets
 - Use the Performance Monitor (top-right corner) to check status
 - Click "Optimize Performance" button for manual cleanup
 
 **Manual Solutions**:
+
 - Reduce image file sizes (compress to 80-90% quality)
 - Navigate gradually between scenes instead of jumping far distances
 - Close other browser tabs to free up memory
@@ -365,6 +376,7 @@ pip install numpy
 - Update graphics drivers for better WebGL performance
 
 **For Large Datasets (100+ scenes)**:
+
 - Performance optimizations are automatically applied
 - Expect 6-16 scenes loaded simultaneously (adaptive)
 - Monitor shows performance status and memory usage
@@ -419,7 +431,7 @@ interface POIData {
   name: string;
   description: string;
   position: { yaw: number; pitch: number };
-  type: 'file' | 'iframe';
+  type: "file" | "iframe";
   content: string;
   createdAt: string;
   updatedAt: string;
@@ -435,6 +447,7 @@ interface POIData {
 ### Project-Specific Storage
 
 POI data is stored per project in the following structure:
+
 ```
 public/
 ├── {projectId}/
@@ -457,12 +470,14 @@ public/
 ### Coordinate System
 
 POIs use spherical coordinates:
+
 - **Yaw**: Horizontal rotation (-180° to 180°)
 - **Pitch**: Vertical rotation (-90° to 90°)
 
 ### Error Handling
 
 The system includes comprehensive error handling for:
+
 - Invalid coordinate ranges
 - File upload failures
 - Network connectivity issues

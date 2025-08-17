@@ -9,46 +9,41 @@ This documentation provides comprehensive guides for setting up, configuring, an
 ### Prerequisites
 
 - **Node.js** (v18 or higher)
-- **Python** (v3.7 or higher) with numpy *(optional - Node.js scripts available)*
 - **Git** (for version control)
 
 ### Installation
 
 1. **Clone and install dependencies:**
+
    ```bash
    git clone <repository-url>
    cd pano-app
    npm install
    ```
 
-2. **Install Python dependencies** *(optional)*:
-   ```bash
-   pip install numpy
-   ```
-   *Note: Node.js scripts are available as an alternative to Python scripts*
+2. **Generate panorama configuration:**
 
-3. **Generate panorama configuration:**
    ```bash
    npm run generate-config
    ```
 
-4. **Start development server:**
+3. **Start development server:**
    ```bash
    npm run dev
    ```
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run generate-config` | Generate Marzipano configuration |
-| `npm run dev:config` | Generate config and start dev server |
-| `npm run test:config` | Test coordinate system configurations |
-| `npm run clean` | Clean build artifacts and config |
+| Script                    | Description                           |
+| ------------------------- | ------------------------------------- |
+| `npm run dev`             | Start development server              |
+| `npm run build`           | Build for production                  |
+| `npm run start`           | Start production server               |
+| `npm run lint`            | Run ESLint                            |
+| `npm run generate-config` | Generate Marzipano configuration      |
+| `npm run dev:config`      | Generate config and start dev server  |
+| `npm run test:config`     | Test coordinate system configurations |
+| `npm run clean`           | Clean build artifacts and config      |
 
 ## Project Structure
 
@@ -61,7 +56,7 @@ pano-app/
 │   │   └── pano-poses.csv  # Panorama position data
 │   └── images/             # Panorama images
 ├── scripts/                # Build and utility scripts
-│   └── generate_marzipano_config.py
+│   └── node/               # Node.js configuration scripts
 ├── src/
 │   ├── components/         # React components
 │   ├── lib/               # Utility libraries
@@ -73,23 +68,27 @@ pano-app/
 
 ## Configuration
 
-See [Configuration Guide](./CONFIGURATION.md) for detailed configuration options.
+See [Configuration Guide](./configuration/CONFIGURATION.md) for detailed configuration options.
 
 ## Troubleshooting
 
-See [Troubleshooting Guide](./TROUBLESHOOTING.md) for common issues and solutions.
+See [Troubleshooting Guide](./configuration/TROUBLESHOOTING.md) for common issues and solutions.
+
+## Build & Distribution
+
+See [Build Documentation](./build/README.md) for comprehensive build and distribution guides.
 
 ## Platform-Specific Setup
 
 ### Windows
-- Ensure Python is in PATH
+
 - Use PowerShell or Command Prompt
 - Scripts automatically detect Windows and use appropriate commands
 
 ### macOS/Linux
-- Use `python3` command
+
 - Ensure proper permissions for script execution
-- May need to install Python via package manager
+- Use bash or zsh terminal
 
 ## Development Workflow
 
@@ -108,7 +107,8 @@ See [Troubleshooting Guide](./TROUBLESHOOTING.md) for common issues and solution
 ## Support
 
 For issues and questions:
+
 1. Check the troubleshooting guide
 2. Review configuration options
 3. Test with different coordinate modes
-4. Check Python and Node.js versions
+4. Check Node.js version and ensure it's v18 or higher

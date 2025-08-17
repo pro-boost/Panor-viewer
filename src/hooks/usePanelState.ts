@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 export function usePanelState() {
   const [expandedPanel, setExpandedPanel] = useState<string | null>(null);

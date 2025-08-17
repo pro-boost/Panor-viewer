@@ -1,16 +1,16 @@
-import React from 'react';
+import React from "react";
 
 interface TapHintProps {
   show: boolean;
 }
 
 const TapHint: React.FC<TapHintProps> = React.memo(
-  ({ show }) => {
+  function TapHint({ show }) {
     if (!show) return null;
 
     return (
       <>
-        <div className='tap-hint show'>Tap anywhere to show navigation</div>
+        <div className="tap-hint show">Tap anywhere to show navigation</div>
         <style jsx>{`
           .tap-hint {
             position: absolute;
@@ -38,7 +38,7 @@ const TapHint: React.FC<TapHintProps> = React.memo(
   },
   (prevProps, nextProps) => {
     return prevProps.show === nextProps.show;
-  }
+  },
 );
 
 export default TapHint;

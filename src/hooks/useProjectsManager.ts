@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { useNavigation } from './useNavigation';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { useNavigation } from "./useNavigation";
+import { CacheManager } from "@/utils/cacheManager";
 
 interface Project {
   id: string;
@@ -19,29 +20,29 @@ interface Project {
 export function useProjectsManager() {
   const router = useRouter();
   const navigation = useNavigation();
-  
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(true);
   const [projectsError, setProjectsError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [isNavigating, setIsNavigating] = useState<boolean>(false);
-  
+
   const currentProject = router.query.projectId as string;
 
   const loadProjects = async () => {
     try {
-      console.log('📂 Loading projects...');
+      console.log("📂 Loading projects...");
       setProjectsLoading(true);
-      const response = await fetch('/api/projects');
+      const response = await fetch("/api/projects");
       if (!response.ok) {
-        throw new Error('Failed to load projects');
+        throw new Error("Failed to load projects");
       }
       const data = await response.json();
-      console.log('📂 Projects loaded:', data.projects);
+      console.log("📂 Projects loaded:", data.projects);
       setProjects(data.projects);
       setProjectsError(null);
     } catch (err: any) {
-      console.error('❌ Failed to load projects:', err);
+      console.error("❌ Failed to load projects:", err);
       setProjectsError(err.message);
     } finally {
       setProjectsLoading(false);
@@ -54,20 +55,24 @@ export function useProjectsManager() {
       const response = await fetch(
         `/api/projects?projectId=${encodeURIComponent(projectId)}`,
         {
-          method: 'DELETE',
-        }
+          method: "DELETE",
+        },
       );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete project');
+        throw new Error(errorData.error || "Failed to delete project");
       }
 
-      setProjects(prev => prev.filter(p => p.id !== projectId));
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+
+      // Clear cache for the deleted project
+      const cacheManager = CacheManager.getInstance();
+      cacheManager.clearProjectCache(projectId);
 
       // If we deleted the current project, go to home
       if (currentProject === projectId) {
-        router.push('/');
+        window.location.href = "/";
       }
     } catch (err: any) {
       setProjectsError(err.message);
@@ -76,33 +81,37 @@ export function useProjectsManager() {
     }
   };
 
-  const handleProjectSelect = async (projectId: string, onPanelClose: () => void) => {
+  const handleProjectSelect = async (
+    projectId: string,
+    onPanelClose: () => void,
+  ) => {
     try {
-      console.log('🔍 handleProjectSelect called with projectId:', projectId);
-      console.log('🔍 Current router state:', {
+      console.log("🔍 handleProjectSelect called with projectId:", projectId);
+      console.log("🔍 Current router state:", {
         pathname: router.pathname,
         query: router.query,
-        asPath: router.asPath
+        asPath: router.asPath,
       });
-      
+
       if (isNavigating) {
-        console.log('⏳ Navigation already in progress, ignoring click');
+        console.log("⏳ Navigation already in progress, ignoring click");
         return;
       }
-      
+
       setIsNavigating(true);
       onPanelClose(); // Close the panel
-      console.log('🔍 Panel closed');
-      
-      console.log('🔍 Attempting navigation with full page reload...');
+      console.log("🔍 Panel closed");
+
+      console.log("🔍 Attempting navigation with full page reload...");
       // Force full page navigation to ensure immediate rendering
       window.location.href = `/${projectId}`;
-      console.log('✅ Navigation initiated!');
-      
+      console.log("✅ Navigation initiated!");
     } catch (error) {
-      console.error('❌ Navigation failed:', error);
+      console.error("❌ Navigation failed:", error);
       // Set error state instead of using alert
-      setProjectsError(`Failed to navigate to project ${projectId}. Please try again.`);
+      setProjectsError(
+        `Failed to navigate to project ${projectId}. Please try again.`,
+      );
       setIsNavigating(false);
     }
   };

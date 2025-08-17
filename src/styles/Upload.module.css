@@ -1,16 +1,14 @@
-
 /* ===================================
    MAIN CONTAINER
    =================================== */
 .container {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-2xl);
+  flex-direction: column;
+  padding: 0;
   position: relative;
   color: var(--text-primary);
-  background-image: url('/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg');
+  background-image: url("/assets/images/nasa-Q1p7bh3SHj8-unsplash.jpg");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -19,14 +17,23 @@
 
 /* Animated background effect */
 .container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 50%, rgba(66, 153, 225, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+  background:
+    radial-gradient(
+      circle at 20% 50%,
+      rgba(66, 153, 225, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(16, 185, 129, 0.1) 0%,
+      transparent 50%
+    );
   pointer-events: none;
   opacity: 0.5;
 }
@@ -42,10 +49,12 @@
   backdrop-filter: blur(10px);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  padding: var(--spacing-lg) var(--spacing-xl);
+
   border-radius: var(--radius-xl);
   transition: var(--transition-base);
 }
+
+/* Logout Container and Admin Link styles moved to Navbar.module.css */
 
 .logoContainer:hover {
   background: var(--glass-bg-hover);
@@ -64,6 +73,38 @@
    CONTENT WRAPPER
    =================================== */
 .content {
+  flex: 1;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--content-padding-desktop);
+  position: relative;
+  z-index: 1;
+}
+
+/* Specific styles for authentication loading and access denied states */
+.authLoadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 200px;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--spacing-3xl) var(--spacing-2xl);
+  position: relative;
+  z-index: 1;
+}
+
+.accessDeniedContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 200px;
   max-width: 800px;
   width: 100%;
   margin: 0 auto;
@@ -90,9 +131,9 @@
   font-size: var(--font-sm);
   padding: var(--spacing-md) var(--spacing-lg);
   margin-bottom: 1.5rem;
-    margin-left: 1rem;
+  margin-left: 1rem;
   background: var(--glass-bg);
-  border: 1px solid rgba(255, 255, 255, 0.284); ;
+  border: 1px solid rgba(255, 255, 255, 0.284);
   border-radius: var(--radius-full);
   transition: var(--transition-base);
   backdrop-filter: blur(10px);
@@ -103,7 +144,7 @@
   border-color: var(--glass-border-hover);
   transform: translateX(-4px);
   box-shadow: var(--shadow-md);
-      cursor: pointer;
+  cursor: pointer;
 }
 
 .backLink:focus-visible {
@@ -118,7 +159,11 @@
   font-size: var(--font-3xl);
   font-weight: 700;
   margin: var(--spacing-2xl) 0;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--text-primary) 0%,
+    var(--text-secondary) 100%
+  );
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -144,13 +189,17 @@
 
 /* Glass shine effect */
 .form::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -50%;
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 70%
+  );
   transform: rotate(45deg);
   pointer-events: none;
 }
@@ -360,11 +409,11 @@
   padding: var(--spacing-xs) 0;
   color: var(--text-tertiary);
   font-size: var(--font-sm);
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
 }
 
 .fileListItems li::before {
-  content: '📄';
+  content: "📄";
   position: absolute;
   left: calc(var(--spacing-xl) * -1);
 }
@@ -375,7 +424,11 @@
 .submitButton {
   width: 100%;
   padding: var(--spacing-lg) var(--spacing-xl);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   border: none;
   border-radius: var(--radius-lg);
   color: white;
@@ -395,13 +448,18 @@
 }
 
 .submitButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -479,7 +537,11 @@
 }
 
 .overwriteButton {
-  background: linear-gradient(135deg, var(--warning) 0%, var(--warning-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--warning) 0%,
+    var(--warning-dark) 100%
+  );
   color: white;
   box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
   position: relative;
@@ -487,13 +549,18 @@
 }
 
 .overwriteButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -510,7 +577,11 @@
 .clearButton,
 .deleteAllButton,
 .removeDuplicatesButton {
-  background: linear-gradient(135deg, var(--danger) 0%, var(--danger-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--danger) 0%,
+    var(--danger-dark) 100%
+  );
   color: white;
   box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
   position: relative;
@@ -520,13 +591,18 @@
 .clearButton::before,
 .deleteAllButton::before,
 .removeDuplicatesButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -592,7 +668,7 @@
   color: var(--success);
   font-size: var(--font-lg);
   font-weight: 700;
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
 }
 
 .progressBar {
@@ -606,7 +682,11 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary) 0%,
+    var(--primary-dark) 100%
+  );
   border-radius: var(--radius-full);
   transition: width 0.3s ease;
   position: relative;
@@ -614,19 +694,28 @@
 }
 
 .progressFill::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 100%
+  );
   animation: shimmer 2s infinite;
 }
 
 @keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 .progressDetails {
@@ -762,6 +851,53 @@
 /* ===================================
    DUPLICATE FILES SECTION
    =================================== */
+.duplicateNotification {
+  margin-top: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(10px);
+  border-left: 4px solid var(--warning);
+}
+
+.duplicateHeader {
+  margin-bottom: var(--spacing-md);
+}
+
+.duplicateTitle {
+  margin: 0;
+  font-size: var(--font-lg);
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.duplicateContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.duplicateMessage {
+  margin: 0;
+  color: var(--warning-dark);
+  font-size: var(--font-sm);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.duplicateAction {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  line-height: 1.5;
+  font-style: italic;
+  padding: var(--spacing-sm);
+  background: rgba(245, 158, 11, 0.05);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
 .duplicateDetails {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-lg);
@@ -819,7 +955,7 @@
 }
 
 .duplicateList li {
-  font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+  font-family: "SF Mono", "Monaco", "Inconsolata", monospace;
   background: rgba(245, 158, 11, 0.1);
   padding: var(--spacing-xs) var(--spacing-md);
   border-radius: var(--radius-md);
@@ -892,8 +1028,6 @@
   border-radius: 50%;
 }
 
-
-
 /* ===================================
    SUCCESS ACTIONS
    =================================== */
@@ -907,7 +1041,11 @@
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-lg) var(--spacing-2xl);
-  background: linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success) 0%,
+    var(--success-dark) 100%
+  );
   color: white;
   text-decoration: none;
   border-radius: var(--radius-lg);
@@ -921,13 +1059,18 @@
 }
 
 .viewPanoramasButton::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
   transition: left 0.5s;
 }
 
@@ -992,13 +1135,90 @@
   font-weight: 600;
 }
 
+.csvRequirements {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--info);
+  backdrop-filter: blur(10px);
+}
+
+.csvRequirementsTitle {
+  margin: 0 0 var(--spacing-md) 0;
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--info-light);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.csvRequirementsText {
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  line-height: 1.6;
+}
+
+.csvRequirementsList {
+  margin: 0 0 var(--spacing-md) 0;
+  padding-left: var(--spacing-xl);
+  color: var(--text-secondary);
+  font-size: var(--font-base);
+  list-style: none;
+  counter-reset: csv-counter;
+}
+
+.csvRequirementsList li {
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+  position: relative;
+  padding-left: var(--spacing-lg);
+  counter-increment: csv-counter;
+}
+
+.csvRequirementsList li::before {
+  content: counter(csv-counter);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--info);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-xs);
+  font-weight: 600;
+}
+
+.csvRequirementsNote {
+  margin: 0;
+  color: var(--warning);
+  font-size: var(--font-sm);
+  background: rgba(245, 158, 11, 0.1);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-left: 3px solid var(--warning);
+  line-height: 1.5;
+}
+
 /* ===================================
    OVERWRITE OPTIONS
    =================================== */
 .overwriteOptions {
   margin-top: var(--spacing-xl);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(245, 158, 11, 0.1) 100%);
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.05) 0%,
+    rgba(245, 158, 11, 0.1) 100%
+  );
   border-radius: var(--radius-lg);
   border: 2px solid rgba(245, 158, 11, 0.3);
   backdrop-filter: blur(10px);
@@ -1122,8 +1342,6 @@
   border-bottom: none;
 }
 
-
-
 /* ===================================
    ANIMATIONS
    =================================== */
@@ -1161,38 +1379,32 @@
   z-index: 10;
 }
 
-
-
 /* ===================================
    RESPONSIVE DESIGN
    =================================== */
 @media (max-width: 1024px) {
-  .container {
-    padding: var(--spacing-xl);
-  }
-  
+ 
+
   .content {
     padding: var(--spacing-2xl) var(--spacing-xl);
   }
-  
+
   .form {
     padding: var(--spacing-2xl);
   }
 }
 
 @media (max-width: 768px) {
- 
-  
   .container {
-    padding: var(--spacing-lg);
+    padding: 0;
     background: var(--bg-primary);
   }
-  
+
   /* Hide animated background on mobile for performance */
   .container::before {
     display: none;
   }
-  
+
   .logoContainer {
     position: static;
     margin-bottom: var(--spacing-xl);
@@ -1200,115 +1412,132 @@
     margin-left: auto;
     margin-right: auto;
   }
-  
+
   .logo {
     height: 48px;
   }
-  
+
   .content {
-    padding: var(--spacing-xl) var(--spacing-md);
+    padding: var(--content-padding-tablet);
   }
   
+  .uploadArea {
+    padding: var(--spacing-xl);
+  }
+  
+  .uploadArea h2 {
+    font-size: 1.5rem;
+  }
+  
+  .uploadArea p {
+    font-size: 0.9rem;
+  }
+  
+  .uploadButton {
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: 0.9rem;
+  }
+
   .header {
     margin-bottom: var(--spacing-2xl);
   }
-  
+
   .backLink {
     font-size: var(--font-sm);
     padding: var(--spacing-sm) var(--spacing-md);
   }
-  
+
   .title {
     font-size: var(--font-2xl);
     margin: var(--spacing-xl) 0;
   }
-  
+
   .form {
     padding: var(--spacing-xl);
     border-radius: var(--radius-xl);
   }
-  
+
   .formGroup {
     margin-bottom: var(--spacing-xl);
   }
-  
+
   .textInput,
   .fileInput {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-base);
   }
-  
+
   .submitButton {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-base);
   }
-  
+
   .fileListHeader {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--spacing-sm);
   }
-  
+
   .toggleButton {
     align-self: flex-start;
   }
-  
+
   /* Stack duplicate action buttons on mobile */
   .duplicateActions {
     gap: var(--spacing-md);
   }
-  
+
   .overwriteButton,
   .clearButton,
   .deleteAllButton {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-base);
   }
-  
+
   /* Simplify progress display on mobile */
   .progressHeader {
     flex-direction: column;
     align-items: center;
     gap: var(--spacing-sm);
   }
-  
+
   .progressTitle {
     font-size: var(--font-sm);
     text-align: center;
   }
-  
+
   /* Adjust sections for mobile */
   .fileSummary,
   .instructions {
     padding: var(--spacing-lg);
   }
-  
+
   .sectionTitle {
     font-size: var(--font-lg);
   }
-  
+
   /* Adjust messages for mobile */
   .message {
     padding: var(--spacing-md) var(--spacing-lg);
     font-size: var(--font-sm);
   }
-  
+
   /* Adjust instruction list */
   .instructionsList {
     padding-left: var(--spacing-lg);
   }
-  
+
   .instructionsList li {
     padding-left: var(--spacing-xl);
     font-size: var(--font-sm);
   }
-  
+
   /* Section header responsive */
   .sectionHeader {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .fileSystemInfo {
     flex-direction: column;
     align-items: flex-start;
@@ -1317,36 +1546,51 @@
 }
 
 @media (max-width: 480px) {
-  
-  
   .container {
-    padding: var(--spacing-md);
+    padding: 0;
   }
-  
+
   .content {
-    padding: var(--spacing-lg) var(--spacing-sm);
+    padding: var(--content-padding-mobile);
   }
   
+  .uploadArea {
+    padding: var(--spacing-lg);
+  }
+  
+  .uploadArea h2 {
+    font-size: 1.25rem;
+  }
+  
+  .uploadArea p {
+    font-size: 0.85rem;
+  }
+  
+  .uploadButton {
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.85rem;
+  }
+
   .form {
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
   }
-  
+
   .label {
     font-size: var(--font-sm);
   }
-  
+
   .textInput,
   .fileInput {
     padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-sm);
   }
-  
+
   .fileInput::file-selector-button {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 12px;
   }
-  
+
   /* Full width buttons on small screens */
   .submitButton,
   .overwriteButton,
@@ -1357,21 +1601,19 @@
     width: 100%;
     justify-content: center;
   }
-  
+
   /* Reduce section padding on small screens */
   .fileSummary,
   .instructions,
   .overwriteOptions {
     padding: var(--spacing-md);
   }
-  
+
   /* Adjust summary items */
   .summaryItem {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: var(--font-sm);
   }
-  
-
 }
 
 /* ===================================
@@ -1388,18 +1630,18 @@
   .container {
     background: black;
   }
-  
+
   .form,
   .fileSummary,
   .instructions {
     border-width: 2px;
   }
-  
+
   .textInput,
   .fileInput {
     border-width: 2px;
   }
-  
+
   .message {
     border-left-width: 6px;
   }
@@ -1413,7 +1655,7 @@
     background: white;
     color: black;
   }
-  
+
   .backLink,
   .toggleButton,
   .submitButton,
@@ -1424,7 +1666,7 @@
   .viewPanoramasButton {
     display: none;
   }
-  
+
   .form,
   .message,
   .fileSummary,
@@ -1434,13 +1676,13 @@
     color: black;
     box-shadow: none;
   }
-  
+
   .title {
     background: none;
     -webkit-text-fill-color: black;
     color: black;
   }
-  
+
   .logoContainer {
     position: static;
     border: none;
@@ -1459,7 +1701,7 @@
 /* @media (prefers-color-scheme: light) {
   :root {
     /* Override colors for light mode if needed */
-    /* Currently the design is dark-first 
+/* Currently the design is dark-first 
   }
 } */
 

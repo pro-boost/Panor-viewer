@@ -1,15 +1,16 @@
-import { useCallback, useMemo } from 'react';
-import { SceneInfo as SceneInfoType } from '@/types/scenes';
-import { PanoramaViewerRefs, PanoramaViewerActions } from './usePanoramaViewer';
+import { useCallback, useMemo } from "react";
+import { SceneInfo as SceneInfoType } from "@/types/scenes";
+import { PanoramaViewerRefs, PanoramaViewerActions } from "./usePanoramaViewer";
+import { FileURLManager } from "@/utils/fileHelpers";
 
 // Performance thresholds and constants
 const PERFORMANCE_THRESHOLDS = {
-  MAX_PRELOADED_SCENES: 8,
-  MIN_PRELOADED_SCENES: 3,
+  MAX_PRELOADED_SCENES: 4,
+  MIN_PRELOADED_SCENES: 2,
   DISTANCE_THRESHOLD_CLOSE: 50,
   DISTANCE_THRESHOLD_FAR: 200,
-  MEMORY_WARNING_THRESHOLD: 100 * 1024 * 1024, // 100MB
-  MEMORY_CRITICAL_THRESHOLD: 200 * 1024 * 1024, // 200MB
+  MEMORY_WARNING_THRESHOLD: 50 * 1024 * 1024, // 50MB
+  MEMORY_CRITICAL_THRESHOLD: 100 * 1024 * 1024, // 100MB
   UNLOAD_DISTANCE_MULTIPLIER: 3,
 } as const;
 
@@ -20,7 +21,7 @@ export interface PerformanceMetrics {
   preloadedScenes: number;
   avgLoadTime: number;
   lastCleanupTime: number;
-  performanceLevel: 'high' | 'medium' | 'low';
+  performanceLevel: "high" | "medium" | "low";
 }
 
 export interface UsePerformanceManagerProps {
@@ -29,7 +30,10 @@ export interface UsePerformanceManagerProps {
   projectId?: string;
   currentScene: string | null;
   calculateSceneDistance: (scene1: string, scene2: string) => number;
-  loadScene: (sceneId: string, priority: 'high' | 'normal' | 'low') => Promise<void>;
+  loadScene: (
+    sceneId: string,
+    priority: "high" | "normal" | "low",
+  ) => Promise<void>;
   clearHotspotsForScene: (sceneInfo: SceneInfoType) => void;
   updatePerformanceStats: () => void;
 }
@@ -49,7 +53,7 @@ export function usePerformanceManager({
     async (sceneId: string): Promise<void> => {
       try {
         if (!sceneId) {
-          console.warn('No scene ID provided for preloading');
+          console.warn("No scene ID provided for preloading");
           return;
         }
 
@@ -62,50 +66,53 @@ export function usePerformanceManager({
         console.log(`Starting preload for adjacent scenes from: ${sceneId}`);
 
         const totalScenes = Object.keys(refs.scenesRef.current).length;
-        const connections = sceneInfo.data.linkHotspots.map(h => h.target);
+        const connections = sceneInfo.data.linkHotspots.map((h) => h.target);
 
         // Adaptive limits based on total scene count
         const maxPreloadedScenes =
           totalScenes > 200
-            ? 6
+            ? 3
             : totalScenes > 100
-              ? 8
+              ? 4
               : totalScenes > 50
-                ? 12
-                : 16;
+                ? 6
+                : 8;
         const maxPriorityConnections =
-          totalScenes > 200 ? 2 : totalScenes > 100 ? 3 : 4;
+          totalScenes > 200 ? 1 : totalScenes > 100 ? 2 : 3;
 
         const loadedScenes = Object.values(refs.scenesRef.current).filter(
-          s => s.loaded
+          (s) => s.loaded,
         );
 
         // If we have too many loaded scenes, unload the furthest ones by distance
         if (loadedScenes.length > maxPreloadedScenes) {
           const scenesToUnload = loadedScenes
             .filter(
-              s => s.data.id !== sceneId && !connections.includes(s.data.id)
+              (s) => s.data.id !== sceneId && !connections.includes(s.data.id),
             )
-            .map(s => {
+            .map((s) => {
               try {
                 return {
                   scene: s,
                   distance: calculateSceneDistance(sceneId, s.data.id),
                 };
               } catch (distanceError) {
-                console.warn(`Failed to calculate distance for scene ${s.data.id}:`, distanceError);
+                console.warn(
+                  `Failed to calculate distance for scene ${s.data.id}:`,
+                  distanceError,
+                );
                 return {
                   scene: s,
                   distance: Infinity,
                 };
               }
             })
-            .filter(item => item.distance !== Infinity)
+            .filter((item) => item.distance !== Infinity)
             .sort((a, b) => b.distance - a.distance) // Sort by distance (furthest first)
             .slice(0, loadedScenes.length - maxPreloadedScenes)
-            .map(item => item.scene);
+            .map((item) => item.scene);
 
-          scenesToUnload.forEach(scene => {
+          scenesToUnload.forEach((scene) => {
             if (scene.scene) {
               try {
                 scene.scene.destroy();
@@ -123,32 +130,39 @@ export function usePerformanceManager({
 
         // Sort connections by distance for priority loading
         const connectionsByDistance = connections
-          .map(targetId => {
+          .map((targetId) => {
             try {
               return {
                 id: targetId,
                 distance: calculateSceneDistance(sceneId, targetId),
               };
             } catch (distanceError) {
-              console.warn(`Failed to calculate distance for connection ${targetId}:`, distanceError);
+              console.warn(
+                `Failed to calculate distance for connection ${targetId}:`,
+                distanceError,
+              );
               return {
                 id: targetId,
                 distance: Infinity,
               };
             }
           })
-          .filter(item => item.distance !== Infinity && item.distance <= PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_FAR)
+          .filter(
+            (item) =>
+              item.distance !== Infinity &&
+              item.distance <= PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_FAR,
+          )
           .sort((a, b) => a.distance - b.distance);
 
         if (connectionsByDistance.length === 0) {
-          console.log('No valid connections found within distance threshold');
+          console.log("No valid connections found within distance threshold");
           return;
         }
 
         // Preload closest connections with high priority
         const priorityConnections = connectionsByDistance.slice(
           0,
-          maxPriorityConnections
+          maxPriorityConnections,
         );
 
         // Create low-priority image preloads for remaining connections
@@ -157,13 +171,19 @@ export function usePerformanceManager({
           .forEach(({ id: targetId }) => {
             try {
               const img = new Image();
-              img.loading = 'lazy';
+              img.loading = "lazy";
               const imagePath = projectId
-                ? `/${projectId}/images/${targetId}-pano.jpg`
+                ? FileURLManager.getPanoramaImageURL(
+                    projectId,
+                    `${targetId}-pano.jpg`,
+                  )
                 : `/images/${targetId}-pano.jpg`;
               img.src = imagePath;
             } catch (imgError) {
-              console.warn(`Failed to preload image for scene ${targetId}:`, imgError);
+              console.warn(
+                `Failed to preload image for scene ${targetId}:`,
+                imgError,
+              );
             }
           });
 
@@ -177,19 +197,24 @@ export function usePerformanceManager({
             !refs.scenesRef.current[targetId].loaded
           ) {
             try {
-              console.log(`Preloading scene ${targetId} (distance: ${distance.toFixed(2)})`);
-              
+              console.log(
+                `Preloading scene ${targetId} (distance: ${distance.toFixed(2)})`,
+              );
+
               // Stagger loading to prevent overwhelming the system
               if (i > 0) {
-                await new Promise(resolve => setTimeout(resolve, 100 * i));
+                await new Promise((resolve) => setTimeout(resolve, 100 * i));
               }
-              
+
               // Add timeout for loading
-              const loadPromise = loadScene(targetId, i === 0 ? 'normal' : 'low');
-              const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Load timeout')), 15000)
+              const loadPromise = loadScene(
+                targetId,
+                i === 0 ? "normal" : "low",
               );
-              
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Load timeout")), 15000),
+              );
+
               await Promise.race([loadPromise, timeoutPromise]);
               console.log(`Successfully preloaded scene: ${targetId}`);
             } catch (err) {
@@ -197,13 +222,12 @@ export function usePerformanceManager({
             }
           }
         }
-        
+
         // Update performance stats
         updatePerformanceStats();
-        console.log('Preloading completed');
-        
+        console.log("Preloading completed");
       } catch (error) {
-        console.error('Error in preloadAdjacentScenes:', error);
+        console.error("Error in preloadAdjacentScenes:", error);
       }
     },
     [
@@ -213,24 +237,28 @@ export function usePerformanceManager({
       clearHotspotsForScene,
       updatePerformanceStats,
       projectId,
-    ]
+    ],
   );
 
   // Optimize performance by unloading distant scenes
   const optimizePerformance = useCallback(() => {
     if (!currentScene) return;
 
-    const loadedScenes = Object.values(refs.scenesRef.current).filter(s => s.loaded);
+    const loadedScenes = Object.values(refs.scenesRef.current).filter(
+      (s) => s.loaded,
+    );
     const currentConnections =
-      refs.scenesRef.current[currentScene]?.data.linkHotspots.map(h => h.target) ||
-      [];
+      refs.scenesRef.current[currentScene]?.data.linkHotspots.map(
+        (h) => h.target,
+      ) || [];
 
     // Unload all scenes except current and immediate connections
     const scenesToUnload = loadedScenes.filter(
-      s => s.data.id !== currentScene && !currentConnections.includes(s.data.id)
+      (s) =>
+        s.data.id !== currentScene && !currentConnections.includes(s.data.id),
     );
 
-    scenesToUnload.forEach(scene => {
+    scenesToUnload.forEach((scene) => {
       if (scene.scene) {
         try {
           scene.scene.destroy();
@@ -240,7 +268,7 @@ export function usePerformanceManager({
         } catch (err) {
           console.warn(
             `Error during optimization unload ${scene.data.id}:`,
-            err
+            err,
           );
         }
       }
@@ -248,22 +276,29 @@ export function usePerformanceManager({
 
     updatePerformanceStats();
     console.log(`Optimized: Unloaded ${scenesToUnload.length} distant scenes`);
-  }, [currentScene, refs.scenesRef, clearHotspotsForScene, updatePerformanceStats]);
+  }, [
+    currentScene,
+    refs.scenesRef,
+    clearHotspotsForScene,
+    updatePerformanceStats,
+  ]);
 
   // Estimate memory usage for performance monitoring
   const getEstimatedMemoryUsage = useCallback(async (): Promise<number> => {
     try {
       // Use Performance API if available
-      if ('memory' in performance) {
+      if ("memory" in performance) {
         return (performance as any).memory.usedJSHeapSize || 0;
       }
-      
+
       // Fallback: estimate based on loaded scenes
-      const loadedScenes = Object.values(refs.scenesRef.current).filter(s => s.loaded);
+      const loadedScenes = Object.values(refs.scenesRef.current).filter(
+        (s) => s.loaded,
+      );
       const estimatedSceneSize = 15 * 1024 * 1024; // ~15MB per scene estimate
       return loadedScenes.length * estimatedSceneSize;
     } catch (error) {
-      console.warn('Failed to estimate memory usage:', error);
+      console.warn("Failed to estimate memory usage:", error);
       return 0;
     }
   }, [refs.scenesRef]);
@@ -273,55 +308,77 @@ export function usePerformanceManager({
     async (currentSceneId: string): Promise<void> => {
       try {
         if (!currentSceneId) {
-          console.warn('No current scene ID provided for unloading distant scenes');
+          console.warn(
+            "No current scene ID provided for unloading distant scenes",
+          );
           return;
         }
 
         const currentSceneInfo = refs.scenesRef.current[currentSceneId];
         if (!currentSceneInfo) {
-          console.warn(`Current scene ${currentSceneId} not found for unloading`);
+          console.warn(
+            `Current scene ${currentSceneId} not found for unloading`,
+          );
           return;
         }
 
-        console.log(`Starting cleanup of distant scenes from: ${currentSceneId}`);
+        console.log(
+          `Starting cleanup of distant scenes from: ${currentSceneId}`,
+        );
 
-        const loadedScenes = Object.values(refs.scenesRef.current).filter(s => s.loaded);
+        const loadedScenes = Object.values(refs.scenesRef.current).filter(
+          (s) => s.loaded,
+        );
         const currentMemory = await getEstimatedMemoryUsage();
-        
-        console.log(`Current memory usage: ${(currentMemory / 1024 / 1024).toFixed(2)}MB, Loaded scenes: ${loadedScenes.length}`);
+
+        console.log(
+          `Current memory usage: ${(currentMemory / 1024 / 1024).toFixed(2)}MB, Loaded scenes: ${loadedScenes.length}`,
+        );
 
         // Calculate distance threshold based on memory pressure
-        let distanceThreshold: number = PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_FAR;
+        let distanceThreshold: number =
+          PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_FAR;
         if (currentMemory > PERFORMANCE_THRESHOLDS.MEMORY_CRITICAL_THRESHOLD) {
           distanceThreshold = PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_CLOSE;
-          console.log('Critical memory usage detected, using aggressive cleanup');
-        } else if (currentMemory > PERFORMANCE_THRESHOLDS.MEMORY_WARNING_THRESHOLD) {
-          distanceThreshold = PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_FAR * 0.7;
-          console.log('High memory usage detected, using moderate cleanup');
+          console.log(
+            "Critical memory usage detected, using aggressive cleanup",
+          );
+        } else if (
+          currentMemory > PERFORMANCE_THRESHOLDS.MEMORY_WARNING_THRESHOLD
+        ) {
+          distanceThreshold =
+            PERFORMANCE_THRESHOLDS.DISTANCE_THRESHOLD_FAR * 0.7;
+          console.log("High memory usage detected, using moderate cleanup");
         }
 
         // Get connected scenes to avoid unloading them
         const connectedScenes = new Set(
-          currentSceneInfo.data.linkHotspots?.map(h => h.target) || []
+          currentSceneInfo.data.linkHotspots?.map((h) => h.target) || [],
         );
         connectedScenes.add(currentSceneId); // Don't unload current scene
 
         const distantScenes = loadedScenes
-          .filter(scene => {
+          .filter((scene) => {
             // Don't unload current scene or directly connected scenes
             if (connectedScenes.has(scene.data.id)) {
               return false;
             }
 
             try {
-              const distance = calculateSceneDistance(currentSceneId, scene.data.id);
+              const distance = calculateSceneDistance(
+                currentSceneId,
+                scene.data.id,
+              );
               return distance > distanceThreshold;
             } catch (distanceError) {
-              console.warn(`Failed to calculate distance for scene ${scene.data.id}:`, distanceError);
+              console.warn(
+                `Failed to calculate distance for scene ${scene.data.id}:`,
+                distanceError,
+              );
               return false;
             }
           })
-          .map(scene => {
+          .map((scene) => {
             try {
               return {
                 scene,
@@ -334,34 +391,41 @@ export function usePerformanceManager({
               };
             }
           })
-          .filter(item => item.distance !== Infinity)
+          .filter((item) => item.distance !== Infinity)
           .sort((a, b) => b.distance - a.distance); // Sort by distance (furthest first)
 
         if (distantScenes.length === 0) {
-          console.log('No distant scenes found for unloading');
+          console.log("No distant scenes found for unloading");
           return;
         }
 
-        console.log(`Found ${distantScenes.length} distant scenes for potential unloading`);
+        console.log(
+          `Found ${distantScenes.length} distant scenes for potential unloading`,
+        );
 
         let unloadedCount = 0;
-        const maxUnloadCount = Math.max(1, Math.floor(distantScenes.length * 0.5)); // Unload up to 50%
+        const maxUnloadCount = Math.max(
+          1,
+          Math.floor(distantScenes.length * 0.5),
+        ); // Unload up to 50%
 
         for (const { scene, distance } of distantScenes) {
           if (unloadedCount >= maxUnloadCount) break;
 
           if (scene.scene) {
             try {
-              console.log(`Unloading distant scene: ${scene.data.id} (distance: ${distance.toFixed(2)})`);
-              
+              console.log(
+                `Unloading distant scene: ${scene.data.id} (distance: ${distance.toFixed(2)})`,
+              );
+
               // Clear hotspots first
               clearHotspotsForScene(scene);
-              
+
               // Destroy the scene
               scene.scene.destroy();
               scene.scene = null;
               scene.loaded = false;
-              
+
               unloadedCount++;
               console.log(`Successfully unloaded scene: ${scene.data.id}`);
             } catch (error) {
@@ -373,16 +437,24 @@ export function usePerformanceManager({
         if (unloadedCount > 0) {
           console.log(`Unloaded ${unloadedCount} distant scenes`);
           updatePerformanceStats();
-          
+
           // Log memory usage after cleanup
           const newMemory = await getEstimatedMemoryUsage();
-          console.log(`Memory usage after cleanup: ${(newMemory / 1024 / 1024).toFixed(2)}MB`);
+          console.log(
+            `Memory usage after cleanup: ${(newMemory / 1024 / 1024).toFixed(2)}MB`,
+          );
         }
       } catch (error) {
-        console.error('Error in unloadDistantScenes:', error);
+        console.error("Error in unloadDistantScenes:", error);
       }
     },
-    [refs.scenesRef, calculateSceneDistance, clearHotspotsForScene, updatePerformanceStats, getEstimatedMemoryUsage]
+    [
+      refs.scenesRef,
+      calculateSceneDistance,
+      clearHotspotsForScene,
+      updatePerformanceStats,
+      getEstimatedMemoryUsage,
+    ],
   );
 
   return {

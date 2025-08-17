@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import formidable from 'formidable';
-import fs from 'fs';
-import path from 'path';
+import { NextApiRequest, NextApiResponse } from "next";
+import formidable from "formidable";
+import fs from "fs";
+import path from "path";
 
 // Disable body parser for file uploads
 export const config = {
@@ -12,22 +12,24 @@ export const config = {
 
 // Helper function to get project-specific upload directory
 function getProjectUploadDir(projectId: string) {
-  const uploadDir = path.join(process.cwd(), 'public', projectId, 'data', 'poi', 'attachments');
-  
+  const projectsPath =
+    process.env.PROJECTS_PATH || path.join(process.cwd(), "public");
+  const uploadDir = path.join(projectsPath, projectId, "poi", "attachments");
+
   // Ensure upload directory exists
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
-  
+
   return uploadDir;
 }
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
@@ -37,37 +39,49 @@ export default async function handler(
       maxTotalFileSize: 50 * 1024 * 1024, // 50MB total limit
       filter: ({ mimetype }) => {
         return [
-          'image/jpeg',
-          'image/jpg', 
-          'image/png',
-          'image/gif',
-          'application/pdf',
-          'video/mp4',
-          'video/webm'
-        ].includes(mimetype || '');
-      }
+          "image/jpeg",
+          "image/jpg",
+          "image/png",
+          "image/gif",
+          "application/pdf",
+          "video/mp4",
+          "video/webm",
+        ].includes(mimetype || "");
+      },
     });
 
     const [fields, files] = await form.parse(req);
-    
-    const projectId = Array.isArray(fields.projectId) ? fields.projectId[0] : fields.projectId;
-    
+
+    const projectId = Array.isArray(fields.projectId)
+      ? fields.projectId[0]
+      : fields.projectId;
+
     if (!projectId) {
-      return res.status(400).json({ error: 'Project ID is required' });
+      return res.status(400).json({ error: "Project ID is required" });
     }
-    
+
     const uploadDir = getProjectUploadDir(projectId);
-    
+
     // Handle multiple files
-    const uploadedFiles = Array.isArray(files.files) ? files.files : (files.files ? [files.files] : []);
-    const filenames = Array.isArray(fields.filenames) ? fields.filenames : (fields.filenames ? [fields.filenames] : []);
-    
+    const uploadedFiles = Array.isArray(files.files)
+      ? files.files
+      : files.files
+        ? [files.files]
+        : [];
+    const filenames = Array.isArray(fields.filenames)
+      ? fields.filenames
+      : fields.filenames
+        ? [fields.filenames]
+        : [];
+
     if (uploadedFiles.length === 0) {
-      return res.status(400).json({ error: 'No files uploaded' });
+      return res.status(400).json({ error: "No files uploaded" });
     }
 
     if (filenames.length !== uploadedFiles.length) {
-      return res.status(400).json({ error: 'Mismatch between files and filenames count' });
+      return res
+        .status(400)
+        .json({ error: "Mismatch between files and filenames count" });
     }
 
     const results = [];
@@ -77,16 +91,16 @@ export default async function handler(
     for (let i = 0; i < uploadedFiles.length; i++) {
       const file = uploadedFiles[i];
       const filename = filenames[i];
-      
+
       try {
         // Move file to final location with the specified filename
         const finalPath = path.join(uploadDir, filename);
-        
+
         // Check if file already exists
         if (fs.existsSync(finalPath)) {
           // Remove the temporary file
           fs.unlinkSync(file.filepath);
-          errors.push({ filename, error: 'File already exists' });
+          errors.push({ filename, error: "File already exists" });
           continue;
         }
 
@@ -95,7 +109,7 @@ export default async function handler(
           fs.renameSync(file.filepath, finalPath);
         } catch (renameError: any) {
           // If rename fails (e.g., cross-drive move), copy and delete
-          if (renameError.code === 'EXDEV') {
+          if (renameError.code === "EXDEV") {
             fs.copyFileSync(file.filepath, finalPath);
             fs.unlinkSync(file.filepath);
           } else {
@@ -107,31 +121,32 @@ export default async function handler(
           filename,
           size: file.size,
           mimetype: file.mimetype,
-          success: true
+          success: true,
         });
       } catch (fileError) {
         console.error(`Error processing file ${filename}:`, fileError);
-        errors.push({ 
-          filename, 
-          error: fileError instanceof Error ? fileError.message : 'Unknown error' 
+        errors.push({
+          filename,
+          error:
+            fileError instanceof Error ? fileError.message : "Unknown error",
         });
-        
+
         // Clean up temporary file if it still exists
         try {
           if (fs.existsSync(file.filepath)) {
             fs.unlinkSync(file.filepath);
           }
         } catch (cleanupError) {
-          console.error('Error cleaning up temporary file:', cleanupError);
+          console.error("Error cleaning up temporary file:", cleanupError);
         }
       }
     }
 
     // Return results
     if (results.length === 0) {
-      return res.status(400).json({ 
-        error: 'No files were successfully uploaded',
-        errors 
+      return res.status(400).json({
+        error: "No files were successfully uploaded",
+        errors,
       });
     }
 
@@ -140,39 +155,53 @@ export default async function handler(
       uploadedFiles: results,
       errors: errors.length > 0 ? errors : undefined,
       totalUploaded: results.length,
-      totalErrors: errors.length
+      totalErrors: errors.length,
     });
   } catch (error) {
-    console.error('Multiple upload error:', error);
-    
+    console.error("Multiple upload error:", error);
+
     if (error instanceof Error) {
-      if (error.message.includes('maxFileSize')) {
-        return res.status(413).json({ error: 'One or more files are too large. Maximum size is 10MB per file.' });
+      if (error.message.includes("maxFileSize")) {
+        return res.status(413).json({
+          error:
+            "One or more files are too large. Maximum size is 10MB per file.",
+        });
       }
-      if (error.message.includes('maxTotalFileSize')) {
-        return res.status(413).json({ error: 'Total file size exceeds limit. Maximum total size is 50MB.' });
+      if (error.message.includes("maxTotalFileSize")) {
+        return res.status(413).json({
+          error: "Total file size exceeds limit. Maximum total size is 50MB.",
+        });
       }
-      if (error.message.includes('filter')) {
-        return res.status(415).json({ error: 'One or more files have unsupported file types. Please upload images (JPG, PNG, GIF), PDFs, or videos (MP4, WebM).' });
+      if (error.message.includes("filter")) {
+        return res.status(415).json({
+          error:
+            "One or more files have unsupported file types. Please upload images (JPG, PNG, GIF), PDFs, or videos (MP4, WebM).",
+        });
       }
     }
-    
+
     // Check for formidable error codes
-    if (error && typeof error === 'object' && 'code' in error) {
+    if (error && typeof error === "object" && "code" in error) {
       if (error.code === 1003) {
-        return res.status(415).json({ 
-          error: 'Unsupported file type. Please upload images (JPG, PNG, GIF), PDFs, or videos (MP4, WebM).',
-          details: 'One or more files were not recognized as valid media files.'
+        return res.status(415).json({
+          error:
+            "Unsupported file type. Please upload images (JPG, PNG, GIF), PDFs, or videos (MP4, WebM).",
+          details:
+            "One or more files were not recognized as valid media files.",
         });
       }
       if (error.code === 1009) {
-        return res.status(413).json({ error: 'One or more files are too large. Maximum size is 10MB per file.' });
+        return res.status(413).json({
+          error:
+            "One or more files are too large. Maximum size is 10MB per file.",
+        });
       }
     }
-    
-    res.status(500).json({ 
-      error: 'Upload failed',
-      details: error instanceof Error ? error.message : 'Unknown error occurred'
+
+    res.status(500).json({
+      error: "Upload failed",
+      details:
+        error instanceof Error ? error.message : "Unknown error occurred",
     });
   }
 }

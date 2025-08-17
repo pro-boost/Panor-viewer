@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { SceneData } from '@/types/scenes';
-import styles from './MiniMap.module.css';
-import minimapStyles from '@/styles/MiniMap.module.css';
+import { useState, useEffect, useRef, useCallback } from "react";
+import { SceneData } from "@/types/scenes";
+import styles from "./MiniMap.module.css";
+import minimapStyles from "@/styles/MiniMap.module.css";
 
 interface MiniMapProps {
   scenes: SceneData[];
   currentScene: SceneData;
-  viewer: any; // Marzipano viewer
+  viewer: Marzipano.Viewer;
   onSelectScene: (sceneId: string) => void;
   rotationAngle: number;
   poiSceneCounts?: Record<string, number>;
@@ -71,7 +71,7 @@ export default function MiniMap({
         y: deltaX * sin + deltaY * cos,
       };
     },
-    []
+    [],
   );
 
   // Rotation function to correct minimap orientation
@@ -81,7 +81,7 @@ export default function MiniMap({
       y: number,
       centerX: number,
       centerY: number,
-      angleDegrees: number
+      angleDegrees: number,
     ) => {
       const angle = (angleDegrees * Math.PI) / 180;
       const dx = x - centerX;
@@ -95,7 +95,7 @@ export default function MiniMap({
         y: centerY + rotatedY,
       };
     },
-    []
+    [],
   );
 
   // Cache content dimensions
@@ -107,8 +107,8 @@ export default function MiniMap({
       };
 
       updateDimensions();
-      window.addEventListener('resize', updateDimensions);
-      return () => window.removeEventListener('resize', updateDimensions);
+      window.addEventListener("resize", updateDimensions);
+      return () => window.removeEventListener("resize", updateDimensions);
     }
   }, [isHovered, isMinimized]);
 
@@ -190,7 +190,7 @@ export default function MiniMap({
       rotateMouseDelta,
       rotationAngle,
       contentDimensions,
-    ]
+    ],
   );
 
   // Handle mouse move for dragging and panning
@@ -206,17 +206,17 @@ export default function MiniMap({
 
     if (isDragging || isPanning) {
       // Use passive event listeners for better performance
-      document.addEventListener('mousemove', handleMouseMoveThrottled, {
+      document.addEventListener("mousemove", handleMouseMoveThrottled, {
         passive: true,
       });
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('mouseleave', handleMouseUp);
+      document.addEventListener("mouseup", handleMouseUp);
+      document.addEventListener("mouseleave", handleMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMoveThrottled);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('mouseleave', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMoveThrottled);
+      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mouseleave", handleMouseUp);
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
@@ -226,19 +226,19 @@ export default function MiniMap({
   // Calculate map bounds from actual scene positions for true top-down 2D view
   useEffect(() => {
     const currentFloorScenes = scenes.filter(
-      scene => scene.floor === currentScene.floor
+      (scene) => scene.floor === currentScene.floor,
     );
     if (currentFloorScenes.length === 0) return;
 
-    const positions = currentFloorScenes.map(scene => ({
+    const positions = currentFloorScenes.map((scene) => ({
       x: scene.position.x,
       y: scene.position.y,
     }));
 
-    const minX = Math.min(...positions.map(p => p.x));
-    const maxX = Math.max(...positions.map(p => p.x));
-    const minY = Math.min(...positions.map(p => p.y));
-    const maxY = Math.max(...positions.map(p => p.y));
+    const minX = Math.min(...positions.map((p) => p.x));
+    const maxX = Math.max(...positions.map((p) => p.x));
+    const minY = Math.min(...positions.map((p) => p.y));
+    const maxY = Math.max(...positions.map((p) => p.y));
 
     const paddingX = Math.max((maxX - minX) * 0.2, 1);
     const paddingY = Math.max((maxY - minY) * 0.2, 1);
@@ -262,12 +262,12 @@ export default function MiniMap({
       setCurrentYaw(yaw);
     };
 
-    viewer.addEventListener('viewChange', updateYaw);
+    viewer.addEventListener("viewChange", updateYaw);
     updateYaw();
 
     return () => {
       if (viewer) {
-        viewer.removeEventListener('viewChange', updateYaw);
+        viewer.removeEventListener("viewChange", updateYaw);
       }
     };
   }, [viewer]);
@@ -275,7 +275,7 @@ export default function MiniMap({
   // Convert actual scene position to 2D map coordinates for top-down view
   const positionToMapCoords = useCallback(
     (sceneId: string) => {
-      const scene = scenes.find(s => s.id === sceneId);
+      const scene = scenes.find((s) => s.id === sceneId);
       if (!scene) return { x: 50, y: 50 };
 
       const mapWidth = mapBounds.maxX - mapBounds.minX;
@@ -302,12 +302,12 @@ export default function MiniMap({
 
       return { x: rotated.x, y: rotated.y };
     },
-    [mapBounds, scenes, rotatePoint, rotationAngle, zoomLevel, panOffset]
+    [mapBounds, scenes, rotatePoint, rotationAngle, zoomLevel, panOffset],
   );
 
   // Get current floor scenes
   const currentFloorScenes = scenes.filter(
-    scene => scene.floor === currentScene.floor
+    (scene) => scene.floor === currentScene.floor,
   );
 
   // Calculate distance between two scenes in map coordinates
@@ -317,7 +317,7 @@ export default function MiniMap({
       const dy = scene1.position.y - scene2.position.y;
       return Math.sqrt(dx * dx + dy * dy);
     },
-    []
+    [],
   );
 
   // Filter hotspots based on zoom level and proximity
@@ -381,7 +381,7 @@ export default function MiniMap({
       // Check distance to all already visible scenes
       for (const visibleSceneId of visibleScenes) {
         const visibleScene = currentFloorScenes.find(
-          s => s.id === visibleSceneId
+          (s) => s.id === visibleSceneId,
         );
         if (
           visibleScene &&
@@ -397,7 +397,7 @@ export default function MiniMap({
       }
     }
 
-    return currentFloorScenes.filter(scene => visibleScenes.has(scene.id));
+    return currentFloorScenes.filter((scene) => visibleScenes.has(scene.id));
   }, [currentFloorScenes, currentScene, zoomLevel, calculateDistance]);
 
   // Get filtered hotspots based on zoom level
@@ -410,10 +410,10 @@ export default function MiniMap({
 
       // Check if clicking on interactive elements
       if (
-        target.classList.contains('minimize-button') ||
-        target.closest('.minimize-button') ||
-        target.classList.contains('scene-hotspot') ||
-        target.closest('.scene-hotspot') ||
+        target.classList.contains("minimize-button") ||
+        target.closest(".minimize-button") ||
+        target.classList.contains("scene-hotspot") ||
+        target.closest(".scene-hotspot") ||
         target.classList.contains(styles.resetIndicator)
       ) {
         return;
@@ -421,8 +421,8 @@ export default function MiniMap({
 
       // Dragging the entire minimap
       if (
-        target.classList.contains('minimap-header') ||
-        target.closest('.minimap-header')
+        target.classList.contains("minimap-header") ||
+        target.closest(".minimap-header")
       ) {
         setIsDragging(true);
         setDragOffset({
@@ -433,15 +433,15 @@ export default function MiniMap({
       // Panning the content
       else if (
         contentRef.current &&
-        (target.classList.contains('minimap-content') ||
-          target.closest('.minimap-content'))
+        (target.classList.contains("minimap-content") ||
+          target.closest(".minimap-content"))
       ) {
         setIsPanning(true);
         setDragStartMouse({ x: e.clientX, y: e.clientY });
         setDragStartPan({ x: panOffset.x, y: panOffset.y });
       }
     },
-    [position, panOffset]
+    [position, panOffset],
   );
 
   // Handle wheel for zooming with improved pan adjustment
@@ -463,12 +463,12 @@ export default function MiniMap({
       const maxPanX = overflowX + 30;
       const maxPanY = overflowY + 30;
 
-      setPanOffset(prev => ({
+      setPanOffset((prev) => ({
         x: Math.max(-maxPanX, Math.min(maxPanX, prev.x)),
         y: Math.max(-maxPanY, Math.min(maxPanY, prev.y)),
       }));
     },
-    [zoomLevel]
+    [zoomLevel],
   );
 
   // Add wheel event listener manually to control passive option
@@ -476,9 +476,9 @@ export default function MiniMap({
     const contentEl = contentRef.current;
     if (contentEl) {
       const handleWheelEvent = (e: WheelEvent) => handleWheel(e);
-      contentEl.addEventListener('wheel', handleWheelEvent, { passive: false });
+      contentEl.addEventListener("wheel", handleWheelEvent, { passive: false });
       return () => {
-        contentEl.removeEventListener('wheel', handleWheelEvent);
+        contentEl.removeEventListener("wheel", handleWheelEvent);
       };
     }
   }, [handleWheel]);
@@ -497,19 +497,19 @@ export default function MiniMap({
 
       // Prevent rapid clicking (debounce with 200ms)
       if (timeSinceLastClick < 200) {
-        console.log('Hotspot click ignored: too rapid');
+        console.log("Hotspot click ignored: too rapid");
         return;
       }
 
       // Prevent clicking if already navigating
       if (isNavigating) {
-        console.log('Hotspot click ignored: navigation in progress');
+        console.log("Hotspot click ignored: navigation in progress");
         return;
       }
 
       // Prevent clicking on current scene
       if (sceneId === currentScene.id) {
-        console.log('Hotspot click ignored: already on this scene');
+        console.log("Hotspot click ignored: already on this scene");
         return;
       }
 
@@ -527,11 +527,11 @@ export default function MiniMap({
           setIsNavigating(false);
         }, 1200); // Reduced timeout to match scene transition
       } catch (error) {
-        console.error('Scene selection failed:', error);
+        console.error("Scene selection failed:", error);
         setIsNavigating(false);
       }
     },
-    [onSelectScene, lastClickTime, isNavigating, currentScene.id]
+    [onSelectScene, lastClickTime, isNavigating, currentScene.id],
   );
 
   // Handle minimize toggle
@@ -540,7 +540,7 @@ export default function MiniMap({
       e.stopPropagation();
       setIsMinimized(!isMinimized);
     },
-    [isMinimized]
+    [isMinimized],
   );
 
   // Reset pan and zoom
@@ -556,7 +556,7 @@ export default function MiniMap({
       e.stopPropagation();
       resetView();
     },
-    [resetView]
+    [resetView],
   );
 
   const mapSize = isHovered ? 300 : window.innerWidth <= 768 ? 150 : 200;
@@ -566,15 +566,15 @@ export default function MiniMap({
     <div
       ref={miniMapRef}
       className={`${styles.minimap} ${minimapStyles.minimap} ${
-        isDragging ? minimapStyles.dragging : ''
-      } ${isHovered ? minimapStyles.hovered : ''} ${
-        isMinimized ? minimapStyles.minimized : ''
+        isDragging ? minimapStyles.dragging : ""
+      } ${isHovered ? minimapStyles.hovered : ""} ${
+        isMinimized ? minimapStyles.minimized : ""
       }`}
       style={{
         right: `${position.x}px`,
         bottom: `${position.y}px`,
-        width: isMinimized ? '60px' : `${mapSize}px`,
-        height: isMinimized ? '60px' : `${mapSize}px`,
+        width: isMinimized ? "60px" : `${mapSize}px`,
+        height: isMinimized ? "60px" : `${mapSize}px`,
       }}
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovered(true)}
@@ -590,9 +590,9 @@ export default function MiniMap({
         <button
           onClick={toggleMinimize}
           className={`${styles.minimizeButton} minimize-button`}
-          aria-label={isMinimized ? 'Expand minimap' : 'Minimize minimap'}
+          aria-label={isMinimized ? "Expand minimap" : "Minimize minimap"}
         >
-          {isMinimized ? '📍' : '−'}
+          {isMinimized ? "📍" : "−"}
         </button>
       </div>
 
@@ -600,7 +600,7 @@ export default function MiniMap({
         <div
           ref={contentRef}
           className={`${styles.minimapContent} ${minimapStyles.minimapContent} minimap-content ${
-            isPanning ? minimapStyles.panning : ''
+            isPanning ? minimapStyles.panning : ""
           }`}
           onDoubleClick={handleDoubleClick}
         >
@@ -608,7 +608,7 @@ export default function MiniMap({
           <div className={styles.mapGrid} />
 
           {/* Scene hotspots - filtered by zoom level and proximity */}
-          {visibleHotspots.map(scene => {
+          {visibleHotspots.map((scene) => {
             const coords = positionToMapCoords(scene.id);
             const isCurrentScene = scene.id === currentScene.id;
             const hasPOIs = (poiSceneCounts[scene.id] || 0) > 0;
@@ -623,35 +623,35 @@ export default function MiniMap({
             return (
               <div
                 key={scene.id}
-                onClick={e => handleHotspotClick(scene.id, e)}
+                onClick={(e) => handleHotspotClick(scene.id, e)}
                 className={`${styles.sceneHotspot} ${minimapStyles.sceneHotspot} scene-hotspot ${
                   isCurrentScene
                     ? `${styles.current} ${minimapStyles.current}`
                     : `${styles.other} ${minimapStyles.other}`
-                } ${hasPOIs && !isCurrentScene ? styles.poiPulse : ''} ${
-                  isNavigating ? minimapStyles.navigating : ''
+                } ${hasPOIs && !isCurrentScene ? styles.poiPulse : ""} ${
+                  isNavigating ? minimapStyles.navigating : ""
                 }`}
                 style={{
                   left: `${coords.x}%`,
                   top: `${coords.y}%`,
-                  visibility: isVisible ? 'visible' : 'hidden',
+                  visibility: isVisible ? "visible" : "hidden",
                   opacity: isVisible ? (isNavigating ? 0.5 : 1) : 0,
                 }}
                 title={
                   isNavigating
-                    ? 'Navigation in progress...'
+                    ? "Navigation in progress..."
                     : `${scene.name} (Floor ${scene.floor})`
                 }
                 tabIndex={isNavigating ? -1 : 0}
-                role='button'
+                role="button"
                 aria-label={
                   isNavigating
-                    ? 'Navigation in progress'
+                    ? "Navigation in progress"
                     : `Navigate to ${scene.name}`
                 }
                 aria-disabled={isNavigating}
-                onKeyDown={e => {
-                  if (!isNavigating && (e.key === 'Enter' || e.key === ' ')) {
+                onKeyDown={(e) => {
+                  if (!isNavigating && (e.key === "Enter" || e.key === " ")) {
                     e.preventDefault();
                     handleHotspotClick(scene.id, e as any);
                   }
@@ -672,8 +672,8 @@ export default function MiniMap({
                 currentSceneCoords.x < 120 &&
                 currentSceneCoords.y > -20 &&
                 currentSceneCoords.y < 120
-                  ? 'visible'
-                  : 'hidden',
+                  ? "visible"
+                  : "hidden",
               opacity:
                 currentSceneCoords.x > -20 &&
                 currentSceneCoords.x < 120 &&
@@ -691,13 +691,15 @@ export default function MiniMap({
             currentScene.linkHotspots.length > 0 && (
               <svg className={minimapStyles.connectionLines}>
                 {currentScene.linkHotspots.map((hotspot, index) => {
-                  const targetScene = scenes.find(s => s.id === hotspot.target);
+                  const targetScene = scenes.find(
+                    (s) => s.id === hotspot.target,
+                  );
                   if (!targetScene || targetScene.floor !== currentScene.floor)
                     return null;
 
                   // Only show connection if target scene is visible in filtered hotspots
                   const isTargetVisible = visibleHotspots.some(
-                    scene => scene.id === hotspot.target
+                    (scene) => scene.id === hotspot.target,
                   );
                   if (!isTargetVisible) return null;
 
@@ -737,11 +739,11 @@ export default function MiniMap({
             <div
               className={styles.resetIndicator}
               onClick={resetView}
-              title='Reset view'
-              role='button'
+              title="Reset view"
+              role="button"
               tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   resetView();
                 }

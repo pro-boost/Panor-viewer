@@ -1,19 +1,28 @@
-import { useCallback, useMemo } from 'react';
-import { SceneInfo as SceneInfoType } from '@/types/scenes';
-import { PanoramaViewerRefs, PanoramaViewerActions, ViewParams } from './usePanoramaViewer';
+import { useCallback, useRef } from "react";
+import { SceneInfo as SceneInfoType } from "@/types/scenes";
+import {
+  PanoramaViewerRefs,
+  PanoramaViewerActions,
+  ViewParams,
+} from "./usePanoramaViewer";
+import { FileURLManager } from "@/utils/fileHelpers";
 
 // Error types for better error handling
 export enum SceneManagerError {
-  SCENE_NOT_FOUND = 'SCENE_NOT_FOUND',
-  VIEWER_NOT_INITIALIZED = 'VIEWER_NOT_INITIALIZED',
-  SCENE_LOAD_FAILED = 'SCENE_LOAD_FAILED',
-  INVALID_SCENE_DATA = 'INVALID_SCENE_DATA',
+  SCENE_NOT_FOUND = "SCENE_NOT_FOUND",
+  VIEWER_NOT_INITIALIZED = "VIEWER_NOT_INITIALIZED",
+  SCENE_LOAD_FAILED = "SCENE_LOAD_FAILED",
+  INVALID_SCENE_DATA = "INVALID_SCENE_DATA",
 }
 
 export class SceneManagerException extends Error {
-  constructor(public type: SceneManagerError, message: string, public sceneId?: string) {
+  constructor(
+    public type: SceneManagerError,
+    message: string,
+    public sceneId?: string,
+  ) {
     super(message);
-    this.name = 'SceneManagerException';
+    this.name = "SceneManagerException";
   }
 }
 
@@ -37,23 +46,30 @@ export function useSceneManager({
     (scene1: string, scene2: string): number => {
       try {
         if (!scene1 || !scene2) {
-          console.warn('Invalid scene IDs provided for distance calculation');
+          console.warn("Invalid scene IDs provided for distance calculation");
           return Infinity;
         }
 
         const s1 = refs.scenesRef.current[scene1]?.data;
         const s2 = refs.scenesRef.current[scene2]?.data;
-        
+
         if (!s1 || !s2) {
           console.warn(`Scene not found: ${!s1 ? scene1 : scene2}`);
           return Infinity;
         }
 
         // Validate coordinates
-        if (!s1.position || !s2.position ||
-            typeof s1.position.x !== 'number' || typeof s1.position.y !== 'number' || typeof s1.position.z !== 'number' ||
-            typeof s2.position.x !== 'number' || typeof s2.position.y !== 'number' || typeof s2.position.z !== 'number') {
-          console.warn('Invalid scene coordinates for distance calculation');
+        if (
+          !s1.position ||
+          !s2.position ||
+          typeof s1.position.x !== "number" ||
+          typeof s1.position.y !== "number" ||
+          typeof s1.position.z !== "number" ||
+          typeof s2.position.x !== "number" ||
+          typeof s2.position.y !== "number" ||
+          typeof s2.position.z !== "number"
+        ) {
+          console.warn("Invalid scene coordinates for distance calculation");
           return Infinity;
         }
 
@@ -61,20 +77,20 @@ export function useSceneManager({
         const dy = s1.position.y - s2.position.y;
         const dz = s1.position.z - s2.position.z;
         const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        
+
         return isNaN(distance) ? Infinity : distance;
       } catch (error) {
-        console.error('Error calculating scene distance:', error);
+        console.error("Error calculating scene distance:", error);
         return Infinity;
       }
     },
-    [refs.scenesRef]
+    [refs.scenesRef],
   );
 
   // Update performance statistics
   const updatePerformanceStats = useCallback(() => {
     const loadedCount = Object.values(refs.scenesRef.current).filter(
-      s => s.loaded
+      (s) => s.loaded,
     ).length;
     const avgTime =
       refs.loadTimesRef.current.length > 0
@@ -96,7 +112,7 @@ export function useSceneManager({
   const loadScene = useCallback(
     async (
       sceneId: string,
-      priority: 'high' | 'normal' | 'low' = 'normal'
+      priority: "high" | "normal" | "low" = "normal",
     ): Promise<void> => {
       const sceneInfo = refs.scenesRef.current[sceneId];
       if (!sceneInfo || sceneInfo.loaded) return;
@@ -108,7 +124,10 @@ export function useSceneManager({
       try {
         // Create source with project-specific path
         const imagePath = projectId
-          ? `/${projectId}/images/${sceneInfo.data.id}-pano.jpg`
+          ? FileURLManager.getPanoramaImageURL(
+              projectId,
+              `${sceneInfo.data.id}-pano.jpg`,
+            )
           : `/images/${sceneInfo.data.id}-pano.jpg`;
         const source = Marzipano.ImageUrlSource.fromString(imagePath);
 
@@ -116,7 +135,7 @@ export function useSceneManager({
         const totalScenes = Object.keys(refs.scenesRef.current).length;
         let geometry;
 
-        if (totalScenes > 100 || priority === 'low') {
+        if (totalScenes > 100 || priority === "low") {
           // Ultra-light for large datasets
           geometry = new Marzipano.EquirectGeometry([
             { width: 256 },
@@ -124,7 +143,7 @@ export function useSceneManager({
             { width: 1024 },
             { width: 2048 },
           ]);
-        } else if (totalScenes > 50 || priority === 'normal') {
+        } else if (totalScenes > 50 || priority === "normal") {
           // Balanced for medium datasets
           geometry = new Marzipano.EquirectGeometry([
             { width: 512 },
@@ -145,16 +164,16 @@ export function useSceneManager({
         // Create view with zoom-friendly limits (always 4096 for zoom functionality)
         const limiter = Marzipano.RectilinearView.limit.traditional(
           4096, // Keep 4096 for zoom functionality
-          (120 * Math.PI) / 180
+          (120 * Math.PI) / 180,
         );
         const view = new Marzipano.RectilinearView(
           sceneInfo.data.initialViewParameters,
-          limiter
+          limiter,
         );
 
         // Create scene
         if (!viewer) {
-          throw new Error('Viewer not initialized');
+          throw new Error("Viewer not initialized");
         }
         const scene = viewer.createScene({
           source: source,
@@ -166,7 +185,7 @@ export function useSceneManager({
         // Wait for the image to actually load by preloading it
         await new Promise<void>((resolve, reject) => {
           const timeout = setTimeout(() => {
-            reject(new Error('Scene load timeout'));
+            reject(new Error("Scene load timeout"));
           }, 15000); // 15 second timeout
 
           const img = new Image();
@@ -176,7 +195,7 @@ export function useSceneManager({
           };
           img.onerror = () => {
             clearTimeout(timeout);
-            reject(new Error('Failed to load scene image'));
+            reject(new Error("Failed to load scene image"));
           };
           img.src = imagePath;
         });
@@ -194,16 +213,18 @@ export function useSceneManager({
         updatePerformanceStats();
 
         console.log(
-          `Loaded scene ${sceneId} with ${priority} priority in ${Math.round(loadTime)}ms (${Object.keys(refs.scenesRef.current).length} total scenes)`
+          `Loaded scene ${sceneId} with ${priority} priority in ${Math.round(loadTime)}ms (${Object.keys(refs.scenesRef.current).length} total scenes)`,
         );
       } catch (err) {
         console.error(`Failed to load scene ${sceneId}:`, err);
         // Still track the time even if it failed, but don't add to successful load times
         const loadTime = performance.now() - startTime;
-        console.log(`Failed to load scene ${sceneId} after ${Math.round(loadTime)}ms`);
+        console.log(
+          `Failed to load scene ${sceneId} after ${Math.round(loadTime)}ms`,
+        );
       }
     },
-    [refs, projectId, updatePerformanceStats]
+    [refs, projectId, updatePerformanceStats],
   );
 
   // Switch scene with improved error handling
@@ -214,24 +235,24 @@ export function useSceneManager({
       preserveViewDirection: boolean,
       clearHotspotsForScene: (sceneInfo: SceneInfoType) => void,
       createHotspotsForScene: (sceneInfo: SceneInfoType) => void,
-      preloadAdjacentScenes: (sceneId: string) => Promise<void>
+      preloadAdjacentScenes: (sceneId: string) => Promise<void>,
     ): Promise<void> => {
       const switchStartTime = performance.now();
-      
+
       try {
         if (!sceneId) {
           throw new SceneManagerException(
             SceneManagerError.INVALID_SCENE_DATA,
-            'Scene ID is required for switching',
-            sceneId
+            "Scene ID is required for switching",
+            sceneId,
           );
         }
 
         if (!refs.viewerRef.current) {
           throw new SceneManagerException(
             SceneManagerError.VIEWER_NOT_INITIALIZED,
-            'Viewer is not initialized',
-            sceneId
+            "Viewer is not initialized",
+            sceneId,
           );
         }
 
@@ -240,7 +261,7 @@ export function useSceneManager({
           throw new SceneManagerException(
             SceneManagerError.SCENE_NOT_FOUND,
             `Scene ${sceneId} not found in scenes reference`,
-            sceneId
+            sceneId,
           );
         }
 
@@ -251,12 +272,12 @@ export function useSceneManager({
         // Load scene if not already loaded
         if (!sceneInfo.loaded) {
           try {
-            await loadScene(sceneId, 'high');
+            await loadScene(sceneId, "high");
           } catch (loadError) {
             throw new SceneManagerException(
               SceneManagerError.SCENE_LOAD_FAILED,
-              `Failed to load scene: ${loadError instanceof Error ? loadError.message : 'Unknown error'}`,
-              sceneId
+              `Failed to load scene: ${loadError instanceof Error ? loadError.message : "Unknown error"}`,
+              sceneId,
             );
           }
         }
@@ -266,7 +287,7 @@ export function useSceneManager({
           throw new SceneManagerException(
             SceneManagerError.SCENE_LOAD_FAILED,
             `Scene ${sceneId} is not loaded yet or failed to load`,
-            sceneId
+            sceneId,
           );
         }
 
@@ -296,9 +317,12 @@ export function useSceneManager({
             } else {
               currentView = currentViewParams;
             }
-            console.log('Preserving view direction:', currentView);
+            console.log("Preserving view direction:", currentView);
           } catch (viewError) {
-            console.warn('Failed to calculate preserved view direction:', viewError);
+            console.warn(
+              "Failed to calculate preserved view direction:",
+              viewError,
+            );
             currentView = currentViewParams;
           }
         }
@@ -309,7 +333,7 @@ export function useSceneManager({
             clearHotspotsForScene(refs.scenesRef.current[currentScene]);
           }
         } catch (hotspotError) {
-          console.warn('Failed to clear hotspots:', hotspotError);
+          console.warn("Failed to clear hotspots:", hotspotError);
         }
 
         // Hide hotspots immediately for clean transition
@@ -323,31 +347,35 @@ export function useSceneManager({
           sceneInfo.scene.switchTo({
             transitionDuration: transitionDuration,
           });
-          
+
           console.log(`Scene switched successfully to: ${sceneId}`);
         } catch (switchError) {
-          const errorMessage = switchError instanceof Error ? switchError.message : 'Unknown error';
+          const errorMessage =
+            switchError instanceof Error
+              ? switchError.message
+              : "Unknown error";
           console.error(`Scene switch failed for ${sceneId}:`, errorMessage);
-          
+
           throw new SceneManagerException(
             SceneManagerError.SCENE_LOAD_FAILED,
             `Failed to switch viewer to scene: ${errorMessage}`,
-            sceneId
+            sceneId,
           );
         }
 
         // Coordinate view change with slight delay
         setTimeout(() => {
           try {
-            const viewParams = currentView || sceneInfo.data.initialViewParameters;
+            const viewParams =
+              currentView || sceneInfo.data.initialViewParameters;
             if (refs.viewerRef.current && viewParams) {
               refs.viewerRef.current.lookTo(viewParams, {
                 transitionDuration: 0, // Apply instantly without rotation
               });
-              console.log('Applied view parameters');
+              console.log("Applied view parameters");
             }
           } catch (viewError) {
-            console.warn('Failed to apply view parameters:', viewError);
+            console.warn("Failed to apply view parameters:", viewError);
           }
         }, 0);
 
@@ -357,7 +385,7 @@ export function useSceneManager({
         try {
           createHotspotsForScene(sceneInfo);
         } catch (hotspotError) {
-          console.warn('Failed to create hotspots:', hotspotError);
+          console.warn("Failed to create hotspots:", hotspotError);
         }
 
         // Show hotspots only after transition completes
@@ -375,46 +403,51 @@ export function useSceneManager({
                 }, 5000);
               }
             } catch (hotspotError) {
-              console.warn('Failed to manage hotspot visibility:', hotspotError);
+              console.warn(
+                "Failed to manage hotspot visibility:",
+                hotspotError,
+              );
             }
           }, 1300); // Wait for transition to complete
         }
 
         // Preload adjacent scenes in background after transition
         setTimeout(() => {
-          preloadAdjacentScenes(sceneId).catch(err => {
-            console.error('Error preloading adjacent scenes:', err);
+          preloadAdjacentScenes(sceneId).catch((err) => {
+            console.error("Error preloading adjacent scenes:", err);
           });
         }, transitionDuration + 300); // Wait for transition to complete
 
         actions.setIsLoading?.(false);
-        
+
         // Measure total scene switch time and track it
         const totalSwitchTime = performance.now() - switchStartTime;
-        
+
         // Track scene switch time in performance metrics
         refs.loadTimesRef.current.push(totalSwitchTime);
         if (refs.loadTimesRef.current.length > 20) {
           refs.loadTimesRef.current.shift(); // Keep only last 20 measurements
         }
         updatePerformanceStats();
-        
-        console.log(`Scene switch completed: ${sceneId} in ${Math.round(totalSwitchTime)}ms`);
+
+        console.log(
+          `Scene switch completed: ${sceneId} in ${Math.round(totalSwitchTime)}ms`,
+        );
       } catch (error) {
         actions.setIsLoading?.(false);
-        
+
         if (error instanceof SceneManagerException) {
           console.error(`Scene Manager Error [${error.type}]:`, error.message);
           actions.setError?.(`Scene switch failed: ${error.message}`);
         } else {
-          console.error('Unexpected error switching scene:', error);
+          console.error("Unexpected error switching scene:", error);
           actions.setError?.(`Failed to switch to scene: ${sceneId}`);
         }
-        
+
         throw error;
       }
     },
-    [refs, actions, currentScene, currentViewParams, loadScene]
+    [refs, actions, currentScene, currentViewParams, loadScene],
   );
 
   // Load scene with progressive quality and improved error handling
@@ -424,8 +457,8 @@ export function useSceneManager({
         if (!sceneId) {
           throw new SceneManagerException(
             SceneManagerError.INVALID_SCENE_DATA,
-            'Scene ID is required for loading',
-            sceneId
+            "Scene ID is required for loading",
+            sceneId,
           );
         }
 
@@ -434,15 +467,15 @@ export function useSceneManager({
           throw new SceneManagerException(
             SceneManagerError.SCENE_NOT_FOUND,
             `Scene ${sceneId} not found in scenes reference`,
-            sceneId
+            sceneId,
           );
         }
 
         if (!refs.viewerRef.current) {
           throw new SceneManagerException(
             SceneManagerError.VIEWER_NOT_INITIALIZED,
-            'Viewer is not initialized',
-            sceneId
+            "Viewer is not initialized",
+            sceneId,
           );
         }
 
@@ -451,7 +484,8 @@ export function useSceneManager({
         console.log(`Loading scene ${sceneId} with progressive quality`);
 
         // Use the same loading approach as loadScene but with priority based on targetQuality
-        const priority = targetQuality >= 2 ? 'high' : targetQuality >= 1 ? 'normal' : 'low';
+        const priority =
+          targetQuality >= 2 ? "high" : targetQuality >= 1 ? "normal" : "low";
         await loadScene(sceneId, priority);
 
         console.log(`Progressive loading completed for scene ${sceneId}`);
@@ -464,7 +498,7 @@ export function useSceneManager({
         throw error;
       }
     },
-    [refs.scenesRef, refs.viewerRef]
+    [refs.scenesRef, refs.viewerRef],
   );
 
   return {

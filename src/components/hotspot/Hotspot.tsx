@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import { createRoot, Root } from 'react-dom/client';
-import styles from './Hotspot.module.css';
-import { LinkHotspot } from '@/types/scenes';
-import { ViewParams } from '@/hooks/usePanoramaViewer';
+import { useEffect, useRef, useState } from "react";
+import { createRoot, Root } from "react-dom/client";
+import styles from "./Hotspot.module.css";
+import { LinkHotspot } from "@/types/scenes";
+import { ViewParams } from "@/hooks/usePanoramaViewer";
 
 interface HotspotProps {
   element: HTMLElement;
@@ -39,12 +39,12 @@ export function HotspotComponent({
 
   return (
     <div
-      className={`${styles.hotspot} ${visible || isHovered ? styles.visible : ''} ${hasPOIs ? styles.poiGlow : ''}`}
+      className={`${styles.hotspot} ${visible || isHovered ? styles.visible : ""} ${hasPOIs ? styles.poiGlow : ""}`}
       onClick={handleClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={style}
-      data-testid='hotspot'
+      data-testid="hotspot"
     >
       <div className={styles.arrow}></div>
     </div>
@@ -70,9 +70,9 @@ export default function Hotspot({
     if (element) {
       // Create a unique container inside the element
       if (!containerRef.current) {
-        containerRef.current = document.createElement('div');
-        containerRef.current.style.width = '100%';
-        containerRef.current.style.height = '100%';
+        containerRef.current = document.createElement("div");
+        containerRef.current.style.width = "100%";
+        containerRef.current.style.height = "100%";
         element.appendChild(containerRef.current);
       }
 
@@ -94,7 +94,7 @@ export default function Hotspot({
           try {
             root.unmount();
           } catch (e) {
-            console.warn('Failed to unmount root:', e);
+            console.warn("Failed to unmount root:", e);
           }
         }, 0);
       }
@@ -120,8 +120,8 @@ export default function Hotspot({
         0.2,
         Math.min(
           1.5,
-          1.5 - ((distance - minDistance) / (maxDistance - minDistance)) * 1
-        )
+          1.5 - ((distance - minDistance) / (maxDistance - minDistance)) * 1,
+        ),
       );
 
       // Oval factor: closer = more circular (0.9), farther = more oval/flat (0.3) to simulate floor perspective
@@ -129,55 +129,57 @@ export default function Hotspot({
         0.3,
         Math.min(
           0.9,
-          0.9 - ((distance - minDistance) / (maxDistance - minDistance)) * 0.6
-        )
+          0.9 - ((distance - minDistance) / (maxDistance - minDistance)) * 0.6,
+        ),
       );
 
       // Perspective rotation: farther objects appear more tilted to simulate lying flat on floor
       const perspectiveRotation = Math.min(
         65,
-        45 + ((distance - minDistance) / (maxDistance - minDistance)) * 20
+        45 + ((distance - minDistance) / (maxDistance - minDistance)) * 20,
       );
 
-// Zoom compensation: adjust position to counteract zoom-induced shift
-let zoomOffsetX = 0;
-let zoomOffsetY = 0;
+      // Zoom compensation: adjust position to counteract zoom-induced shift
+      let zoomOffsetX = 0;
+      let zoomOffsetY = 0;
 
-if (currentViewParams?.fov) {
-  // Reference FOV (when hotspots should be in exact position)
-  const referenceFov = Math.PI / 4; // 45 degrees in radians
-  const currentFov = currentViewParams.fov;
-  
-  // Calculate zoom factor (higher FOV = zoomed out, lower FOV = zoomed in)
-  const zoomFactor = currentFov / referenceFov;
-  
-  // When zoomed out (higher FOV), hotspots appear to shift backward and right
-  // So we compensate by moving them forward (negative Y) and left (negative X)
-  const compensationStrength = 0.4; // Increased strength for more noticeable effect
-  
-  // Calculate offset based on distance and zoom level
-  const distanceNormalized = (distance - minDistance) / (maxDistance - minDistance);
-  const baseOffset = distanceNormalized * compensationStrength;
-  
-  // Apply compensation: more compensation for more zoomed out views
-  const zoomCompensation = (zoomFactor - 1) * baseOffset;
-  
-  // NEW: Add distance dampening - reduce compensation for far hotspots
-  // Close hotspots (distance < 5) get full compensation
-  // Far hotspots get reduced compensation
-  const distanceDampening = distance < 5 ? 1 : Math.max(0.1, 1 / (distance / 5));
-  
-  // More aggressive compensation for forward/left movement when zooming out
-  zoomOffsetX = -zoomCompensation * 2 * distanceDampening; // Move left to counteract rightward shift
-  zoomOffsetY = -zoomCompensation * 3.5 * distanceDampening; // Move forward to counteract backward shift
-}
+      if (currentViewParams?.fov) {
+        // Reference FOV (when hotspots should be in exact position)
+        const referenceFov = Math.PI / 4; // 45 degrees in radians
+        const currentFov = currentViewParams.fov;
+
+        // Calculate zoom factor (higher FOV = zoomed out, lower FOV = zoomed in)
+        const zoomFactor = currentFov / referenceFov;
+
+        // When zoomed out (higher FOV), hotspots appear to shift backward and right
+        // So we compensate by moving them forward (negative Y) and left (negative X)
+        const compensationStrength = 0.4; // Increased strength for more noticeable effect
+
+        // Calculate offset based on distance and zoom level
+        const distanceNormalized =
+          (distance - minDistance) / (maxDistance - minDistance);
+        const baseOffset = distanceNormalized * compensationStrength;
+
+        // Apply compensation: more compensation for more zoomed out views
+        const zoomCompensation = (zoomFactor - 1) * baseOffset;
+
+        // NEW: Add distance dampening - reduce compensation for far hotspots
+        // Close hotspots (distance < 5) get full compensation
+        // Far hotspots get reduced compensation
+        const distanceDampening =
+          distance < 5 ? 1 : Math.max(0.1, 1 / (distance / 5));
+
+        // More aggressive compensation for forward/left movement when zooming out
+        zoomOffsetX = -zoomCompensation * 2 * distanceDampening; // Move left to counteract rightward shift
+        zoomOffsetY = -zoomCompensation * 3.5 * distanceDampening; // Move forward to counteract backward shift
+      }
 
       const hotspotStyle = {
-        '--scale-factor': scaleFactor,
-        '--oval-factor': ovalFactor,
-        '--perspective-rotation': `${perspectiveRotation}deg`,
-        '--zoom-offset-x': `${zoomOffsetX * 100}%`,
-        '--zoom-offset-y': `${zoomOffsetY * 100}%`,
+        "--scale-factor": scaleFactor,
+        "--oval-factor": ovalFactor,
+        "--perspective-rotation": `${perspectiveRotation}deg`,
+        "--zoom-offset-x": `${zoomOffsetX * 100}%`,
+        "--zoom-offset-y": `${zoomOffsetY * 100}%`,
       } as React.CSSProperties;
 
       rootRef.current.render(
@@ -187,7 +189,7 @@ if (currentViewParams?.fov) {
           onNavigate={onNavigate}
           style={hotspotStyle}
           hasPOIs={hasPOIs}
-        />
+        />,
       );
     }
   }, [data, visible, onNavigate, currentViewParams]);

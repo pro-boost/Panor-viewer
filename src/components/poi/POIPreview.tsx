@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { POIPreviewProps } from '@/types/poi';
-import { getFileCategory } from './utils';
+import React, { useState, useEffect } from "react";
+import { POIPreviewProps } from "@/types/poi";
+import { getFileCategory } from "./utils";
 import {
   FaTimes,
   FaFile,
@@ -13,12 +13,18 @@ import {
   FaEdit,
   FaTrash,
   FaEye,
-} from 'react-icons/fa';
-import ConfirmationModal from '../ui/ConfirmationModal';
-import styles from './POIPreview.module.css';
+} from "react-icons/fa";
+import ConfirmationModal from "../ui/ConfirmationModal";
+import styles from "./POIPreview.module.css";
 // Using iframe-based PDF viewer for better compatibility
 
-const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit, onDelete }) => {
+const POIPreview: React.FC<POIPreviewProps> = ({
+  poi,
+  projectId,
+  onClose,
+  onEdit,
+  onDelete,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [pdfError, setPdfError] = useState(false);
@@ -66,21 +72,21 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
   };
 
   const getContentPath = (filename?: string) => {
-    if (poi.type === 'iframe') {
+    if (poi.type === "iframe") {
       return poi.content;
     }
     // Use API route for file serving to handle CORS and static file issues
     const file = filename || poi.content;
-    return `/api/files/${projectId}/data/poi/attachments/${file}`;
+    return `/api/files/${projectId}/poi/attachments/${file}`;
   };
 
   const renderFileIcon = (category: string) => {
     switch (category) {
-      case 'image':
+      case "image":
         return <FaImage className="text-blue-500" size={24} />;
-      case 'video':
+      case "video":
         return <FaVideo className="text-green-500" size={24} />;
-      case 'pdf':
+      case "pdf":
         return <FaFilePdf className="text-red-500" size={24} />;
       default:
         return <FaFile className="text-gray-500" size={24} />;
@@ -88,24 +94,25 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
   };
 
   const decodeHtmlEntities = (text: string) => {
-    const textarea = document.createElement('textarea');
+    const textarea = document.createElement("textarea");
     textarea.innerHTML = text;
     return textarea.value;
   };
 
   const convertYouTubeUrl = (url: string): string => {
     // Convert various YouTube URL formats to embed format
-    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const youtubeRegex =
+      /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
     const match = url.match(youtubeRegex);
-    
+
     if (match && match[1]) {
       const videoId = match[1];
       // Extract timestamp if present
       const timeMatch = url.match(/[?&]t=([0-9]+)/);
-      const startTime = timeMatch ? `?start=${timeMatch[1]}` : '';
+      const startTime = timeMatch ? `?start=${timeMatch[1]}` : "";
       return `https://www.youtube.com/embed/${videoId}${startTime}`;
     }
-    
+
     return url;
   };
 
@@ -113,22 +120,22 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     // Convert Vimeo URLs to embed format
     const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/([0-9]+)/;
     const match = url.match(vimeoRegex);
-    
+
     if (match && match[1]) {
       return `https://player.vimeo.com/video/${match[1]}`;
     }
-    
+
     return url;
   };
 
   const getIframeContent = () => {
     const content = poi.content.trim();
-    
+
     // If it's HTML iframe code, extract src or render directly
-    if (content.toLowerCase().startsWith('<iframe')) {
+    if (content.toLowerCase().startsWith("<iframe")) {
       // Decode HTML entities first
       const decodedContent = decodeHtmlEntities(content);
-      
+
       // Try to extract src attribute from decoded content
       const srcMatch = decodedContent.match(/src=["']([^"']+)["']/i);
       if (srcMatch) {
@@ -136,40 +143,40 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
         // Convert YouTube/Vimeo URLs in iframe src to embed format
         src = convertYouTubeUrl(src);
         src = convertVimeoUrl(src);
-        
+
         return {
           src: src,
           html: decodedContent.replace(/src=["']([^"']+)["']/i, `src="${src}"`),
-          isHtml: true
+          isHtml: true,
         };
       }
       // If no src found, render as HTML
       return {
         src: null,
         html: decodedContent,
-        isHtml: true
+        isHtml: true,
       };
     }
-    
+
     // It's a direct URL - convert YouTube/Vimeo URLs to embed format
     let convertedUrl = convertYouTubeUrl(content);
     convertedUrl = convertVimeoUrl(convertedUrl);
-    
+
     return {
       src: convertedUrl,
       html: null,
-      isHtml: false
+      isHtml: false,
     };
   };
 
   const renderFileContent = (filename: string, index?: number) => {
     const contentPath = getContentPath(filename);
-    const fileExtension = filename.split('.').pop()?.toLowerCase() || '';
+    const fileExtension = filename.split(".").pop()?.toLowerCase() || "";
     const mimeType = getMimeType(fileExtension);
     const category = getFileCategory(mimeType);
     const fileKey = index !== undefined ? `${filename}-${index}` : filename;
 
-    if (category === 'image') {
+    if (category === "image") {
       return (
         <div key={fileKey} className={styles.imageContainer}>
           {isLoading && (
@@ -183,7 +190,6 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
               <p className={styles.errorText}>Failed to load image</p>
               <a
                 href={contentPath}
-                target="_blank"
                 rel="noopener noreferrer"
                 className={styles.errorLink}
               >
@@ -203,7 +209,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
       );
     }
 
-    if (category === 'video') {
+    if (category === "video") {
       return (
         <div key={fileKey} className={styles.videoContainer}>
           {isLoading && (
@@ -225,7 +231,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     }
 
     // For PDFs, show PDF viewer
-    if (category === 'pdf') {
+    if (category === "pdf") {
       return (
         <div key={fileKey} className={styles.pdfContainer}>
           {isLoading && (
@@ -240,7 +246,6 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
               <p className={styles.errorText}>Failed to load PDF</p>
               <a
                 href={contentPath}
-                target="_blank"
                 rel="noopener noreferrer"
                 className={styles.errorLink}
               >
@@ -259,7 +264,6 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
               <div className={styles.pdfActions}>
                 <a
                   href={contentPath}
-                  target="_blank"
                   rel="noopener noreferrer"
                   className={styles.openFileButton}
                 >
@@ -279,8 +283,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
         <p className={styles.fileName}>{getDisplayFilename(filename, index)}</p>
         <a
           href={contentPath}
-          target='_blank'
-          rel='noopener noreferrer'
+          rel="noopener noreferrer"
           className={styles.openFileButton}
         >
           Open File
@@ -290,9 +293,9 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
   };
 
   const renderContent = () => {
-    if (poi.type === 'iframe') {
+    if (poi.type === "iframe") {
       const iframeContent = getIframeContent();
-      
+
       return (
         <div className={styles.iframeContainer}>
           {isLoading && (
@@ -301,7 +304,7 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
             </div>
           )}
           {iframeContent.isHtml && iframeContent.html ? (
-            <div 
+            <div
               dangerouslySetInnerHTML={{ __html: iframeContent.html }}
               className={styles.iframeWrapper}
             />
@@ -320,7 +323,6 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
           {iframeContent.src && (
             <a
               href={iframeContent.src}
-              target="_blank"
               rel="noopener noreferrer"
               className={styles.externalLinkButton}
               title="Open in new tab"
@@ -338,29 +340,31 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
         // Single file - render directly
         return renderFileContent(poi.files[0], 0);
       }
-      
+
       // Multiple files - show stacked layout with preview
       return (
         <div className={styles.stackedFilesContainer}>
           <div className={styles.filesHeader}>
-            <p className={styles.filesCount}>{poi.files.length} files attached</p>
+            <p className={styles.filesCount}>
+              {poi.files.length} files attached
+            </p>
           </div>
-          
+
           {/* Main preview area */}
           <div className={styles.mainPreviewArea}>
             {renderFileContent(poi.files[selectedFileIndex], selectedFileIndex)}
           </div>
-          
+
           {/* File thumbnails/stack */}
           <div className={styles.fileStack}>
             {poi.files.map((filename, index) => {
               const category = getFileCategory(filename);
               const isSelected = index === selectedFileIndex;
-              
+
               return (
                 <div
                   key={`stack-${index}`}
-                  className={`${styles.stackItem} ${isSelected ? styles.stackItemSelected : ''}`}
+                  className={`${styles.stackItem} ${isSelected ? styles.stackItemSelected : ""}`}
                   onClick={() => setSelectedFileIndex(index)}
                   style={{ zIndex: poi.files!.length - index }}
                 >
@@ -368,7 +372,9 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
                     {renderFileIcon(category)}
                   </div>
                   <div className={styles.stackItemInfo}>
-                    <span className={styles.stackItemName}>{getDisplayFilename(filename, index)}</span>
+                    <span className={styles.stackItemName}>
+                      {getDisplayFilename(filename, index)}
+                    </span>
                     <span className={styles.stackItemType}>{category}</span>
                   </div>
                   {isSelected && (
@@ -385,14 +391,19 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     }
 
     // Check if POI has no files or empty content
-    if ((!poi.files || poi.files.length === 0) && (!poi.content || poi.content.trim() === '')) {
+    if (
+      (!poi.files || poi.files.length === 0) &&
+      (!poi.content || poi.content.trim() === "")
+    ) {
       return (
         <div className={styles.emptyContentContainer}>
           <div className={styles.emptyContentIcon}>
             <FaFile size={48} className="text-gray-400" />
           </div>
           <p className={styles.emptyContentText}>No content available</p>
-          <p className={styles.emptyContentSubtext}>This POI doesn't have any files or content attached.</p>
+          <p className={styles.emptyContentSubtext}>
+            This POI doesn&apos;t have any files or content attached.
+          </p>
         </div>
       );
     }
@@ -401,34 +412,40 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
     return renderFileContent(poi.content);
   };
 
-
-
   const getMimeType = (extension: string): string => {
     const mimeTypes: { [key: string]: string } = {
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      pdf: 'application/pdf',
-      mp4: 'video/mp4',
-      webm: 'video/webm'
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+      gif: "image/gif",
+      pdf: "application/pdf",
+      mp4: "video/mp4",
+      webm: "video/webm",
     };
-    return mimeTypes[extension] || 'application/octet-stream';
+    return mimeTypes[extension] || "application/octet-stream";
   };
 
   const getDisplayFilename = (filename: string, index?: number): string => {
     // First, check if we have a custom filename for this index
-    if (index !== undefined && poi.customFilenames && poi.customFilenames[index]) {
+    if (
+      index !== undefined &&
+      poi.customFilenames &&
+      poi.customFilenames[index]
+    ) {
       return poi.customFilenames[index];
     }
-    
+
     // If no custom filename is set, try to use the original filename
-    if (index !== undefined && poi.originalFilenames && poi.originalFilenames[index]) {
+    if (
+      index !== undefined &&
+      poi.originalFilenames &&
+      poi.originalFilenames[index]
+    ) {
       return poi.originalFilenames[index];
     }
-    
+
     // If we have a stored filename, return it, otherwise return empty string
-    return filename || '';
+    return filename || "";
   };
 
   return (
@@ -470,12 +487,8 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
         <div className={styles.previewContent}>
           {poi.description && (
             <div className={styles.descriptionSection}>
-              <h3 className={styles.sectionTitle}>
-                Description
-              </h3>
-              <p className={styles.descriptionText}>
-                {poi.description}
-              </p>
+              <h3 className={styles.sectionTitle}>Description</h3>
+              <p className={styles.descriptionText}>{poi.description}</p>
             </div>
           )}
 
@@ -485,14 +498,18 @@ const POIPreview: React.FC<POIPreviewProps> = ({ poi, projectId, onClose, onEdit
           </div>
 
           <div className={styles.previewFooter}>
-            <p className={styles.footerText}>Created: {new Date(poi.createdAt).toLocaleString()}</p>
+            <p className={styles.footerText}>
+              Created: {new Date(poi.createdAt).toLocaleString()}
+            </p>
             {poi.updatedAt !== poi.createdAt && (
-              <p className={styles.footerText}>Updated: {new Date(poi.updatedAt).toLocaleString()}</p>
+              <p className={styles.footerText}>
+                Updated: {new Date(poi.updatedAt).toLocaleString()}
+              </p>
             )}
           </div>
         </div>
       </div>
-      
+
       <ConfirmationModal
         isOpen={showDeleteConfirm}
         title="Delete POI"

@@ -25,9 +25,9 @@
   align-items: center;
   gap: 0.5rem;
   padding: 10px 14px;
-  
+
   color: #fff;
-  
+
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
@@ -81,7 +81,7 @@
   .contextMenu {
     min-width: 160px;
   }
-  
+
   .menuItem {
     padding: 0.625rem 0.875rem;
     font-size: 0.8125rem;

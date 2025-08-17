@@ -18,7 +18,6 @@
   display: inline-block;
 }
 
-
 /* Consistent logo image size across all variants */
 .logoImage {
   height: 60px;
@@ -26,16 +25,16 @@
   display: block;
   transition: all 0.3s ease;
   /* Add subtle contour and shadow for contrast */
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) 
-          drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))
-          drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))
+    drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.1));
 }
 
 .logoImage:hover {
   transform: scale(1.05);
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4)) 
-          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))
-          drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4))
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6))
+    drop-shadow(0 0 2px rgba(255, 255, 255, 0.2));
 }
 
 /* Responsive adjustments */
@@ -44,21 +43,18 @@
     top: 16px;
     left: 16px;
   }
-  
-  .default,
-  .enhanced {
-    padding: 8px 12px;
-  }
-  
+
+
+
   .default .logoImage,
   .enhanced .logoImage {
-    height: 40px;
+    height: 50px;
   }
-  
+
   .large .logoImage {
     height: 60px;
   }
-  
+
   .small .logoImage {
     height: 35px;
   }
@@ -69,22 +65,18 @@
     top: 12px;
     left: 12px;
   }
-  
-  .default,
-  .enhanced,
-  .small {
-    padding: 6px 10px;
-  }
-  
+
+
+
   .default .logoImage,
   .enhanced .logoImage {
-    height: 35px;
+    height: 45px;
   }
-  
+
   .large .logoImage {
     height: 50px;
   }
-  
+
   .small .logoImage {
     height: 30px;
   }

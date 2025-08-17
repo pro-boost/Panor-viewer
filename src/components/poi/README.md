@@ -15,19 +15,25 @@ A comprehensive POI system for the panorama viewer that allows users to create, 
 ## Components
 
 ### POIComponent.tsx
+
 Main container component that handles:
+
 - Right-click event detection
 - Coordinate conversion from screen to panorama space
 - POI data management and persistence
 - Integration with other POI components
 
 ### POIContextMenu.tsx
+
 Context menu that appears on right-click with options to:
+
 - Create new POI
 - Cancel operation
 
 ### POIModal.tsx
+
 Modal form for POI configuration including:
+
 - Name and description fields
 - Content type selection (File/URL)
 - File upload with drag-and-drop support
@@ -35,14 +41,18 @@ Modal form for POI configuration including:
 - Form validation and submission
 
 ### POIPreview.tsx
+
 Preview component that displays:
+
 - POI information and metadata
 - Image/video content preview
 - PDF and file download links
 - Iframe content for URLs
 
 ### utils.ts
+
 Utility functions for:
+
 - Screen to panorama coordinate conversion
 - Angle validation and normalization
 - File type validation
@@ -53,15 +63,15 @@ Utility functions for:
 ### Integration
 
 ```tsx
-import POIComponent from '@/components/poi/POIComponent';
+import POIComponent from "@/components/poi/POIComponent";
 
 // In your panorama viewer component
 <POIComponent
   currentPanoramaId={currentSceneId}
   viewerSize={{ width: viewerWidth, height: viewerHeight }}
   viewerRef={marzipanoViewerRef}
-  onPOICreated={(poi) => console.log('New POI created:', poi)}
-/>
+  onPOICreated={(poi) => console.log("New POI created:", poi)}
+/>;
 ```
 
 ### Creating POIs
@@ -120,12 +130,14 @@ public/
 ## API Endpoints
 
 ### POST /api/poi/upload
+
 Handles file uploads for POI attachments.
 
 **Request**: FormData with file and filename
 **Response**: Upload confirmation with file details
 
 ### POST /api/poi/save
+
 Saves POI metadata to the JSON data file.
 
 **Request**: POI data object
@@ -151,6 +163,7 @@ NEXT_PUBLIC_PROJECT_NAME=pano-app
 ## Coordinate System
 
 The POI system uses spherical coordinates:
+
 - **Yaw**: Horizontal rotation (-180° to +180°)
 - **Pitch**: Vertical rotation (-90° to +90°)
 
@@ -166,6 +179,7 @@ Coordinates are calculated from screen click positions using the current view pa
 ## Styling
 
 The POI system uses Tailwind CSS classes for styling. Key visual elements:
+
 - Context menu with hover effects
 - Modal with form validation states
 - POI markers with drop shadows

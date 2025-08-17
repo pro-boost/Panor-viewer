@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import styles from '../ControlPanel.module.css';
-import { usePerformanceMonitor } from '../../../hooks/usePerformanceMonitor';
+import React from "react";
+import styles from "../ControlPanel.module.css";
+import { usePerformanceMonitor } from "../../../hooks/usePerformanceMonitor";
 
 interface PerformanceStats {
   loadedScenes: number;
@@ -31,25 +31,25 @@ export function PerformanceMonitorPanel({
       <div className={styles.header}>
         <div className={styles.icon}>
           <svg
-            width='16'
-            height='16'
-            viewBox='0 0 24 24'
-            fill='none'
-            xmlns='http://www.w3.org/2000/svg'
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
           >
             <path
-              d='M3 3V21H21'
-              stroke='white'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
+              d="M3 3V21H21"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
             <path
-              d='M9 9L12 6L16 10L20 6'
-              stroke='white'
-              strokeWidth='2'
-              strokeLinecap='round'
-              strokeLinejoin='round'
+              d="M9 9L12 6L16 10L20 6"
+              stroke="white"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         </div>

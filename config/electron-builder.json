@@ -1,0 +1,146 @@
+{
+  "appId": "com.fribouz.panoramaviewer",
+  "productName": "Advanced Panorama Viewer",
+  "copyright": "Copyright © 2025 fribouz",
+  "icon": "public/icons/panorama-viewer-icon-multi.ico",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "desktop/**/*",
+    "data/credential-config.json",
+    "package.json",
+    "!dist/**/*",
+    "!node_modules/**/*",
+    "node_modules/mime-types/**/*",
+    "node_modules/mime-db/**/*",
+    "!**/*.map",
+    "!**/locales/!(en-US.pak|en-GB.pak)",
+    "!**/*.pak",
+    "**/en-US.pak",
+    "**/en-GB.pak",
+    "**/resources.pak",
+    "**/chrome_100_percent.pak",
+    "**/chrome_200_percent.pak",
+    "!scripts/**/*",
+    "!public/assets/**/*",
+    "!config/**/*",
+    "!public/cars/**/*",
+    "!docs/**/*",
+    "!.github/**/*",
+    "!.husky/**/*",
+    "!jest.*",
+    "!eslint.*",
+    "!.prettier*",
+    "!config/.lighthouserc.json",
+    "!.lintstagedrc.json",
+    "!config/.eslintrc.json",
+    "!config/.prettierrc.json",
+    "!config/.prettierignore",
+    "!config/jest.config.js",
+    "!config/eslint.config.mjs",
+    "!config/postcss.config.mjs",
+    "!config/tsconfig.json",
+    "!next.config.js",
+    "!instruction.md",
+    "!readmeoverview.md",
+    "!README.md",
+    "!**/*.test.*",
+    "!**/*.spec.*",
+    "!**/__tests__/**/*",
+    "!**/test/**/*",
+    "!**/tests/**/*",
+    "!tests/**/*",
+    "!**/*.log",
+    "!**/.env*",
+    "!**/coverage/**/*",
+    "!**/.nyc_output/**/*",
+    "!temp_asar_*/**/*",
+    "!temp/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "resources/node",
+      "to": "node",
+      "filter": ["**/*"]
+    },
+    {
+      "from": ".next/standalone",
+      "to": "standalone",
+      "filter": ["**/*", "!src/**/*"]
+    },
+    {
+      "from": ".next/static",
+      "to": "standalone/.next/static",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "public/icons",
+      "to": "icons",
+      "filter": [
+        "panorama-viewer-icon.ico",
+        "panorama-viewer-icon-multi.ico",
+        "panorama-viewer-icon.png",
+        "panorama-viewer-icon 16x16.ico",
+        "panorama-viewer-icon 24x24.ico",
+        "panorama-viewer-icon 32x32.ico",
+        "panorama-viewer-icon 64x64.ico",
+        "panorama-viewer-icon 128x128.ico",
+        "panorama-viewer-icon 256x256.ico"
+      ]
+    }
+  ],
+  "asar": {
+    "smartUnpack": true
+  },
+  "compression": "maximum",
+  "afterPack": "scripts/electron/after-pack.js",
+  "win": {
+    "target": "nsis",
+    "signAndEditExecutable": false,
+    "icon": "public/icons/panorama-viewer-icon-multi.ico",
+    "requestedExecutionLevel": "requireAdministrator"
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false,
+    "installerIcon": "public/icons/panorama-viewer-icon-multi.ico",
+    "uninstallerIcon": "public/icons/panorama-viewer-icon-multi.ico",
+    "displayLanguageSelector": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
+  },
+  "mac": {
+    "target": [
+      {
+        "target": "dmg",
+        "arch": ["x64", "arm64"]
+      },
+      {
+        "target": "zip",
+        "arch": ["x64", "arm64"]
+      }
+    ],
+    "icon": "public/icons/panorama-viewer-icon.png",
+    "category": "public.app-category.graphics-design",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist"
+  },
+  "dmg": {
+    "contents": [
+      {
+        "x": 130,
+        "y": 220
+      },
+      {
+        "x": 410,
+        "y": 220,
+        "type": "link",
+        "path": "/Applications"
+      }
+    ]
+  }
+}

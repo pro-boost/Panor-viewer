@@ -1,24 +1,23 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { useRouter } from 'next/router';
-import { ReactElement, useState, useEffect } from 'react';
-import Link from 'next/link';
-import styles from '@/styles/Welcome.module.css';
-import Logo from '@/components/ui/Logo';
+import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
+import { ReactElement, useState, useEffect } from "react";
+import Link from "next/link";
+import styles from "@/styles/Welcome.module.css";
+import { FileURLManager } from "@/utils/fileHelpers";
+import Logo from "@/components/ui/Logo";
+import PageLoadingComponent from "@/components/ui/PageLoadingComponent";
 
 // Dynamically import PanoramaViewer to avoid SSR issues with Marzipano
 const PanoramaViewer = dynamic(
-  () => import('@/components/viewer/PanoramaViewer'),
+  () => import("@/components/viewer/PanoramaViewer"),
   {
     ssr: false,
     loading: (): ReactElement => (
-      <div id='loading'>
-        <div className='loader'></div>
-        <div>Loading panorama...</div>
-      </div>
+      <PageLoadingComponent headerText="Loading Panorama" />
     ),
-  }
+  },
 );
 
 interface ConfigData {
@@ -39,9 +38,9 @@ export default function SceneViewer(): ReactElement {
   useEffect(() => {
     if (
       !projectId ||
-      typeof projectId !== 'string' ||
+      typeof projectId !== "string" ||
       !sceneId ||
-      typeof sceneId !== 'string'
+      typeof sceneId !== "string"
     ) {
       return;
     }
@@ -55,15 +54,15 @@ export default function SceneViewer(): ReactElement {
         const configResponse = await fetch(
           `/api/projects/${encodeURIComponent(projectId)}/config`,
           {
-            cache: 'no-store',
-          }
+            cache: "no-store",
+          },
         );
 
         if (!configResponse.ok) {
           if (configResponse.status === 404) {
-            setError('Project not found or no configuration available');
+            setError("Project not found or no configuration available");
           } else {
-            setError('Failed to load project configuration');
+            setError("Failed to load project configuration");
           }
           setHasPanoramas(false);
           return;
@@ -73,13 +72,13 @@ export default function SceneViewer(): ReactElement {
         setConfig(configData);
 
         if (!configData.scenes || configData.scenes.length === 0) {
-          setError('No panoramas found in this project');
+          setError("No panoramas found in this project");
           setHasPanoramas(false);
           return;
         }
 
         // Check if the specific scene exists
-        const scene = configData.scenes.find(s => s.id === sceneId);
+        const scene = configData.scenes.find((s) => s.id === sceneId);
         if (!scene) {
           setError(`Scene "${sceneId}" not found in project "${projectId}"`);
           setSceneExists(false);
@@ -92,11 +91,14 @@ export default function SceneViewer(): ReactElement {
         // Check if the scene's image file exists
         try {
           const imageResponse = await fetch(
-            `/${projectId}/images/${sceneId}-pano.jpg`,
+            FileURLManager.getPanoramaImageURL(
+              projectId,
+              `${sceneId}-pano.jpg`,
+            ),
             {
-              method: 'HEAD',
-              cache: 'no-store',
-            }
+              method: "HEAD",
+              cache: "no-store",
+            },
           );
 
           if (imageResponse.ok) {
@@ -110,8 +112,8 @@ export default function SceneViewer(): ReactElement {
           setHasPanoramas(false);
         }
       } catch (error) {
-        console.error('Error checking for scene:', error);
-        setError('Failed to load scene data');
+        console.error("Error checking for scene:", error);
+        setError("Failed to load scene data");
         setHasPanoramas(false);
       } finally {
         setLoading(false);
@@ -122,23 +124,13 @@ export default function SceneViewer(): ReactElement {
   }, [projectId, sceneId]);
 
   if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.content}>
-
-          <h1 className={styles.title}>Loading Scene</h1>
-          <p className={styles.description}>
-            Loading scene "{sceneId}" from project "{projectId}"...
-          </p>
-        </div>
-      </div>
-    );
+    return <PageLoadingComponent headerText="Loading Scene" />;
   }
 
   if (error) {
     return (
       <div className={styles.container}>
-        <Logo variant='default' position='absolute' />
+        <Logo variant="default" position="absolute" />
 
         <div className={styles.content}>
           <h1 className={styles.title}>Scene Error</h1>
@@ -146,13 +138,13 @@ export default function SceneViewer(): ReactElement {
 
           <div
             style={{
-              display: 'flex',
-              gap: '16px',
-              justifyContent: 'center',
-              marginTop: '24px',
+              display: "flex",
+              gap: "16px",
+              justifyContent: "center",
+              marginTop: "24px",
             }}
           >
-            <Link href='/' className={styles.uploadButton}>
+            <Link href="/" className={styles.uploadButton}>
               Back to Home
             </Link>
 
@@ -162,7 +154,7 @@ export default function SceneViewer(): ReactElement {
               </Link>
             )}
 
-            <Link href='/upload' className={styles.uploadButton}>
+            <Link href="/upload" className={styles.uploadButton}>
               Upload New Project
             </Link>
           </div>
@@ -176,7 +168,7 @@ export default function SceneViewer(): ReactElement {
     return (
       <div>
         {/* Logo */}
-        <Logo variant='default' position='absolute' />
+        <Logo variant="default" position="absolute" />
 
         <PanoramaViewer
           projectId={projectId as string}
@@ -194,7 +186,7 @@ export default function SceneViewer(): ReactElement {
         <h1 className={styles.title}>Something went wrong</h1>
         <p className={styles.description}>Unable to load scene data.</p>
 
-        <Link href='/' className={styles.uploadButton}>
+        <Link href="/" className={styles.uploadButton}>
           <span className={styles.uploadIcon}>🏠</span>
           Back to Home
         </Link>

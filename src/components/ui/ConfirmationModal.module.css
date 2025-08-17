@@ -194,11 +194,11 @@
     max-width: none;
     margin: 20px;
   }
-  
+
   .modalActions {
     flex-direction: column;
   }
-  
+
   .cancelButton,
   .confirmButton {
     width: 100%;

@@ -24,17 +24,17 @@
 }
 
 @keyframes debugPulse {
-  0% { 
-    transform: translate(-50%, -50%) scale(1); 
-    opacity: 1; 
+  0% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
   }
-  50% { 
-    transform: translate(-50%, -50%) scale(1.2); 
-    opacity: 0.7; 
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0.7;
   }
-  100% { 
-    transform: translate(-50%, -50%) scale(1); 
-    opacity: 1; 
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
   }
 }
 
@@ -48,20 +48,30 @@
 
 /* POI Marker Animation */
 @keyframes lightPass {
-  0% { 
-    box-shadow: 0 0 0 3px #fff, 0 0 10px rgba(255, 255, 255, 0.8);
+  0% {
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 10px rgba(255, 255, 255, 0.8);
   }
-  25% { 
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 1);
+  25% {
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.8),
+      0 0 15px rgba(255, 255, 255, 1);
   }
-  50% { 
-    box-shadow: 0 0 0 3px #fff, 0 0 10px rgba(255, 255, 255, 0.8);
+  50% {
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 10px rgba(255, 255, 255, 0.8);
   }
-  75% { 
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 0 15px rgba(255, 255, 255, 1);
+  75% {
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.8),
+      0 0 15px rgba(255, 255, 255, 1);
   }
-  100% { 
-    box-shadow: 0 0 0 3px #fff, 0 0 10px rgba(255, 255, 255, 0.8);
+  100% {
+    box-shadow:
+      0 0 0 3px #fff,
+      0 0 10px rgba(255, 255, 255, 0.8);
   }
 }
 
@@ -125,7 +135,7 @@
 }
 
 .poiTooltip::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -4px;
   left: 50%;
@@ -150,18 +160,18 @@
     height: 60px;
     border-radius: 12px;
   }
-  
+
   .poiIconContainer {
     width: 44px;
     height: 44px;
   }
-  
+
   .poiTooltip {
     font-size: 13px;
     padding: 10px 14px;
     top: 55px;
   }
-  
+
   .debugMarker {
     width: 16px;
     height: 16px;

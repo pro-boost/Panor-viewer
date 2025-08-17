@@ -1,6 +1,14 @@
-import { useEffect, useCallback, MouseEvent } from 'react';
-import { createRipple, checkWebGLSupport, getWebGLDiagnostics } from '@/utils/panoramaUtils';
-import { PanoramaViewerRefs, PanoramaViewerActions, ViewParams } from './usePanoramaViewer';
+import { useEffect, useCallback, MouseEvent } from "react";
+import {
+  createRipple,
+  checkWebGLSupport,
+  getWebGLDiagnostics,
+} from "@/utils/panoramaUtils";
+import {
+  PanoramaViewerRefs,
+  PanoramaViewerActions,
+  ViewParams,
+} from "./usePanoramaViewer";
 
 export interface UseViewerEventsProps {
   refs: PanoramaViewerRefs;
@@ -25,7 +33,7 @@ export function useViewerEvents({
   const handlePanoClick = useCallback(
     (e: MouseEvent<HTMLDivElement>): void => {
       // Don't toggle if clicking a hotspot
-      if ((e.target as HTMLElement).closest('.hotspot')) return;
+      if ((e.target as HTMLElement).closest(".hotspot")) return;
 
       // Close any open panels
       if (closePanels) {
@@ -38,13 +46,13 @@ export function useViewerEvents({
       // Toggle hotspots
       toggleHotspots();
     },
-    [toggleHotspots, closePanels, refs.panoRef]
+    [toggleHotspots, closePanels, refs.panoRef],
   );
 
   // WebGL context loss recovery
   const handleWebGLContextLoss = useCallback(() => {
-    console.warn('WebGL context lost, attempting recovery...');
-    actions.setError('WebGL context was lost. Reloading viewer...');
+    console.warn("WebGL context lost, attempting recovery...");
+    actions.setError("WebGL context was lost. Reloading viewer...");
 
     // Attempt to reinitialize after a short delay
     setTimeout(() => {
@@ -54,7 +62,7 @@ export function useViewerEvents({
         initializeViewer();
       } else {
         actions.setError(
-          'WebGL context could not be restored. Please refresh the page.'
+          "WebGL context could not be restored. Please refresh the page.",
         );
       }
     }, 1000);
@@ -79,10 +87,14 @@ export function useViewerEvents({
   // Handle keyboard controls
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent): void => {
-      if (e.key === ' ') {
+      if (e.key === " ") {
         // Don't prevent default if user is typing in an input field
         const target = e.target as HTMLElement;
-        if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+        if (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable
+        ) {
           return;
         }
         e.preventDefault();
@@ -90,13 +102,13 @@ export function useViewerEvents({
       }
     };
 
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
   }, [toggleHotspots]);
 
   // Add WebGL context loss listeners
   useEffect(() => {
-    const canvas = refs.panoRef.current?.querySelector('canvas');
+    const canvas = refs.panoRef.current?.querySelector("canvas");
     if (canvas) {
       const handleContextLost = (event: Event) => {
         event.preventDefault();
@@ -104,18 +116,18 @@ export function useViewerEvents({
       };
 
       const handleContextRestored = () => {
-        console.log('WebGL context restored');
+        console.log("WebGL context restored");
         handleWebGLContextLoss();
       };
 
-      canvas.addEventListener('webglcontextlost', handleContextLost);
-      canvas.addEventListener('webglcontextrestored', handleContextRestored);
+      canvas.addEventListener("webglcontextlost", handleContextLost);
+      canvas.addEventListener("webglcontextrestored", handleContextRestored);
 
       return () => {
-        canvas.removeEventListener('webglcontextlost', handleContextLost);
+        canvas.removeEventListener("webglcontextlost", handleContextLost);
         canvas.removeEventListener(
-          'webglcontextrestored',
-          handleContextRestored
+          "webglcontextrestored",
+          handleContextRestored,
         );
       };
     }
@@ -140,8 +152,8 @@ export function useViewerEvents({
       }
     }
     updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
   }, [refs.panoRef, actions]);
 
   // Update arrow rotation on view change
@@ -154,7 +166,10 @@ export function useViewerEvents({
       let rotation = yaw * (180 / Math.PI); // Convert radians to degrees
 
       // Apply north offset correction for compass arrow
-      if (currentScene && refs.scenesRef.current[currentScene]?.data?.northOffset) {
+      if (
+        currentScene &&
+        refs.scenesRef.current[currentScene]?.data?.northOffset
+      ) {
         rotation += refs.scenesRef.current[currentScene].data.northOffset;
       }
 
@@ -165,46 +180,49 @@ export function useViewerEvents({
     };
 
     if (viewer.addEventListener) {
-      viewer.addEventListener('viewChange', updateArrowRotation);
+      viewer.addEventListener("viewChange", updateArrowRotation);
     }
 
     return () => {
       if (viewer && viewer.removeEventListener) {
-        viewer.removeEventListener('viewChange', updateArrowRotation);
+        viewer.removeEventListener("viewChange", updateArrowRotation);
       }
     };
   }, [isLoading, currentScene, refs.viewerRef, refs.scenesRef, actions]);
 
   // Setup view parameter tracking
-  const setupViewTracking = useCallback((viewer: Marzipano.Viewer) => {
-    const updateViewParams = () => {
-      try {
-        if (viewer) {
-          const view = viewer.view();
-          actions.setCurrentViewParams({
-            yaw: view.yaw(),
-            pitch: view.pitch(),
-            fov: view.fov(),
-          });
+  const setupViewTracking = useCallback(
+    (viewer: Marzipano.Viewer) => {
+      const updateViewParams = () => {
+        try {
+          if (viewer) {
+            const view = viewer.view();
+            actions.setCurrentViewParams({
+              yaw: view.yaw(),
+              pitch: view.pitch(),
+              fov: view.fov(),
+            });
+          }
+        } catch (err) {
+          // Silently ignore errors during view tracking
         }
-      } catch (err) {
-        // Silently ignore errors during view tracking
+      };
+
+      // Listen for view changes
+      if (viewer.addEventListener) {
+        viewer.addEventListener("viewChange", updateViewParams);
       }
-    };
 
-    // Listen for view changes
-    if (viewer.addEventListener) {
-      viewer.addEventListener('viewChange', updateViewParams);
-    }
+      // Also update on mouse/touch interactions
+      if (refs.panoRef.current) {
+        refs.panoRef.current.addEventListener("mouseup", updateViewParams);
+        refs.panoRef.current.addEventListener("touchend", updateViewParams);
+      }
 
-    // Also update on mouse/touch interactions
-    if (refs.panoRef.current) {
-      refs.panoRef.current.addEventListener('mouseup', updateViewParams);
-      refs.panoRef.current.addEventListener('touchend', updateViewParams);
-    }
-
-    return updateViewParams;
-  }, [refs.panoRef, actions]);
+      return updateViewParams;
+    },
+    [refs.panoRef, actions],
+  );
 
   return {
     handlePanoClick,

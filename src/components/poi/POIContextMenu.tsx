@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useEffect, useRef } from 'react';
-import { POIContextMenuProps } from '@/types/poi';
-import { FaMapPin, FaTimes } from 'react-icons/fa';
-import styles from './POIContextMenu.module.css';
+import React, { useEffect, useRef } from "react";
+import { POIContextMenuProps } from "@/types/poi";
+import { FaMapPin, FaTimes } from "react-icons/fa";
+import styles from "./POIContextMenu.module.css";
 
 const POIContextMenu: React.FC<POIContextMenuProps> = ({
   position,
   onCreatePOI,
-  onClose
+  onClose,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -20,17 +20,17 @@ const POIContextMenu: React.FC<POIContextMenuProps> = ({
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [onClose]);
 
@@ -46,7 +46,7 @@ const POIContextMenu: React.FC<POIContextMenuProps> = ({
       className={styles.contextMenu}
       style={{
         left: `${position.x}px`,
-        top: `${position.y}px`
+        top: `${position.y}px`,
       }}
     >
       <div className={styles.menuContent}>
@@ -57,9 +57,9 @@ const POIContextMenu: React.FC<POIContextMenuProps> = ({
           <FaMapPin className={styles.createIcon} />
           Create POI
         </button>
-        
+
         <div className={styles.divider} />
-        
+
         <button
           onClick={onClose}
           className={`${styles.menuItem} ${styles.cancelButton}`}
