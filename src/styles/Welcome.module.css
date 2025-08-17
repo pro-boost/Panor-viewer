@@ -1049,7 +1049,8 @@ text-align: center;
 }
 
 .editButton,
-.deleteButton {
+.deleteButton,
+.exportButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1072,6 +1073,13 @@ text-align: center;
   transform: translateY(-1px);
 }
 
+.exportButton:hover {
+  background: var(--bg-overlay-hover);
+  border-color: var(--border-strong);
+  color: var(--green-primary);
+  transform: translateY(-1px);
+}
+
 .deleteButton:hover {
   background: var(--bg-overlay-hover);
   border-color: var(--border-strong);
@@ -1079,10 +1087,23 @@ text-align: center;
   transform: translateY(-1px);
 }
 
+.exportButton:disabled,
 .deleteButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+}
+
+.exportButton.disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.exportButton.exporting {
+  background: var(--green-primary);
+  color: var(--white);
+  border-color: var(--green-primary);
 }
 
 .deleteButton.deleting {
@@ -1091,6 +1112,7 @@ text-align: center;
   border-color: var(--red-primary);
 }
 
+.exportingSpinner,
 .deletingSpinner {
   font-size: 12px;
   animation: spin 1s linear infinite;

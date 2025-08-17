@@ -56,6 +56,7 @@ export default function Home(): ReactElement {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [exporting, setExporting] = useState<string | null>(null);
 
   // Search and filter state
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -395,6 +396,43 @@ export default function Home(): ReactElement {
       alert(err.message || "Failed to delete project");
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const exportProject = async (projectId: string, projectName: string) => {
+    setExporting(projectId);
+    try {
+      const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/export`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          includeAssets: true,
+          includePOI: true,
+        }),
+      });
+
+      if (response.ok) {
+        // Create download link
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${projectName.replace(/[^a-zA-Z0-9-_]/g, "-")}-export.zip`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        console.error("Failed to export project");
+        alert("Failed to export project. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error exporting project:", error);
+      alert("Error exporting project. Please try again.");
+    } finally {
+      setExporting(null);
     }
   };
 
@@ -857,6 +895,54 @@ export default function Home(): ReactElement {
                                     strokeLinejoin="round"
                                   />
                                 </svg>
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  exportProject(project.id, project.name);
+                                }}
+                                disabled={exporting === project.id || !project.hasConfig}
+                                className={`${styles.exportButton} ${
+                                  exporting === project.id ? styles.exporting : ""
+                                } ${
+                                  !project.hasConfig ? styles.disabled : ""
+                                }`}
+                                title={project.hasConfig ? "Export project for client review" : "Project must have configuration to export"}
+                              >
+                                {exporting === project.id ? (
+                                  <div className={styles.exportingSpinner}>
+                                    ...
+                                  </div>
+                                ) : (
+                                  <svg
+                                    width="12"
+                                    height="12"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                  >
+                                    <path
+                                      d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    <path
+                                      d="M7 10L12 15L17 10"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                    <path
+                                      d="M12 15V3"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                )}
                               </button>
                               <button
                                 onClick={(e) => {
