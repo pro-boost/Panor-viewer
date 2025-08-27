@@ -11,9 +11,11 @@ import {
   POIManagementPanelWithModal,
   HotspotPanel,
 } from "./panels";
-import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon, HotspotIcon } from "./icons";
+import { ProjectsIcon, FloorsIcon, PerformanceIcon, POIIcon, HotspotIcon, ExportIcon } from "./icons/ControlPanelIcons";
 import { POIData } from "@/types/poi";
 import { usePanelState } from "../../hooks/usePanelState";
+import ExportButton from "../export/ExportButton";
+import { ConfigData } from "@/types/scenes";
 
 interface PerformanceStats {
   loadedScenes: number;
@@ -46,6 +48,10 @@ interface ControlPanelProps {
   onPOIDelete?: (poiId: string | POIData) => void;
   onPOINavigate?: (panoramaId: string) => void;
 
+  // Export props
+  projectConfig?: ConfigData;
+  projectPOIs?: POIData[];
+
   // Panel control props
   onClosePanels?: (closePanelsFunc: () => void) => void;
 }
@@ -67,6 +73,8 @@ export default function ControlPanel({
   onPOIEdit,
   onPOIDelete,
   onPOINavigate,
+  projectConfig,
+  projectPOIs,
   onClosePanels,
 }: ControlPanelProps): ReactElement {
   const {
@@ -175,6 +183,25 @@ export default function ControlPanel({
             setHotspotsVisible={setHotspotsVisible}
             hotspotTimeoutRef={hotspotTimeoutRef}
           />
+        </ControlButton>
+      )}
+
+      {/* Export Panel */}
+      {projectConfig && (
+        <ControlButton
+          id="export"
+          expandedPanel={expandedPanel}
+          onToggle={handlePanelToggle}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          icon={<ExportIcon />}
+        >
+          <div style={{ padding: '16px' }}>
+            <ExportButton
+              config={projectConfig}
+              pois={projectPOIs || []}
+            />
+          </div>
         </ControlButton>
       )}
     </div>

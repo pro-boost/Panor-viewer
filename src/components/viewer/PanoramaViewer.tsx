@@ -36,6 +36,7 @@ export default function PanoramaViewer({
   const [poiSceneCounts, setPoiSceneCounts] = useState<Record<string, number>>(
     {}
   );
+  const [projectPOIs, setProjectPOIs] = useState<POIData[]>([]);
   const hotspotRendererRef = useRef<HotspotRendererRef>(null);
   const poiComponentRef = useRef<POIComponentRef>(null);
 
@@ -70,6 +71,30 @@ export default function PanoramaViewer({
     }
   }, [projectId]);
 
+  // Fetch POI data
+  const fetchPOIData = useCallback(async () => {
+    if (!projectId) {
+      setProjectPOIs([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/poi/load?projectId=${encodeURIComponent(projectId)}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setProjectPOIs(data.pois || []);
+      } else {
+        console.warn("Failed to fetch POI data:", response.status);
+        setProjectPOIs([]);
+      }
+    } catch (error) {
+      console.error("Error fetching POI data:", error);
+      setProjectPOIs([]);
+    }
+  }, [projectId]);
+
   const handlePOICreated = useCallback(
     (poi: POIData) => {
       console.log("POI created:", poi);
@@ -77,16 +102,18 @@ export default function PanoramaViewer({
       if (hotspotRendererRef.current) {
         hotspotRendererRef.current.refreshPOISceneCounts();
       }
-      // Also refresh local POI scene counts for MiniMap
+      // Also refresh local POI scene counts for MiniMap and POI data for export
       fetchPOISceneCounts();
+      fetchPOIData();
     },
-    [fetchPOISceneCounts]
+    [fetchPOISceneCounts, fetchPOIData]
   );
 
-  // Fetch POI scene counts when projectId changes
+  // Fetch POI scene counts and data when projectId changes
   useEffect(() => {
     fetchPOISceneCounts();
-  }, [fetchPOISceneCounts]);
+    fetchPOIData();
+  }, [fetchPOISceneCounts, fetchPOIData]);
 
   // Initialize cache refresh functionality
   const { refreshImages } = useCacheRefresh(projectId);
@@ -239,6 +266,8 @@ export default function PanoramaViewer({
         onOptimize={optimizePerformance}
         projectId={projectId}
         currentPanoramaId={state.currentScene}
+        projectConfig={state.config}
+        projectPOIs={projectPOIs}
         onPOIEdit={(poi) => {
           // Navigate to the POI's scene first, then edit
           if (poi.panoramaId !== state.currentScene) {
@@ -275,27 +304,32 @@ export default function PanoramaViewer({
                   setTimeout(() => {
                     poiComponentRef.current?.deletePOI(actualPoiId);
                     fetchPOISceneCounts();
+                    fetchPOIData();
                   }, 1500);
                 } else {
                   // Already in the current scene, delete immediately
                   poiComponentRef.current?.deletePOI(actualPoiId);
                   fetchPOISceneCounts();
+                  fetchPOIData();
                 }
               } else {
                 // POI not found, just try to delete it anyway
                 poiComponentRef.current?.deletePOI(actualPoiId);
                 fetchPOISceneCounts();
+                fetchPOIData();
               }
             } else {
               // Failed to fetch POI data, just try to delete it anyway
               poiComponentRef.current?.deletePOI(actualPoiId);
               fetchPOISceneCounts();
+              fetchPOIData();
             }
           } catch (error) {
             console.error("Error fetching POI data for deletion:", error);
             // Fallback: just try to delete it anyway
             poiComponentRef.current?.deletePOI(actualPoiId);
             fetchPOISceneCounts();
+            fetchPOIData();
           }
         }}
         onPOINavigate={navigateToScene}

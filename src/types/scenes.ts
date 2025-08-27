@@ -51,6 +51,7 @@ export interface SceneData {
   initialYaw: number; // Absolute orientation in degrees
   northOffset?: number; // Optional: offset from true north in degrees
   panoPos?: PanoPosition;
+  imageUrl?: string; // URL to the panorama image
   // Optional fields for Marzipano configuration
   levels?: Array<{ width: number }>;
   faceSize?: number;
@@ -63,10 +64,22 @@ export interface SceneData {
 }
 
 /**
+ * Logo configuration
+ */
+export interface LogoConfig {
+  image?: string;
+  position?: string;
+  size?: string;
+}
+
+/**
  * Configuration data containing all scenes
  */
 export interface ConfigData {
   scenes: SceneData[];
+  projectId?: string;
+  projectName?: string;
+  logo?: LogoConfig;
 }
 
 /**
