@@ -9,6 +9,10 @@ interface ExportProjectData {
   pois?: POIData[];
 }
 
+interface ExportProgressCallback {
+  (step: number, totalSteps: number, message: string, details?: any): void;
+}
+
 /**
  * Export project as a standalone ZIP package
  * Creates a self-contained panorama viewer with all assets
@@ -114,7 +118,7 @@ export async function testExportWithSampleData(): Promise<void> {
   }
 }
 
-export async function exportAsZip(projectData: ExportProjectData): Promise<Buffer> {
+export async function exportAsZip(projectData: ExportProjectData, progressCallback?: ExportProgressCallback): Promise<Buffer> {
   const startTime = Date.now();
   let currentStep = 'initialization';
   
@@ -141,33 +145,38 @@ export async function exportAsZip(projectData: ExportProjectData): Promise<Buffe
       throw new Error('Project must contain at least one scene');
     }
     
-    console.log('=== EXPORT PROGRESS: Step 1/6 - Validation completed ===');
+    console.log('=== EXPORT PROGRESS: Step 1/8 - Validation completed ===');
+    progressCallback?.(1, 8, 'Project validation completed');
     
     const zip = new JSZip();
     
     // Load standalone templates
     currentStep = 'loading templates';
-    console.log('=== EXPORT PROGRESS: Step 2/6 - Loading templates... ===');
+    console.log('=== EXPORT PROGRESS: Step 2/8 - Loading templates... ===');
+    progressCallback?.(2, 8, 'Loading export templates...');
     const templates = await loadStandaloneTemplates();
     console.log('=== EXPORT DEBUG: Templates loaded successfully');
     
     // Process project data for standalone viewer
     currentStep = 'processing data';
-    console.log('=== EXPORT PROGRESS: Step 3/6 - Processing project data... ===');
+    console.log('=== EXPORT PROGRESS: Step 3/8 - Processing project data... ===');
+    progressCallback?.(3, 8, 'Processing project configuration...');
     const processedData = await processProjectData(projectData);
     console.log('=== EXPORT DEBUG: Project data processed successfully');
     
     // Add core files to ZIP
     currentStep = 'adding core files';
-    console.log('=== EXPORT PROGRESS: Step 4/6 - Adding core files... ===');
+    console.log('=== EXPORT PROGRESS: Step 4/8 - Adding core files... ===');
+    progressCallback?.(4, 8, 'Adding core files to package...');
     console.log('=== EXPORT DEBUG: Adding core files...');
     await addCoreFiles(zip, templates, processedData);
     console.log('=== EXPORT DEBUG: Core files added successfully');
     
     // Add project assets (images, etc.)
     currentStep = 'adding assets';
-    console.log('=== EXPORT PROGRESS: Step 5/6 - Adding project assets... ===');
-    await addProjectAssets(zip, projectData);
+    console.log('=== EXPORT PROGRESS: Step 5/8 - Adding project assets... ===');
+    progressCallback?.(5, 8, 'Processing panorama images...');
+    await addProjectAssets(zip, projectData, progressCallback);
     console.log('=== EXPORT DEBUG: Project assets added successfully');
     
     // Add Marzipano library
@@ -177,7 +186,8 @@ export async function exportAsZip(projectData: ExportProjectData): Promise<Buffe
     
     // Generate ZIP buffer for API response with streaming for memory efficiency
     currentStep = 'generating zip';
-    console.log('=== EXPORT PROGRESS: Step 6/6 - Generating ZIP file with streaming... ===');
+    console.log('=== EXPORT PROGRESS: Step 8/8 - Generating ZIP file with streaming... ===');
+    progressCallback?.(8, 8, 'Generating final export package...');
     const content = await zip.generateAsync({ 
       type: 'nodebuffer',
       compression: 'DEFLATE',
@@ -359,7 +369,7 @@ async function readElectronFile(filePath: string): Promise<Buffer> {
 /**
  * Add project assets (images, logos, POI files) to ZIP
  */
-async function addProjectAssets(zip: JSZip, projectData: ExportProjectData) {
+async function addProjectAssets(zip: JSZip, projectData: ExportProjectData, progressCallback?: ExportProgressCallback) {
   const assetsFolder = zip.folder('assets');
   const imagesFolder = assetsFolder!.folder('images');
   const panoramasFolder = imagesFolder!.folder('panoramas');
@@ -534,6 +544,7 @@ async function addProjectAssets(zip: JSZip, projectData: ExportProjectData) {
   // Add POI config file
   if (projectData.pois && projectData.pois.length > 0) {
     console.log('Processing POI config file...', { poisCount: projectData.pois.length });
+    progressCallback?.(6, 8, 'Processing POI data...', { poisCount: projectData.pois.length });
     try {
       let poiConfigBuffer: Buffer;
       
@@ -575,46 +586,81 @@ async function addProjectAssets(zip: JSZip, projectData: ExportProjectData) {
       fileAttachments: fileAttachments.length 
     });
     
-    for (const poi of projectData.pois) {
-      if (poi.type === 'file' && poi.content && !addedFiles.has(poi.content)) {
-        try {
-          let fileBuffer: Buffer;
-          
-          console.log(`Processing POI attachment: ${poi.content}`);
-          
-          // Try to read from local app data directory first
-          const poiFilePath = path.join(projectPaths.projectPoiPath, 'attachments', poi.content);
-          console.log(`Attempting to read POI attachment from local path: ${poiFilePath}`);
+    if (fileAttachments.length > 0) {
+      progressCallback?.(6, 8, `Processing ${fileAttachments.length} POI attachments...`, { 
+        totalAttachments: fileAttachments.length 
+      });
+      
+      // Create attachments subfolder within POI folder
+      const poiAttachmentsFolder = poiFolder!.folder('attachments');
+      
+      let processedAttachments = 0;
+      for (const poi of projectData.pois) {
+        if (poi.type === 'file' && poi.content && !addedFiles.has(poi.content)) {
           try {
-            fileBuffer = await readElectronFile(poiFilePath);
-            console.log(`Successfully read POI attachment ${poi.content}, size: ${fileBuffer.length} bytes`);
-          } catch (localError) {
-            console.log('Local POI attachment not accessible, trying URL fetch:', localError.message);
-            // Method 2: Fallback to URL fetch
-            const attachmentUrl = `/api/files/${projectData.config.projectId}/poi/attachments/${poi.content}`;
-            console.log(`Fetching POI attachment from URL: ${attachmentUrl}`);
-            const fileBlob = await fetchAsBlob(attachmentUrl);
-            fileBuffer = Buffer.from(await fileBlob.arrayBuffer());
-            console.log(`Successfully fetched POI attachment ${poi.content} via URL, size: ${fileBuffer.length} bytes`);
+            let fileBuffer: Buffer;
+            
+            console.log(`Processing POI attachment: ${poi.content}`);
+            processedAttachments++;
+            
+            progressCallback?.(6, 8, `Processing POI attachment ${processedAttachments}/${fileAttachments.length}: ${poi.content}`, {
+              currentAttachment: processedAttachments,
+              totalAttachments: fileAttachments.length,
+              fileName: poi.content
+            });
+            
+            // Try to read from local app data directory first
+            const poiFilePath = path.join(projectPaths.projectPoiPath, 'attachments', poi.content);
+            console.log(`Attempting to read POI attachment from local path: ${poiFilePath}`);
+            try {
+              fileBuffer = await readElectronFile(poiFilePath);
+              console.log(`Successfully read POI attachment ${poi.content}, size: ${fileBuffer.length} bytes`);
+            } catch (localError) {
+              console.log('Local POI attachment not accessible, trying URL fetch:', localError.message);
+              // Method 2: Fallback to URL fetch
+              const attachmentUrl = `/api/files/${projectData.config.projectId}/poi/attachments/${poi.content}`;
+              console.log(`Fetching POI attachment from URL: ${attachmentUrl}`);
+              const fileBlob = await fetchAsBlob(attachmentUrl);
+              fileBuffer = Buffer.from(await fileBlob.arrayBuffer());
+              console.log(`Successfully fetched POI attachment ${poi.content} via URL, size: ${fileBuffer.length} bytes`);
+            }
+            
+            // Add file to attachments subfolder
+            poiAttachmentsFolder!.file(poi.content, fileBuffer);
+            addedFiles.add(poi.content);
+            console.log(`Added POI attachment ${poi.content} to ZIP attachments folder`);
+            
+            // Update progress for completed attachment
+            progressCallback?.(6, 8, `Added POI attachment: ${poi.content}`, {
+              currentAttachment: processedAttachments,
+              totalAttachments: fileAttachments.length,
+              completed: true
+            });
+          } catch (error) {
+            console.error(`Failed to fetch POI attachment ${poi.content}:`, {
+              poiId: poi.id,
+              content: poi.content,
+              error: error.message,
+              stack: error.stack
+            });
           }
-          
-          poiFolder!.file(poi.content, fileBuffer);
-          addedFiles.add(poi.content);
-          console.log(`Added POI attachment ${poi.content} to ZIP`);
-        } catch (error) {
-          console.error(`Failed to fetch POI attachment ${poi.content}:`, {
-            poiId: poi.id,
-            content: poi.content,
-            error: error.message,
-            stack: error.stack
-          });
         }
       }
+      
+      console.log(`Processed ${addedFiles.size} unique POI attachments in attachments subfolder`);
+      
+      // Final POI processing step
+      progressCallback?.(7, 8, `Completed processing ${addedFiles.size} POI attachments`, {
+        totalProcessed: addedFiles.size,
+        totalAttachments: fileAttachments.length
+      });
+    } else {
+      console.log('No POI file attachments found');
+      progressCallback?.(7, 8, 'No POI attachments to process');
     }
-    
-    console.log(`Processed ${addedFiles.size} unique POI attachments`);
   } else {
     console.log('No POIs found for attachment processing');
+    progressCallback?.(7, 8, 'No POI attachments to process');
   }
 }
 

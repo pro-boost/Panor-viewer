@@ -45,7 +45,7 @@ const ExportConfirmationModal: React.FC<ExportConfirmationModalProps> = ({
   }>({ type: null, message: "" });
   const [exportProgress, setExportProgress] = useState({
     step: 0,
-    totalSteps: 6,
+    totalSteps: 8,
     message: "Initializing export..."
   });
 
@@ -69,7 +69,7 @@ const ExportConfirmationModal: React.FC<ExportConfirmationModalProps> = ({
 
     setIsExporting(true);
     setExportStatus({ type: null, message: "" });
-    setExportProgress({ step: 1, totalSteps: 6, message: "Validating project data..." });
+    setExportProgress({ step: 0, totalSteps: 8, message: "Initializing export..." });
 
     try {
       // Prepare project data for export
@@ -78,73 +78,86 @@ const ExportConfirmationModal: React.FC<ExportConfirmationModalProps> = ({
         pois: includePOIs ? pois : [], // Include POIs only if checkbox is checked
       };
 
-      // Set initial progress state
-      setExportProgress({ step: 1, totalSteps: 6, message: "Validating project data..." });
-
-      // Simulate realistic progress during export
-      const progressSteps = [
-        { step: 2, message: "Loading templates...", delay: 500 },
-        { step: 3, message: "Processing configuration...", delay: 1000 },
-        { step: 4, message: "Adding core files...", delay: 1500 },
-        { step: 5, message: "Processing images...", delay: 2000 }
-      ];
-
-      // Start gradual progress updates
-      const progressPromises = progressSteps.map((step, index) => 
-        new Promise(resolve => {
-          setTimeout(() => {
-            setExportProgress({ step: step.step, totalSteps: 6, message: step.message });
-            resolve(null);
-          }, step.delay);
-        })
-      );
-
-      // Start all progress updates and API call simultaneously
-      const [response] = await Promise.all([
-        fetch('/api/export-project', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'export',
-            projectData
-          })
-        }),
-        ...progressPromises
-      ]);
+      // Use EventSource for real-time progress updates
+      const eventSource = new EventSource('/api/export-project-stream');
       
-      // Final progress step when server operations complete
-      setExportProgress({ step: 6, totalSteps: 6, message: "Download ready - starting download..." });
+      // Handle real-time progress updates
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'progress') {
+            const { step, totalSteps, message, details } = data.data;
+            setExportProgress({ step, totalSteps, message });
+            
+            // Log detailed progress for POI processing
+            if (details) {
+              console.log('Export progress details:', details);
+            }
+          } else if (data.type === 'complete') {
+            // Handle successful completion
+            const { filename, fileData, size } = data.data;
+            
+            // Convert base64 back to blob and trigger download
+            const byteCharacters = atob(fileData);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: 'application/zip' });
+            
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            setExportStatus({
+              type: "success",
+              message: `Project "${config?.projectName || "Panorama Project"}" exported successfully! (${(size / 1024 / 1024).toFixed(2)} MB)`,
+            });
+            
+            eventSource.close();
+            
+            // Close modal after successful export
+            setTimeout(() => {
+              onClose();
+            }, 2000);
+          } else if (data.type === 'error') {
+            // Handle export error
+            throw new Error(data.data.message);
+          }
+        } catch (parseError) {
+          console.error('Error parsing SSE data:', parseError);
+        }
+      };
+      
+      eventSource.onerror = (error) => {
+        console.error('EventSource error:', error);
+        eventSource.close();
+        throw new Error('Connection to export service failed');
+      };
+      
+      // Start the export process
+      const response = await fetch('/api/export-project-stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ projectData })
+      });
       
       if (!response.ok) {
+        eventSource.close();
         const errorData = await response.json();
         throw new Error(errorData.message || 'Export failed');
       }
-
-      // Handle ZIP file download
-      const blob = await response.blob();
-      const filename = response.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] || 'panorama-export.zip';
       
-      // Create download link
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-
-      setExportStatus({
-        type: "success",
-        message: `Project "${config?.projectName || "Panorama Project"}" exported successfully!`,
-      });
-
-      // Close modal after successful export
-      setTimeout(() => {
-        onClose();
-      }, 2000);
     } catch (error) {
       console.error("Export failed:", error);
       
@@ -168,9 +181,8 @@ const ExportConfirmationModal: React.FC<ExportConfirmationModalProps> = ({
         type: "error",
         message: errorMessage,
       });
-    } finally {
       setIsExporting(false);
-      setExportProgress({ step: 0, totalSteps: 6, message: "Initializing export..." });
+      setExportProgress({ step: 0, totalSteps: 8, message: "Initializing export..." });
     }
   };
 
@@ -248,6 +260,32 @@ const ExportConfirmationModal: React.FC<ExportConfirmationModalProps> = ({
                         : "POIs will be excluded from the exported viewer"
                       }
                     </p>
+                  </div>
+                  
+                  <div className={styles.exportSummary}>
+                    <h4>Export Summary</h4>
+                    <div className={styles.summaryGrid}>
+                      <div className={styles.summaryItem}>
+                        <span className={styles.summaryLabel}>Scenes:</span>
+                        <span className={styles.summaryValue}>{config?.scenes?.length || 0}</span>
+                      </div>
+                      <div className={styles.summaryItem}>
+                        <span className={styles.summaryLabel}>POIs:</span>
+                        <span className={styles.summaryValue}>{pois?.length || 0}</span>
+                      </div>
+                      {pois && pois.length > 0 && (
+                        <div className={styles.summaryItem}>
+                          <span className={styles.summaryLabel}>POI Attachments:</span>
+                          <span className={styles.summaryValue}>
+                            {pois.filter(poi => poi.type === 'file' && poi.content).length}
+                          </span>
+                        </div>
+                      )}
+                      <div className={styles.summaryItem}>
+                        <span className={styles.summaryLabel}>Project Name:</span>
+                        <span className={styles.summaryValue}>{config?.projectName || "Untitled"}</span>
+                      </div>
+                    </div>
                   </div>
                 </>
               )}
